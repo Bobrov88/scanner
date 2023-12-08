@@ -22,6 +22,7 @@ endif()
 
 set(Boost_USE_STATIC_LIBS ON)
 set(BUILD_SHARED_LIBS FALSE)
+add_compile_definitions(_WIN32_WINNT=0x0601)
 
 find_package(Boost COMPONENTS filesystem regex json log REQUIRED)
 
