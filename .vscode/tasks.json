@@ -1,0 +1,19 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "conan install linux",
+            "type": "shell",
+            "command": "conan install -pr linux_x86_64 -if \"${command:cmake.buildDirectory}\" \"${workspaceFolder}\" --build missing",
+            "problemMatcher": []
+        },
+        {
+            "label": "conan install win_msvc_x86_64",
+            "type": "shell",
+            "command": "conan install -pr:b win_msvc_2019_x86_64 -pr:h win_msvc_2019_x86_64 -if \"${command:cmake.buildDirectory}\" \"${workspaceFolder}\" --build missing",
+            "problemMatcher": []
+        }
+    ]
+}
