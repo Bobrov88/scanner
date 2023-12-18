@@ -7,7 +7,6 @@ compiler.version=9.4
 compiler.libcxx=libstdc++11
 build_type=Release
 [options]
-caf:shared=False
 boost:without_stacktrace = True
 [build_requires]
 [env]

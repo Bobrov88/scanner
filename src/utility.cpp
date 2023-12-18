@@ -85,14 +85,14 @@ std::vector<UTIL::AVAILABLE_COM> UTIL::get_available_linux_com_ports()
 
 std::vector<UTIL::AVAILABLE_HID> UTIL::get_available_hid_devices()
 {
-    std::vector<UTIL::AVAILABLE_HID> hid_device;
+    std::vector<UTIL::AVAILABLE_HID> device;
     struct hid_device_info *cur_dev;
     cur_dev = hid_enumerate(0x0, 0x0);
     while (cur_dev)
     {
         if (cur_dev->vendor_id != 0 && cur_dev->product_id != 0)
         {
-            hid_device.push_back({cur_dev->vendor_id,
+            device.push_back({cur_dev->vendor_id,
                                    cur_dev->product_id,
                                    cur_dev->path,
                                    cur_dev->serial_number,
@@ -106,7 +106,7 @@ std::vector<UTIL::AVAILABLE_HID> UTIL::get_available_hid_devices()
         cur_dev = cur_dev->next;
     }
     hid_free_enumeration(cur_dev);
-    return hid_device;
+    return device;
 }
 
 inline std::string UTIL::str(const std::wstring &src)
