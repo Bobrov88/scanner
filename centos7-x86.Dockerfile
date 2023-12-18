@@ -3,24 +3,17 @@ FROM i386/centos:7
 ENV TZ=Europe/Moscow
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-# copy conan files
-COPY conan/ /root/.conan/
-# copy conan profiles
-COPY conan_profiles/linux/centos7/ /root/.conan/profiles
-# private.pem
-COPY private.pem /opt
-
 RUN yum groupinstall -y 'Development Tools' && \
     yum install -y wget && \
     yum install -y openssl-devel && \
     yum install -y sqlite-devel libffi-devel && \
     yum install -y xz-devel && \
     yum install -y xz-lzma-compat && \
-    yum install -y bzip2-devel && \
-    yum install -y libX11-devel && \
-    yum install -y qt5-qtbase-devel && \
-    yum install -y qt-devel qt-config && \
-    yum-builddep -y qt5-qtbase-devel
+    #yum install -y bzip2-devel && \
+    yum install -y libX11-devel
+    #yum install -y qt5-qtbase-devel && \
+    #yum install -y qt-devel qt-config && \
+    #yum-builddep -y qt5-qtbase-devel
 
 #install and build gcc 9.4.0
 RUN mkdir /build && \
@@ -41,11 +34,12 @@ RUN mkdir /build && \
     rm -f /usr/lib/libstdc++.so.6 && \
     ln -s /usr/lib/libstdc++.so.6.0.28 /usr/lib/libstdc++.so.6
 
+
 #install and build cmake
 RUN cd /build/ && \
     git clone https://gitlab.kitware.com/cmake/cmake.git && \
     cd cmake && \
-    git checkout v3.18.3 && \
+    git checkout v3.20.0 && \
     ./bootstrap && \
     make && \
     make install
@@ -68,11 +62,19 @@ RUN cd / && \
     conan config set general.revisions_enabled=1 && \
     cd / && rm -rf Python-${PYTHON_VERSION}.tgz && rm -rf Python-${PYTHON_VERSION}
 
+# copy conan files
+COPY conan/ /root/.conan/
+# copy conan profiles
+COPY conan_profiles/linux/centos7/ /root/.conan/profiles
+# private.pem
+COPY private.pem /opt
+
 #clean build folder and cache
 RUN cd / && \
     rm -rf /build && \
     yum clean all
 
+#creating folder for project
 RUN cd /home && \
     mkdir project && \
     cd project &&\

@@ -10,12 +10,3 @@ boost:without_stacktrace=True
 cmake
 virtualenv
 cmake_find_package
-
-[settings]
-os=Linux
-os.distro=debian12
-arch=x86_64
-compiler=gcc
-compiler.version=12.2.0
-compiler.libcxx=libstdc++11
-build_type=Release
