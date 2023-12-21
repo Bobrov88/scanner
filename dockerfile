@@ -2,7 +2,7 @@ FROM debian:stable-slim
 
 RUN apt-get update -y && \
     apt-get upgrade -y && \
-    apt-get install -y build-essential git cmake libhidapi-dev wget dpkg
+    apt-get install -y build-essential git cmake libhidapi-dev wget dpkg tar gzip vim
 
 RUN cd /home && \
     mkdir conan-deb &&\
@@ -17,4 +17,5 @@ RUN cd /home && \
     mkdir project && \
     cd project &&\
     mkdir scanner
+
 WORKDIR /home/project/scanner

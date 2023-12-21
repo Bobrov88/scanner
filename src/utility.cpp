@@ -1,8 +1,8 @@
 #include "utility.h"
-#include "windows.h"
-#include "tchar.h"
+//#include "windows.h"
+//#include "tchar.h"
 
-std::vector<UTIL::AVAILABLE_COM> UTIL::get_available_windows_com_ports()
+/*std::vector<UTIL::AVAILABLE_COM> UTIL::get_available_windows_com_ports()
 {
     std::vector<UTIL::AVAILABLE_COM> com_list;
     int r = 0;
@@ -47,7 +47,7 @@ std::vector<UTIL::AVAILABLE_COM> UTIL::get_available_windows_com_ports()
     RegCloseKey(hkey);
 
     return com_list;
-}
+}*/
 
 std::vector<UTIL::AVAILABLE_COM> UTIL::get_available_linux_com_ports()
 {

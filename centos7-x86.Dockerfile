@@ -3,17 +3,21 @@ FROM i386/centos:7
 ENV TZ=Europe/Moscow
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-RUN yum groupinstall -y 'Development Tools' && \
+RUN yum update -y && \
+    yum upgrade -y && \
+    yum groupinstall -y 'Development Tools' && \
     yum install -y wget && \
     yum install -y openssl-devel && \
     yum install -y sqlite-devel libffi-devel && \
     yum install -y xz-devel && \
     yum install -y xz-lzma-compat && \
-    #yum install -y bzip2-devel && \
+    yum install -y bzip2-devel && \
     yum install -y libX11-devel
-    #yum install -y qt5-qtbase-devel && \
-    #yum install -y qt-devel qt-config && \
-    #yum-builddep -y qt5-qtbase-devel
+ #   yum install -y libudev-devel && \
+ #   yum install boost boost-thread boost-devel -y
+#yum install -y qt5-qtbase-devel && \
+#yum install -y qt-devel qt-config && \
+#yum-builddep -y qt5-qtbase-devel
 
 #install and build gcc 9.4.0
 RUN mkdir /build && \
@@ -33,7 +37,6 @@ RUN mkdir /build && \
     cp /build/obj.gcc-9.4.0/stage1-i686-redhat-linux/libstdc++-v3/src/.libs/libstdc++.so.6.0.28 /usr/lib && \
     rm -f /usr/lib/libstdc++.so.6 && \
     ln -s /usr/lib/libstdc++.so.6.0.28 /usr/lib/libstdc++.so.6
-
 
 #install and build cmake
 RUN cd /build/ && \
@@ -80,6 +83,15 @@ RUN cd /home && \
     cd project &&\
     mkdir scanner
 
+RUN yum install libusbx-devel -y && yum install libusb-devel -y && yum install -y libudev-devel
+
+COPY conanfile.txt /home/project/scanner
+
 VOLUME /home/bobrov/project/scanner /home/project/scanner
 
 WORKDIR /home/project/scanner
+
+RUN cd /home/project/scanner
+
+#RUN conan install -pr linux_x86_build -if build /home/project/scanner/ --build=missing
+#RUN conan profile update settings.compiler.libcxx=libstdc++11 default

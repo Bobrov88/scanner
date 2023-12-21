@@ -17,7 +17,7 @@ namespace UTIL
     {
         unsigned short pid_ = 0x0000;
         unsigned short vid_ = 0x0000;
-        char *path_ = "";
+        char *path_;
         wchar_t *serial_number_;
         wchar_t *manufacturer_;
         wchar_t *product_;
