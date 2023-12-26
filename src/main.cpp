@@ -22,30 +22,30 @@ int main() {
     } else {
         std::cout<<"Success!\n";
         int result = 0;
-        uint8_t* ch[9];
-        uint8_t* buf[255];
-        ch[0] = 0x7E;
-        ch[1] = 0x00;
-        ch[2] = 0x07;
-        ch[3] = 0x01;
-        ch[4] = 0x00;
-        ch[5] = 0x08;
-        ch[6] = 0x09;
+        uint8_t ch[9];
+        uint8_t buf[255];
+        ch[0] = 0x7Eu;
+        ch[1] = 0x00u;
+        ch[2] = 0x07u;
+        ch[3] = 0x01u;
+        ch[4] = 0x00u;
+        ch[5] = 0x08u;
+        ch[6] = 0x09u;
         uint16_t crc16 = UTIL::crc_16(&ch[2], 5);
         ch[7] = crc16 >> 8;
         ch[8] = crc16 & 0x00FF;
         hid_write(handle, &ch[0], 9);
 
-        uint8_t* head2[2];
+        uint8_t head2[2];
         hid_read(handle, &head2[0], 2);
-        uint8_t types;
+        uint8_t types[1];
         hid_read(handle, types, 1);
-        uint8_t length;
+        uint8_t length[1];
         hid_read(handle, length, 1);
         uint8_t data[256];
-        hid_read(handle, &data[0], length);
+        hid_read(handle, data, length[0]);
         std::cout<<std::hex<<head2[0]<<" "<<head2[1]<<" "<<types<<" "<<length<<"\n";
-        for (int i=0;i<length;++i) std::cout<<std::hex<<data[i]<<" ";
+        for (int i=0;i<length[0];++i) std::cout<<std::hex<<data[i]<<" ";
         std::cout<<"\n";
     }
     hid_exit();

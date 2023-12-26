@@ -1,6 +1,6 @@
 #include "utility.h"
-//#include "windows.h"
-//#include "tchar.h"
+// #include "windows.h"
+// #include "tchar.h"
 
 /*std::vector<UTIL::AVAILABLE_COM> UTIL::get_available_windows_com_ports()
 {
@@ -93,15 +93,15 @@ std::vector<UTIL::AVAILABLE_HID> UTIL::get_available_hid_devices()
         if (cur_dev->vendor_id != 0 && cur_dev->product_id != 0)
         {
             device.push_back({cur_dev->vendor_id,
-                                   cur_dev->product_id,
-                                   cur_dev->path,
-                                   cur_dev->serial_number,
-                                   cur_dev->manufacturer_string,
-                                   cur_dev->product_string,
-                                   cur_dev->release_number,
-                                   cur_dev->interface_number,
-                                   cur_dev->usage,
-                                   cur_dev->usage_page});
+                              cur_dev->product_id,
+                              cur_dev->path,
+                              cur_dev->serial_number,
+                              cur_dev->manufacturer_string,
+                              cur_dev->product_string,
+                              cur_dev->release_number,
+                              cur_dev->interface_number,
+                              cur_dev->usage,
+                              cur_dev->usage_page});
         }
         cur_dev = cur_dev->next;
     }
@@ -150,4 +150,30 @@ inline std::wstring UTIL::wstr(const std::string &src)
     {
     }
     return dest;
+}
+
+uint16_t UTIL::crc_16(uint8_t *data, uint16_t len)
+{
+    uint16_t crc16 = 0x0000;
+    while (len--)
+    {
+        for (uint8_t i = 0x80; i != 0; i >>= 1)
+        {
+            if ((crc16 & 0x8000) != 0)
+            {
+                crc16 = crc16 << 1;
+                crc16 = crc16 ^ 0x1021;
+            }
+            else
+            {
+                crc16 = crc16 << 1;
+            }
+            if ((*data & i) != 0)
+            {
+                crc16 = crc16 ^ 0x1021; // crc16 = crc16 ^ (0x10000 ^ 0x11021)
+            }
+        }
+        data++;
+    }
+    return crc16;
 }

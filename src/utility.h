@@ -53,4 +53,5 @@ namespace UTIL
 
     inline std::wstring wstr(const std::string &src);
     inline std::string str(const std::wstring &src);
+    uint16_t crc_16(uint8_t *data, uint16_t len);
 };

@@ -1,4 +1,3 @@
-SET(CMAKE_POSITION_INDEPENDENT_CODE ON)
 cmake_minimum_required(VERSION 3.2)
 project(scanner CXX)
 message("Building project: " ${PROJECT_NAME})
@@ -19,7 +18,7 @@ set(HEADERS
     src/config2_data.h
     src/config3_data.h)
 
-add_library(hidapi STATIC src/hidapi)
+add_subdirectory(src/hidapi)
 add_subdirectory(src/utfcpp)
 
 if(EXISTS ${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
@@ -30,7 +29,7 @@ else()
 endif()
 
 find_package(Boost REQUIRED)
-include_directories(${Boost_INCLUDE_DIR})
+include_directories( ${Boost_INCLUDE_DIR} )
 
 list(APPEND CMAKE_FIND_ROOT_PATH ${CONAN_BOOST_ROOT})
 set(Boost_USE_STATIC_LIBS ON)
@@ -41,9 +40,8 @@ find_package(Boost COMPONENTS REQUIRED)
 
 if(Boost_FOUND)
     message("Boost found... Linking...")
-    target_include_directories(hidapi PUBLIC src/hidapi)
     include_directories(${Boost_INCLUDE_DIRS})
     add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
     target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
-    target_link_libraries(${PROJECT_NAME} utf8cpp)
+    target_link_libraries(${PROJECT_NAME} hidapi::hidapi utf8cpp)
 endif()
