@@ -1,5 +1,6 @@
 [requires]
 boost/1.80.0
+libusb/1.0.26
 
 [options]
 boost:header_only=False

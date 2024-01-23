@@ -84,6 +84,11 @@ RUN cd /home && \
     mkdir scanner
 
 RUN yum install libusbx-devel -y && yum install libusb-devel -y && yum install -y libudev-devel
+#RUN yum -y install glibc.i686
+#RUN yum -y install glibc-devel.i686
+#RUN LD_LIBRARY_PATH=/usr/local/lib  ## for finding libhidapi-hidraw ## to be resolved as plugged-in into scanner
+#RUN export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/libhidapi-hidraw.so.0
+#RUN yum install libstdc++.i686
 
 COPY conanfile.txt /home/project/scanner
 
@@ -91,6 +96,6 @@ VOLUME /home/bobrov/project/scanner /home/project/scanner
 
 WORKDIR /home/project/scanner
 
-RUN cd /home/project/scanner && \
-    conan install -pr linux_x86_build -if build /home/project/scanner/ --build=missing
+RUN cd /home/project/scanner && mkdir build && \
+    conan install -pr linux_x86_build -if build /home/project/scanner/ --build=missing 
 #RUN conan profile update settings.compiler.libcxx=libstdc++11 default

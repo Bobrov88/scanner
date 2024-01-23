@@ -92,9 +92,9 @@ std::vector<UTIL::AVAILABLE_HID> UTIL::get_available_hid_devices()
     {
         if (cur_dev->vendor_id != 0 && cur_dev->product_id != 0)
         {
-            device.push_back({cur_dev->vendor_id,
+            device.push_back({cur_dev->path,
+                              cur_dev->vendor_id,
                               cur_dev->product_id,
-                              cur_dev->path,
                               cur_dev->serial_number,
                               cur_dev->manufacturer_string,
                               cur_dev->product_string,
@@ -109,7 +109,7 @@ std::vector<UTIL::AVAILABLE_HID> UTIL::get_available_hid_devices()
     return device;
 }
 
-inline std::string UTIL::str(const std::wstring &src)
+std::string UTIL::str(const std::wstring &src)
 {
     if (src.empty())
         return "";
@@ -130,7 +130,7 @@ inline std::string UTIL::str(const std::wstring &src)
     return std::string(&dest[0], dest.size());
 }
 
-inline std::wstring UTIL::wstr(const std::string &src)
+std::wstring UTIL::wstr(const std::string &src)
 {
     std::wstring dest;
     size_t i = 0;
@@ -177,3 +177,37 @@ uint16_t UTIL::crc_16(uint8_t *data, uint16_t len)
     }
     return crc16;
 }
+
+std::string UTIL::convert_from_bytes_to_string(std::vector<uint8_t> from, size_t length)
+{
+    std::string str;
+    str.reverse(length);
+    for (size_t i = 0; i < length; ++i)
+    {
+        str += static_cast<char>(from[i]);
+    }
+    return str;
+}
+
+std::vector<uint8_t> UTIL::read_json_piece(hid_device *handle)
+{
+    uint8_t response[64] = {0};
+    int size_of_read_bytes = hid_read(handle, response, 64);
+    if (size_of_read_bytes == -1)
+    {
+        // TODO
+        return {};
+    }
+    size_t size_of_json_piece = static_cast<size_t>(response[1]);
+    std::vector<uint8_t> json_bytes;
+    json_bytes.reserve(size_of_json_piece);
+    for (int i = 0; i < size_of_json_piece; ++i)
+    {
+        json_bytes.push_back((&response[5]) + i);
+    }
+    return json_bytes;
+}
+
+ std::string UTIL::read_json_settings(hid_device *handle) {
+    
+ }
