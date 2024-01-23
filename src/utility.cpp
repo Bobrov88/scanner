@@ -178,11 +178,12 @@ uint16_t UTIL::crc_16(uint8_t *data, uint16_t len)
     return crc16;
 }
 
-std::string UTIL::convert_from_bytes_to_string(std::vector<uint8_t> from, size_t length)
+std::string UTIL::convert_from_bytes_to_string(std::vector<uint8_t> from)
 {
     std::string str;
-    str.reverse(length);
-    for (size_t i = 0; i < length; ++i)
+    size_t size = from.size();
+    str.reserve(size);
+    for (size_t i = 0; i < size; ++i)
     {
         str += static_cast<char>(from[i]);
     }
@@ -192,10 +193,10 @@ std::string UTIL::convert_from_bytes_to_string(std::vector<uint8_t> from, size_t
 std::vector<uint8_t> UTIL::read_json_piece(hid_device *handle)
 {
     uint8_t response[64] = {0};
-    int size_of_read_bytes = hid_read(handle, response, 64);
-    if (size_of_read_bytes == -1)
+    int size_of_read_bytes = hid_read_timeout(handle, response, 64, 100);
+    if (size_of_read_bytes <= 0)
     {
-        // TODO
+        // TODO if result is negative
         return {};
     }
     size_t size_of_json_piece = static_cast<size_t>(response[1]);
@@ -203,11 +204,57 @@ std::vector<uint8_t> UTIL::read_json_piece(hid_device *handle)
     json_bytes.reserve(size_of_json_piece);
     for (int i = 0; i < size_of_json_piece; ++i)
     {
-        json_bytes.push_back((&response[5]) + i);
+        json_bytes.push_back(*(&response[5] + i));
     }
     return json_bytes;
 }
 
- std::string UTIL::read_json_settings(hid_device *handle) {
+ std::string UTIL::send_command_for_json_response(hid_device *handle) {
+    uint8_t ch[64] = {0};
+    ch[0] = 0xfd;
+    ch[1] = 0x0C;
+    ch[2] = 0xff;
+    ch[3] = 0x47;
+    ch[4] = 0x65;
+    ch[5] = 0x74;
+    ch[6] = 0x43;
+    ch[7] = 0x6F;
+    ch[8] = 0x6E;
+    ch[9] = 0x66;
+    ch[10] = 0x69;
+    ch[11] = 0x67;
+    ch[12] = 0x30;
+    ch[13] = 0x31;
+    ch[14] = 0x2E;
+    // TODO if result is negative, not all bytes send
+    hid_write(handle, ch, 64);
+    std::cout<<"GetConfig01.\n";
+    std::string result1 = read_json_settings(handle);
+
+    ch[13] = 0x32;
+    hid_write(handle, ch, 64);
+    std::cout<<"GetConfig02.\n";
+    std::string result2 = read_json_settings(handle);
     
+    ch[13] = 0x33;
+    hid_write(handle, ch, 64);
+    std::cout<<"GetConfig03.\n";
+    std::string result3 = read_json_settings(handle);
+
+    ch[13] = 0x34;
+    hid_write(handle, ch, 64);
+    std::cout<<"GetConfig04.\n";
+    std::string result4 = read_json_settings(handle);
+
+    return result1 + result2 + result3 + result4;
+ }
+
+ std::string UTIL::read_json_settings(hid_device *handle) {
+    std::vector<uint8_t> result;
+    while(true) {
+        std::vector<uint8_t> tmp = read_json_piece(handle);
+        if (tmp.empty()) break;
+        result.insert(result.end(), tmp.begin(), tmp.end());
+    }
+    return convert_from_bytes_to_string(result);
  }

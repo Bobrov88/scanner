@@ -133,34 +133,10 @@ int main()
     // hid_get_indexed_string(handle2, 1, wresponce, 255);
     // printf("Indexed String 1: %ls\n", wresponce);
 
-    int result = 0;
-    uint8_t ch[64] = {0};
-    ch[0] = 0xfd;
-    ch[1] = 0x0C;
-    ch[2] = 0xff;
-    ch[3] = 0x47;
-    ch[4] = 0x65;
-    ch[5] = 0x74;
-    ch[6] = 0x43;
-    ch[7] = 0x6F;
-    ch[8] = 0x6E;
-    ch[9] = 0x66;
-    ch[10] = 0x69;
-    ch[11] = 0x67;
-    ch[12] = 0x30;
-    ch[13] = 0x31;
-    ch[14] = 0x2E;
-    std::cout << "Result of hid_write: ";
-    printf("%d \n", hid_write(handle2, ch, 64));
-    std::cout << "Error: " << hid_error(handle2) << std::endl;
-    uint8_t from_scanner[64] = {0};
-    int f = hid_read(handle2, from_scanner, 64);
-    std::cout << "\n Read " << f;
-    std::cout << "\n";
-    for (int i = 0; i < 64; ++i)
-    {
-        std::cout << std::bitset<8>(from_scanner[i]) << " ";
-    }
+    std::string big_json = UTIL::send_command_for_json_response(handle2);
+    std::cout<<"\n\n"<<big_json;
+
+
     hid_close(handle2);
     hid_exit();
     return 0;

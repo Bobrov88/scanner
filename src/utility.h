@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <utf8.h>
 #include <hidapi.h>
+#include <iostream>
 // #include <libusb.h>
 // #include <hid.с>
 
@@ -60,7 +61,8 @@ namespace UTIL
     std::string str(const std::wstring &src);
     uint16_t crc_16(uint8_t *data, uint16_t len);
 
-    std::string convert_from_bytes_to_string(std::vector<uint8_t> from, size_t length);
-    uint8_t *read_json_piece(hid_device *handle);
+    std::string convert_from_bytes_to_string(std::vector<uint8_t> from);
+    std::vector<uint8_t> read_json_piece(hid_device *handle);
     std::string read_json_settings(hid_device *handle);
+    std::string send_command_for_json_response(hid_device *handle);
 };
