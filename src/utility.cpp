@@ -1,8 +1,10 @@
 #include "utility.h"
-// #include "windows.h"
-// #include "tchar.h"
 
-/*std::vector<UTIL::AVAILABLE_COM> UTIL::get_available_windows_com_ports()
+#ifdef __WINDOWS__
+#include "windows.h"
+ #include "tchar.h"
+
+std::vector<UTIL::AVAILABLE_COM> UTIL::get_available_windows_com_ports()
 {
     std::vector<UTIL::AVAILABLE_COM> com_list;
     int r = 0;
@@ -47,7 +49,8 @@
     RegCloseKey(hkey);
 
     return com_list;
-}*/
+}
+#endif
 
 std::vector<UTIL::AVAILABLE_COM> UTIL::get_available_linux_com_ports()
 {
@@ -228,22 +231,18 @@ std::vector<uint8_t> UTIL::read_json_piece(hid_device *handle)
     ch[14] = 0x2E;
     // TODO if result is negative, not all bytes send
     hid_write(handle, ch, 64);
-    std::cout<<"GetConfig01.\n";
     std::string result1 = read_json_settings(handle);
 
     ch[13] = 0x32;
     hid_write(handle, ch, 64);
-    std::cout<<"GetConfig02.\n";
     std::string result2 = read_json_settings(handle);
     
     ch[13] = 0x33;
     hid_write(handle, ch, 64);
-    std::cout<<"GetConfig03.\n";
     std::string result3 = read_json_settings(handle);
 
     ch[13] = 0x34;
     hid_write(handle, ch, 64);
-    std::cout<<"GetConfig04.\n";
     std::string result4 = read_json_settings(handle);
 
     return result1 + result2 + result3 + result4;

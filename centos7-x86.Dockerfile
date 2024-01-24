@@ -96,6 +96,5 @@ VOLUME /home/bobrov/project/scanner /home/project/scanner
 
 WORKDIR /home/project/scanner
 
-RUN cd /home/project/scanner && mkdir build && \
-    conan install -pr linux_x86_build -if build /home/project/scanner/ --build=missing 
-#RUN conan profile update settings.compiler.libcxx=libstdc++11 default
+RUN cd /home/project/scanner && mkdir build_centos_x86 && \
+    conan install -pr linux_x86_build -if build_centos_x86 /home/project/scanner/ --build=missing 

@@ -1,6 +1,6 @@
 [requires]
 boost/1.80.0
-libusb/1.0.26
+hidapi/0.14.0
 
 [options]
 boost:header_only=False
