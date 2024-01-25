@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <bitset>
 #include "utility.h"
+#include "commands.h"
 
 std::string to_hex(char *response, size_t size)
 {
@@ -16,16 +17,17 @@ std::string to_hex(char *response, size_t size)
 
 int main()
 {
-    std::vector<UTIL::AVAILABLE_HID> response = UTIL::get_available_hid_devices();
-    for (const auto &hid : response)
-    {
-        std::cout << std::hex << hid.vid_ << " " << std::hex << hid.pid_ << " " << hid.path_ << "\n";
+    if (hid_init() != 0) {
+        std::cout<<"HIDAPI library cannot be initialized! Reason: ";
+        std::cout<<UTIL::str(hid_error(NULL));
+        return -1;
     }
-    std::cout << std::dec;
-
-    hid_init();
-
-    hid_device *handle2;
+    UTIL::detect_all_hid_linux_devices();
+   // UTIL::detect_all_com_linux_devices(); https://scmax.ru/questions/16070737/
+    hid_device* handle = hid_open_path("/dev/hidraw2");
+    HID::save_to_internal_flash(handle);
+    HID::restore_to_factory_settings(handle);
+  /*  hid_device *handle2;
     handle2 = hid_open_path(response[2].path_);
     if (!handle2)
     {
@@ -37,9 +39,9 @@ int main()
     }
 
     std::string big_json = UTIL::send_command_for_json_response(handle2);
-    std::cout<<"\n"<<big_json;
-    
-    hid_close(handle2);
+   // std::cout<<"\n"<<big_json;
+    */
+    hid_close(handle);
     hid_exit();
     return 0;
 }

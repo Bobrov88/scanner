@@ -7,6 +7,9 @@
 #include <hidapi.h>
 #include <iostream>
 #include <fstream>
+#include "CppConsoleTable/CppConsoleTable.hpp"
+
+using ConsoleTable = samilton::ConsoleTable;
 
 namespace UTIL
 {
@@ -52,16 +55,22 @@ namespace UTIL
         }
     };
 
+    ConsoleTable getTableInitialSetup();
+
     std::vector<AVAILABLE_COM> get_available_windows_com_ports();
     std::vector<AVAILABLE_COM> get_available_linux_com_ports();
     std::vector<AVAILABLE_HID> get_available_hid_devices();
 
     std::wstring wstr(const std::string &src);
     std::string str(const std::wstring &src);
+    std::string str(const wchar_t* ws);
+    std::string hex_view(const unsigned short number);
     uint16_t crc_16(uint8_t *data, uint16_t len);
 
     std::string convert_from_bytes_to_string(std::vector<uint8_t> from);
     std::vector<uint8_t> read_json_piece(hid_device *handle);
     std::string read_json_settings(hid_device *handle);
     std::string send_command_for_json_response(hid_device *handle);
+    void detect_all_hid_linux_devices();
+    void detect_all_com_linux_devices();
 };

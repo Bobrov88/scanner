@@ -2,7 +2,7 @@
 
 #ifdef __WINDOWS__
 #include "windows.h"
- #include "tchar.h"
+#include "tchar.h"
 
 std::vector<UTIL::AVAILABLE_COM> UTIL::get_available_windows_com_ports()
 {
@@ -52,6 +52,29 @@ std::vector<UTIL::AVAILABLE_COM> UTIL::get_available_windows_com_ports()
 }
 #endif
 
+ConsoleTable UTIL::getTableInitialSetup()
+{
+    ConsoleTable table;
+
+    ConsoleTable::TableChars chars;
+    chars.topDownSimple = '-';
+    chars.leftRightSimple = '|';
+    chars.centreSeparation = '+';
+    chars.topSeparation = '-';
+    chars.downSeparation = '-';
+    chars.leftSeparation = '|';
+    chars.rightSeparation = '|';
+    chars.topLeft = '*';
+    chars.topRight = '*';
+    chars.downLeft = '*';
+    chars.downRight = '*';
+    table.setTableChars(chars);
+
+    table.setAlignment(samilton::Alignment::centre);
+    table.setIndent(1, 1);
+    return table;
+}
+
 std::vector<UTIL::AVAILABLE_COM> UTIL::get_available_linux_com_ports()
 {
     namespace fs = std::filesystem;
@@ -78,7 +101,7 @@ std::vector<UTIL::AVAILABLE_COM> UTIL::get_available_linux_com_ports()
     }
     catch (const fs::filesystem_error &ex)
     {
-        // std::cout << ex.what() << '\n';
+        std::cout << ex.what() << '\n';
         throw ex;
     }
     std::sort(com_ports.begin(), com_ports.end(), [](const auto &first, const auto &second)
@@ -91,6 +114,12 @@ std::vector<UTIL::AVAILABLE_HID> UTIL::get_available_hid_devices()
     std::vector<UTIL::AVAILABLE_HID> device;
     struct hid_device_info *cur_dev;
     cur_dev = hid_enumerate(0x0, 0x0);
+    if (cur_dev == NULL)
+    {
+        std::cout << "Error in searching HID-devices. Reason: ";
+        std::cout << str(hid_error(NULL));
+        return {};
+    }
     while (cur_dev)
     {
         if (cur_dev->vendor_id != 0 && cur_dev->product_id != 0)
@@ -110,6 +139,65 @@ std::vector<UTIL::AVAILABLE_HID> UTIL::get_available_hid_devices()
     }
     hid_free_enumeration(cur_dev);
     return device;
+}
+
+void UTIL::detect_all_hid_linux_devices()
+{
+    std::vector<UTIL::AVAILABLE_HID> hids = UTIL::get_available_hid_devices();
+
+    ConsoleTable table = getTableInitialSetup();
+
+    table[0][0] = "#";
+    table[0][1] = "VID";
+    table[0][2] = "PID";
+    table[0][3] = "Product";
+    table[0][4] = "Serial Number";
+    table[0][5] = "Path";
+
+    if (hids.empty())
+    {
+        table[1][0] = "HID Devices not found\n";
+        return;
+    }
+
+    int row = 1;
+    for (const auto &hid : hids)
+    {
+        table[row][0] = row;
+        table[row][1] = hex_view(hid.vid_);
+        table[row][2] = hex_view(hid.pid_);
+        table[row][3] = str(hid.product_);
+        table[row][4] = str(hid.serial_number_);
+        table[row][5] = hid.path_;
+        ++row;
+    }
+
+    std::cout << table;
+}
+
+void UTIL::detect_all_com_linux_devices()
+{
+    std::vector<UTIL::AVAILABLE_COM> coms = get_available_linux_com_ports();
+
+    ConsoleTable table = getTableInitialSetup();
+    table[0][0] = "#";
+    table[0][1] = "COM";
+
+    if (coms.empty())
+    {
+        table[1][0] = "HID Devices not found\n";
+        return;
+    }
+
+    int row = 1;
+    for (const auto &com : coms)
+    {
+        table[row][0] = row;
+        table[row][1] = com.data_;
+        ++row;
+    }
+
+    std::cout << table;
 }
 
 std::string UTIL::str(const std::wstring &src)
@@ -153,6 +241,19 @@ std::wstring UTIL::wstr(const std::string &src)
     {
     }
     return dest;
+}
+
+std::string UTIL::str(const wchar_t *ws)
+{
+    std::wstring w(ws);
+    return str(w);
+}
+
+std::string UTIL::hex_view(const unsigned short number)
+{
+    std::stringstream str_hex;
+    str_hex << "0x" << std::setfill('0') << std::setw(4) << std::hex << number;
+    return str_hex.str();
 }
 
 uint16_t UTIL::crc_16(uint8_t *data, uint16_t len)
@@ -212,7 +313,8 @@ std::vector<uint8_t> UTIL::read_json_piece(hid_device *handle)
     return json_bytes;
 }
 
- std::string UTIL::send_command_for_json_response(hid_device *handle) {
+std::string UTIL::send_command_for_json_response(hid_device *handle)
+{
     uint8_t ch[64] = {0};
     ch[0] = 0xfd;
     ch[1] = 0x0C;
@@ -236,7 +338,7 @@ std::vector<uint8_t> UTIL::read_json_piece(hid_device *handle)
     ch[13] = 0x32;
     hid_write(handle, ch, 64);
     std::string result2 = read_json_settings(handle);
-    
+
     ch[13] = 0x33;
     hid_write(handle, ch, 64);
     std::string result3 = read_json_settings(handle);
@@ -246,14 +348,17 @@ std::vector<uint8_t> UTIL::read_json_piece(hid_device *handle)
     std::string result4 = read_json_settings(handle);
 
     return result1 + result2 + result3 + result4;
- }
+}
 
- std::string UTIL::read_json_settings(hid_device *handle) {
+std::string UTIL::read_json_settings(hid_device *handle)
+{
     std::vector<uint8_t> result;
-    while(true) {
+    while (true)
+    {
         std::vector<uint8_t> tmp = read_json_piece(handle);
-        if (tmp.empty()) break;
+        if (tmp.empty())
+            break;
         result.insert(result.end(), tmp.begin(), tmp.end());
     }
     return convert_from_bytes_to_string(result);
- }
+}
