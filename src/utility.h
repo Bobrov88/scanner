@@ -65,7 +65,6 @@ namespace UTIL
     std::string str(const std::wstring &src);
     std::string str(const wchar_t* ws);
     std::string hex_view(const unsigned short number);
-    uint16_t crc_16(uint8_t *data, uint16_t len);
 
     std::string convert_from_bytes_to_string(std::vector<uint8_t> from);
     std::vector<uint8_t> read_json_piece(hid_device *handle);

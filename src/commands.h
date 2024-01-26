@@ -1,5 +1,9 @@
+#pragma once
+#include <iostream>
 #include "hidapi.h"
 #include "utility.h"
+#include "error_handler.h"
+#include "commands_sequencies.h"
 
 namespace HID
 {

@@ -256,32 +256,6 @@ std::string UTIL::hex_view(const unsigned short number)
     return str_hex.str();
 }
 
-uint16_t UTIL::crc_16(uint8_t *data, uint16_t len)
-{
-    uint16_t crc16 = 0x0000;
-    while (len--)
-    {
-        for (uint8_t i = 0x80; i != 0; i >>= 1)
-        {
-            if ((crc16 & 0x8000) != 0)
-            {
-                crc16 = crc16 << 1;
-                crc16 = crc16 ^ 0x1021;
-            }
-            else
-            {
-                crc16 = crc16 << 1;
-            }
-            if ((*data & i) != 0)
-            {
-                crc16 = crc16 ^ 0x1021; // crc16 = crc16 ^ (0x10000 ^ 0x11021)
-            }
-        }
-        data++;
-    }
-    return crc16;
-}
-
 std::string UTIL::convert_from_bytes_to_string(std::vector<uint8_t> from)
 {
     std::string str;
