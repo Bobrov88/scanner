@@ -80,7 +80,15 @@
         "xutility": "cpp",
         "filesystem": "cpp",
         "*.ipp": "cpp",
-        "hidapi.h": "c"
+        "hidapi.h": "c",
+        "*.tcc": "cpp",
+        "clocale": "cpp",
+        "memory_resource": "cpp",
+        "numeric": "cpp",
+        "random": "cpp",
+        "string_view": "cpp",
+        "cinttypes": "cpp",
+        "bit": "cpp"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

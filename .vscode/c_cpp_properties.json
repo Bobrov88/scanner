@@ -3,14 +3,15 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "/root/.conan/data/boost/1.80.0/"
             ],
             "defines": [],
             "compilerPath": "${default}",
-            "cStandard": "c17",
+            "cStandard": "c11",
             "cppStandard": "c++17",
             "intelliSenseMode": "gcc-x64",
-            "compileCommands": "${config:cmake.buildDirectory}/compile_commands.json",
+            "compileCommands": "${workspaceFolder}/build_centos_x86/compile_commands.json",
             "configurationProvider": "ms-vscode.cmake-tools"
         }
     ],

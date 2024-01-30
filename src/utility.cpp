@@ -114,12 +114,6 @@ std::vector<UTIL::AVAILABLE_HID> UTIL::get_available_hid_devices()
     std::vector<UTIL::AVAILABLE_HID> device;
     struct hid_device_info *cur_dev;
     cur_dev = hid_enumerate(0x0, 0x0);
-    if (cur_dev == NULL)
-    {
-        std::cout << "Error in searching HID-devices. Reason: ";
-        std::cout << str(hid_error(NULL));
-        return {};
-    }
     while (cur_dev)
     {
         if (cur_dev->vendor_id != 0 && cur_dev->product_id != 0)
@@ -138,41 +132,70 @@ std::vector<UTIL::AVAILABLE_HID> UTIL::get_available_hid_devices()
         cur_dev = cur_dev->next;
     }
     hid_free_enumeration(cur_dev);
+    if (!device.empty())
+    {
+        remove_dublicates_of_hid_devices(device);
+    }
     return device;
 }
 
-void UTIL::detect_all_hid_linux_devices()
+void UTIL::remove_dublicates_of_hid_devices(std::vector<AVAILABLE_HID> &hids)
 {
-    std::vector<UTIL::AVAILABLE_HID> hids = UTIL::get_available_hid_devices();
+    // todo maybe not connected with first try
+    // I delete all being connected with failure
+    std::vector<AVAILABLE_HID> unique_hids;
+    unique_hids.reserve(hids.size());
+    for (auto &hid : hids)
+    {
+        hid_device *handle = hid_open_path(hid.path_);
+        if (handle)
+        {
+            if (HID::testing_connect_for_erasing_duplicates(handle))
+            {
+                unique_hids.emplace_back(std::move(hid));
+            }
+        }
+        hid_close(handle);
+    }
+    hids.clear();
+    hids.assign(unique_hids.begin(), unique_hids.end());
+}
 
+std::vector<UTIL::AVAILABLE_HID> UTIL::detect_all_hid_linux_devices()
+{
+    std::vector<UTIL::AVAILABLE_HID> hids = get_available_hid_devices();
     ConsoleTable table = getTableInitialSetup();
 
-    table[0][0] = "#";
-    table[0][1] = "VID";
-    table[0][2] = "PID";
-    table[0][3] = "Product";
-    table[0][4] = "Serial Number";
-    table[0][5] = "Path";
-
-    if (hids.empty())
+    if (!hids.empty())
     {
-        table[1][0] = "HID Devices not found\n";
-        return;
+        table[0][0] = "#";
+        table[0][1] = "VID";
+        table[0][2] = "PID";
+        table[0][3] = "Product";
+        table[0][4] = "Serial Number";
+        table[0][5] = "Model";
+        table[0][6] = "FirmwareVersion";
+        int row = 1;
+        for (const auto &hid : hids)
+        {
+            table[row][0] = row;
+            table[row][1] = hex_view(hid.vid_);
+            table[row][2] = hex_view(hid.pid_);
+            table[row][3] = str(hid.product_);
+            table[row][4] = str(hid.serial_number_);
+            boost::json::value obj = boost::json::parse(get_firmware_device_name_model(hid_open_path(hid.path_)));
+            table[row][5] = obj.at("deviceName").as_string().c_str();
+            table[row][6] = obj.at("FwVer").as_string().c_str();
+            ++row;
+        }
     }
-
-    int row = 1;
-    for (const auto &hid : hids)
+    else
     {
-        table[row][0] = row;
-        table[row][1] = hex_view(hid.vid_);
-        table[row][2] = hex_view(hid.pid_);
-        table[row][3] = str(hid.product_);
-        table[row][4] = str(hid.serial_number_);
-        table[row][5] = hid.path_;
-        ++row;
+        table[0][0] = "Scanners not found";
     }
 
     std::cout << table;
+    return hids;
 }
 
 void UTIL::detect_all_com_linux_devices()
@@ -289,39 +312,23 @@ std::vector<uint8_t> UTIL::read_json_piece(hid_device *handle)
 
 std::string UTIL::send_command_for_json_response(hid_device *handle)
 {
+    std::string result;
     uint8_t ch[64] = {0};
-    ch[0] = 0xfd;
-    ch[1] = 0x0C;
-    ch[2] = 0xff;
-    ch[3] = 0x47;
-    ch[4] = 0x65;
-    ch[5] = 0x74;
-    ch[6] = 0x43;
-    ch[7] = 0x6F;
-    ch[8] = 0x6E;
-    ch[9] = 0x66;
-    ch[10] = 0x69;
-    ch[11] = 0x67;
-    ch[12] = 0x30;
-    ch[13] = 0x31;
-    ch[14] = 0x2E;
-    // TODO if result is negative, not all bytes send
-    hid_write(handle, ch, 64);
-    std::string result1 = read_json_settings(handle);
+    for (int i = 0; i < 4; ++i)
+    {
+        SEQ::get_config_command(ch, i);
+        hid_write(handle, ch, 64);
+        result += read_json_settings(handle);
+    }
+    return result;
+}
 
-    ch[13] = 0x32;
+std::string UTIL::get_firmware_device_name_model(hid_device *handle)
+{
+    uint8_t ch[64] = {0};
+    SEQ::get_config_command(ch, 2);
     hid_write(handle, ch, 64);
-    std::string result2 = read_json_settings(handle);
-
-    ch[13] = 0x33;
-    hid_write(handle, ch, 64);
-    std::string result3 = read_json_settings(handle);
-
-    ch[13] = 0x34;
-    hid_write(handle, ch, 64);
-    std::string result4 = read_json_settings(handle);
-
-    return result1 + result2 + result3 + result4;
+    return read_json_settings(handle);
 }
 
 std::string UTIL::read_json_settings(hid_device *handle)
@@ -335,4 +342,18 @@ std::string UTIL::read_json_settings(hid_device *handle)
         result.insert(result.end(), tmp.begin(), tmp.end());
     }
     return convert_from_bytes_to_string(result);
+}
+
+int HID_WRITE(hid_device *handle, uint8_t *c, int size)
+{
+    int write_resutl = hid_write(handle, c, size);
+    // write to log
+    // bytes
+    // result with error
+    uint8_t *r[64] = {0};
+    int read_result = hid_read_timeout(handle, r, 64);
+    // write to log
+    // bytes
+    // result with error
+    
 }

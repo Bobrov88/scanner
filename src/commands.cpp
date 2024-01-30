@@ -3,8 +3,8 @@
 int HID::save_to_internal_flash(hid_device *handle)
 {
     uint8_t c[64] = {0};
-    //SEQ::save_to_internal_flash_command(c);
-    // TODO several trues to do
+    // SEQ::save_to_internal_flash_command(c);
+    //  TODO several trues to do
     check_operation_result(FUNC::SAVE_TO_INTERNAL_FLASH, hid_write(handle, c, 64), handle);
     uint8_t r[64] = {0};
     // todo call check result write cause error
@@ -70,4 +70,21 @@ int HID::restore_to_factory_settings(hid_device *handle)
         std::cout << "Unknown error";
         return 3;
     }
+}
+
+bool HID::testing_connect_for_erasing_duplicates(hid_device *handle)
+{
+    uint8_t c[30] = {0};
+    SEQ::testing_connect_for_erasing_duplicates_command(c);
+    hid_write(handle, c, 30);
+    uint8_t r[64] = {0};
+    hid_read_timeout(handle, r, 64, 100);
+    if (r[5] == 0x02 &&
+        r[6] == 0x00 &&
+        r[7] == 0x00 &&
+        r[8] == 0x01)
+    {
+        return true;
+    }
+    return false;
 }

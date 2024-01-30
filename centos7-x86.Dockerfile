@@ -98,3 +98,7 @@ WORKDIR /home/project/scanner
 
 RUN cd /home/project/scanner && mkdir build_centos_x86 && \
     conan install -pr linux_x86_build -if build_centos_x86 /home/project/scanner/ --build=missing 
+
+
+#cmake -Bbuild_centos_x86 .
+#cmake --build ./build_centos_x86

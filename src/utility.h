@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <boost/json.hpp>
 #include <algorithm>
 #include <string>
 #include <filesystem>
@@ -8,6 +9,8 @@
 #include <iostream>
 #include <fstream>
 #include "CppConsoleTable/CppConsoleTable.hpp"
+#include "commands.h"
+#include "commands_sequencies.h"
 
 using ConsoleTable = samilton::ConsoleTable;
 
@@ -57,9 +60,13 @@ namespace UTIL
 
     ConsoleTable getTableInitialSetup();
 
+    int HID_WRITE(hid_device *handle, uint8_t *c, int size);
+
     std::vector<AVAILABLE_COM> get_available_windows_com_ports();
     std::vector<AVAILABLE_COM> get_available_linux_com_ports();
     std::vector<AVAILABLE_HID> get_available_hid_devices();
+    std::vector<AVAILABLE_HID> detect_all_hid_linux_devices();
+    void remove_dublicates_of_hid_devices(std::vector<AVAILABLE_HID>& hids);
 
     std::wstring wstr(const std::string &src);
     std::string str(const std::wstring &src);
@@ -69,7 +76,8 @@ namespace UTIL
     std::string convert_from_bytes_to_string(std::vector<uint8_t> from);
     std::vector<uint8_t> read_json_piece(hid_device *handle);
     std::string read_json_settings(hid_device *handle);
+    
+    std::string get_firmware_device_name_model(hid_device *handle);
     std::string send_command_for_json_response(hid_device *handle);
-    void detect_all_hid_linux_devices();
     void detect_all_com_linux_devices();
 };
