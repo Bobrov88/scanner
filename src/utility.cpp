@@ -424,23 +424,19 @@ void UTIL::convert_json_to_bits(const std::string &json)
             uint8_t byte = 0;
             {
                 const std::string key = "cmdTrigAck"s;
-                std::string tmp = str.at(key).as_string().c_str();
-                if (low(tmp) == "true"s)
+                bool tmp = str.at(key).as_bool();
+                if (tmp)
                     byte |= 0b00000000;
-                else if (low(tmp) == "false"s)
-                    byte |= 0b10000000;
                 else
-                    incorrect_data += UTIL::get_bool_possible_data(key);
+                    byte |= 0b10000000;
             }
             {
-                const std::string key = "cmdTrigAck"s;
-                std::string tmp = str.at(key).as_string().c_str();
-                if (low(tmp) == "true"s)
+                const std::string key = "muteEnable"s;
+                bool tmp = str.at(key).as_bool();
+                if (tmp)
                     byte |= 0b00000000;
-                else if (low(tmp) == "false"s)
-                    byte |= 0b10000000;
                 else
-                    incorrect_data += UTIL::get_bool_possible_data(key);
+                    byte |= 0b10000000;
             }
         }
     }
