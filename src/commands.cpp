@@ -5,10 +5,10 @@ int HID::save_to_internal_flash(hid_device *handle)
     uint8_t c[64] = {0};
     // SEQ::save_to_internal_flash_command(c);
     //  TODO several trues to do
-    check_operation_result(FUNC::SAVE_TO_INTERNAL_FLASH, hid_write(handle, c, 64), handle);
+  //  check_operation_result(FUNC::SAVE_TO_INTERNAL_FLASH, hid_write(handle, c, 64), handle);
     uint8_t r[64] = {0};
     // todo call check result write cause error
-    check_operation_result(FUNC::READ_AS_RESPONSE, hid_read_timeout(handle, r, 64, 100), handle, r);
+ //   check_operation_result(FUNC::READ_AS_RESPONSE, hid_read_timeout(handle, r, 64, 100), handle, r);
     return 0;
 }
 

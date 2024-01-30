@@ -314,12 +314,13 @@ std::string UTIL::send_command_for_json_response(hid_device *handle)
 {
     std::string result;
     uint8_t ch[64] = {0};
-    for (int i = 0; i < 4; ++i)
+    for (int i = 1; i <= 4; ++i)
     {
         SEQ::get_config_command(ch, i);
         hid_write(handle, ch, 64);
         result += read_json_settings(handle);
     }
+    merge_json(result);
     return result;
 }
 
@@ -346,14 +347,156 @@ std::string UTIL::read_json_settings(hid_device *handle)
 
 int HID_WRITE(hid_device *handle, uint8_t *c, int size)
 {
-    int write_resutl = hid_write(handle, c, size);
+    int write_result = hid_write(handle, c, size);
     // write to log
     // bytes
     // result with error
-    uint8_t *r[64] = {0};
-    int read_result = hid_read_timeout(handle, r, 64);
+    uint8_t r[64] = {0};
+    int read_result = hid_read_timeout(handle, r, 64, 100);
     // write to log
     // bytes
     // result with error
-    
+    // TODO
+    return 0;
+}
+
+void UTIL::convert_json_to_bits(const std::string &json)
+{
+    boost::json::value str = boost::json::parse(json);
+    std::vector<uint8_t> bytes;
+    bytes.reserve(60);
+    std::string incorrect_data;
+
+    try
+    {
+        {
+            // FLAG 0x0000
+            uint8_t byte = 0x00;
+            {
+                const std::string key = "locateLed"s;
+                std::vector<std::string> variants = {"allwaysOff"s, "getPictureOn"s, "allwaysOn"s};
+                std::string tmp = str.at(key).as_string().c_str();
+                if (low(tmp) == low(variants[0]))
+                    byte |= 0b00000000;
+                else if (low(tmp) == low(variants[1]))
+                    byte |= 0b01000000;
+                else if (low(tmp) == low(variants[2]))
+                    byte |= 0b10000000;
+                else
+                    incorrect_data += UTIL::get_string_possible_data(variants, key);
+            }
+            {
+                const std::string key = "fillLed"s;
+                std::vector<std::string> variants = {"allwaysOff"s, "getPictureOn"s, "allwaysOn"s};
+                std::string tmp = str.at(key).as_string().c_str();
+                if (low(tmp) == low(variants[0]))
+                    byte |= 0b11000000;
+                else if (low(tmp) == low(variants[1]))
+                    byte |= 0b11010000;
+                else if (low(tmp) == low(variants[2]))
+                    byte |= 0b11100000;
+                else
+                    incorrect_data += UTIL::get_string_possible_data(variants, key);
+            }
+            {
+                const std::string key = "workMode";
+                std::vector<std::string> variants = {"keyTrig", "edgeTrig", "cmdTrig", "incuction", "noMoveNoRead", "continuous"};
+                std::string tmp = str.at(key).as_string().c_str();
+                if (low(tmp) == low(variants[0]))
+                    byte |= 0b11110000;
+                else if (low(tmp) == low(variants[1]))
+                    byte |= 0b11110001;
+                else if (low(tmp) == low(variants[2]))
+                    byte |= 0b11110010;
+                else if (low(tmp) == low(variants[3]))
+                    byte |= 0b11110011;
+                else if (low(tmp) == low(variants[4]))
+                    byte |= 0b11110100;
+                else if (low(tmp) == low(variants[5]))
+                    byte |= 0b11110101;
+                else
+                    incorrect_data += UTIL::get_string_possible_data(variants, key);
+            }
+            bytes.push_back(byte);
+        }
+        {
+            // FLAG 0x0001
+            uint8_t byte = 0;
+            {
+                const std::string key = "cmdTrigAck"s;
+                std::string tmp = str.at(key).as_string().c_str();
+                if (low(tmp) == "true"s)
+                    byte |= 0b00000000;
+                else if (low(tmp) == "false"s)
+                    byte |= 0b10000000;
+                else
+                    incorrect_data += UTIL::get_bool_possible_data(key);
+            }
+            {
+                const std::string key = "cmdTrigAck"s;
+                std::string tmp = str.at(key).as_string().c_str();
+                if (low(tmp) == "true"s)
+                    byte |= 0b00000000;
+                else if (low(tmp) == "false"s)
+                    byte |= 0b10000000;
+                else
+                    incorrect_data += UTIL::get_bool_possible_data(key);
+            }
+        }
+    }
+    catch (...)
+    {
+        return;
+    }
+    return;
+}
+
+std::string &UTIL::low(std::string &str)
+{
+    std::for_each(str.begin(),
+                  str.end(),
+                  [](auto &ch)
+                  { std::tolower(ch); });
+    return str;
+}
+
+std::string UTIL::get_string_possible_data(const std::vector<std::string> &variants, const std::string &tmp)
+{
+    std::string result;
+    result += "\nPossible values for ";
+    result += tmp;
+    result += ": ";
+    for (const auto &str : variants)
+    {
+        result += str;
+        result += " ";
+    }
+    return result;
+}
+
+std::string UTIL::get_bool_possible_data(const std::string &tmp)
+{
+    std::string result;
+    result += "\nPossible values for ";
+    result += tmp;
+    result += ": true false";
+    return result;
+}
+
+void UTIL::merge_json(std::string &json)
+{
+    std::string merged_json;
+    merged_json.reserve(json.size());
+    for (auto it = json.cbegin(); it != json.cend(); ++it)
+    {
+        if (*it == '}' && *(it + 1) == '{')
+        {
+            merged_json.push_back(',');
+            it += 2;
+        }
+        else
+            merged_json.push_back(*it);
+    }
+    json.clear();
+    json = merged_json;
 }

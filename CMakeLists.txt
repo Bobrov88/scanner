@@ -13,6 +13,7 @@ set(SOURCES
 )
 
 set(HEADERS
+    src/enums/function_name.h
     src/commands_sequencies.h
     src/commands.h
     src/utility.h
@@ -65,7 +66,8 @@ if(Boost_FOUND)
 
     # include_directories(${libusb_INCLUDE_DIRS})
     add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
-    #target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} Threads::Threads)
+
+    # target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} Threads::Threads)
     target_link_libraries(${PROJECT_NAME} utf8cpp hidapi::hidapi)
     target_link_libraries(${PROJECT_NAME} Boost::thread Boost::system Boost::json Boost::log)
 endif()

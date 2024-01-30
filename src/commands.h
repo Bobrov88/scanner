@@ -3,6 +3,7 @@
 #include "hidapi.h"
 #include "utility.h"
 #include "commands_sequencies.h"
+#include "enums/function_name.h"
 
 namespace HID
 {
