@@ -364,6 +364,7 @@ void UTIL::convert_json_to_bits(const std::string &json)
 {
     boost::json::value str = boost::json::parse(json);
     std::vector<uint8_t> bytes;
+    std::vector<std::vector<uint8_t>> set_of_bytes;
     bytes.reserve(60);
     std::string incorrect_data;
 
@@ -455,6 +456,7 @@ void UTIL::convert_json_to_bits(const std::string &json)
                     byte |= 0b11110000;
             }
             // {
+            // to Chinese
             //     const std::string key = "BIT 3-2 ???"s;
             //     bool tmp = str.at(key).as_bool();
             //     if (tmp)
@@ -471,15 +473,70 @@ void UTIL::convert_json_to_bits(const std::string &json)
                 else if (low(tmp) == low(variants[1]))
                     byte |= 0b11111101;
                 else if (low(tmp) == low(variants[2]))
-                    // byte |= 0b11111101;
-                    else incorrect_data += get_string_possible_data(variants, key);
+                    // byte |= 0b11111101; //to Chinese
+                    byte |= 0b11111111;
+                else
+                    incorrect_data += get_string_possible_data(variants, key);
             }
             bytes.push_back(byte);
         }
         {
             // FLAG 0x0002
             uint8_t byte = 0;
+            {
+                // Reserved
+                byte |= 0b11111110;
+            }
+            {
+                // to Chinese
+            }
+            bytes.push_back(byte);
         }
+        {
+            // FLAG 0x0003
+            uint8_t byte = 0;
+            {
+                // to Chinese
+            }
+            {
+                // to Chinese
+            }
+            {
+                const std::string key = "printSetCode"s;
+                bool tmp = str.at(key).as_bool();
+                if (tmp)
+                    byte |= 0b11111110;
+                else
+                    byte |= 0b11111111;
+            }
+            bytes.push_back(byte);
+        }
+        {
+            // FLAG 0x0004
+            uint8_t byte = 0;
+            {
+                // to Chinese
+            }
+            bytes.push_back(byte);
+        }
+        {
+            // FLAG 0x0005
+            uint8_t byte = 0;
+            {
+                // to Chinese
+            }
+            bytes.push_back(byte);
+        }
+        {
+            // FLAG 0x0006
+            uint8_t byte = 0;
+            {
+                // to Chinese
+            }
+            bytes.push_back(byte);
+        }
+        set_of_bytes.push_back(std::move(bytes));
+        bytes.clear();
     }
     catch (...)
     {
