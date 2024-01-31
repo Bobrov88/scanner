@@ -434,10 +434,51 @@ void UTIL::convert_json_to_bits(const std::string &json)
                 const std::string key = "muteEnable"s;
                 bool tmp = str.at(key).as_bool();
                 if (tmp)
-                    byte |= 0b00000000;
-                else
                     byte |= 0b10000000;
+                else
+                    byte |= 0b11000000;
             }
+            {
+                const std::string key = "decodeLed"s;
+                bool tmp = str.at(key).as_bool();
+                if (tmp)
+                    byte |= 0b11100000;
+                else
+                    byte |= 0b11000000;
+            }
+            {
+                const std::string key = "continuousSwitch"s;
+                bool tmp = str.at(key).as_bool();
+                if (tmp)
+                    byte |= 0b11100000;
+                else
+                    byte |= 0b11110000;
+            }
+            // {
+            //     const std::string key = "BIT 3-2 ???"s;
+            //     bool tmp = str.at(key).as_bool();
+            //     if (tmp)
+            //         byte |= 0b11100000;
+            //     else
+            //         byte |= 0b11110000;
+            // }
+            {
+                std::vector<std::string> variants = {"passive", "active", "mimicry"};
+                const std::string key = "buzzerType"s;
+                std::string tmp = str.at(key).as_string().c_str();
+                if (low(tmp) == low(variants[0]))
+                    byte |= 0b11111100;
+                else if (low(tmp) == low(variants[1]))
+                    byte |= 0b11111101;
+                else if (low(tmp) == low(variants[2]))
+                    // byte |= 0b11111101;
+                    else incorrect_data += get_string_possible_data(variants, key);
+            }
+            bytes.push_back(byte);
+        }
+        {
+            // FLAG 0x0002
+            uint8_t byte = 0;
         }
     }
     catch (...)
