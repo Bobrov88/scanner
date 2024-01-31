@@ -372,7 +372,7 @@ void UTIL::convert_json_to_bits(const std::string &json)
     {
         {
             // FLAG 0x0000
-            uint8_t byte = 0x00;
+            uint8_t byte = 0;
             {
                 const std::string key = "locateLed"s;
                 std::vector<std::string> variants = {"allwaysOff"s, "getPictureOn"s, "allwaysOn"s};
@@ -391,11 +391,11 @@ void UTIL::convert_json_to_bits(const std::string &json)
                 std::vector<std::string> variants = {"allwaysOff"s, "getPictureOn"s, "allwaysOn"s};
                 std::string tmp = str.at(key).as_string().c_str();
                 if (low(tmp) == low(variants[0]))
-                    byte |= 0b11000000;
+                    byte |= 0b00000000;
                 else if (low(tmp) == low(variants[1]))
-                    byte |= 0b11010000;
+                    byte |= 0b00010000;
                 else if (low(tmp) == low(variants[2]))
-                    byte |= 0b11100000;
+                    byte |= 0b00100000;
                 else
                     incorrect_data += UTIL::get_string_possible_data(variants, key);
             }
@@ -404,17 +404,17 @@ void UTIL::convert_json_to_bits(const std::string &json)
                 std::vector<std::string> variants = {"keyTrig"s, "edgeTrig"s, "cmdTrig"s, "incuction"s, "noMoveNoRead"s, "continuous"s};
                 std::string tmp = str.at(key).as_string().c_str();
                 if (low(tmp) == low(variants[0]))
-                    byte |= 0b11110000;
+                    byte |= 0b00000000;
                 else if (low(tmp) == low(variants[1]))
-                    byte |= 0b11110001;
+                    byte |= 0b00000001;
                 else if (low(tmp) == low(variants[2]))
-                    byte |= 0b11110010;
+                    byte |= 0b00000010;
                 else if (low(tmp) == low(variants[3]))
-                    byte |= 0b11110011;
+                    byte |= 0b00000011;
                 else if (low(tmp) == low(variants[4]))
-                    byte |= 0b11110100;
+                    byte |= 0b00000100;
                 else if (low(tmp) == low(variants[5]))
-                    byte |= 0b11110101;
+                    byte |= 0b00000101;
                 else
                     incorrect_data += UTIL::get_string_possible_data(variants, key);
             }
@@ -435,25 +435,25 @@ void UTIL::convert_json_to_bits(const std::string &json)
                 const std::string key = "muteEnable"s;
                 bool tmp = str.at(key).as_bool();
                 if (tmp)
-                    byte |= 0b10000000;
+                    byte |= 0b00000000;
                 else
-                    byte |= 0b11000000;
+                    byte |= 0b01000000;
             }
             {
                 const std::string key = "decodeLed"s;
                 bool tmp = str.at(key).as_bool();
                 if (tmp)
-                    byte |= 0b11100000;
+                    byte |= 0b00100000;
                 else
-                    byte |= 0b11000000;
+                    byte |= 0b00000000;
             }
             {
                 const std::string key = "continuousSwitch"s;
                 bool tmp = str.at(key).as_bool();
                 if (tmp)
-                    byte |= 0b11100000;
+                    byte |= 0b00000000;
                 else
-                    byte |= 0b11110000;
+                    byte |= 0b00010000;
             }
             // {
             // to Chinese
@@ -469,12 +469,12 @@ void UTIL::convert_json_to_bits(const std::string &json)
                 const std::string key = "buzzerType"s;
                 std::string tmp = str.at(key).as_string().c_str();
                 if (low(tmp) == low(variants[0]))
-                    byte |= 0b11111100;
+                    byte |= 0b00000000;
                 else if (low(tmp) == low(variants[1]))
-                    byte |= 0b11111101;
+                    byte |= 0b00000001;
                 else if (low(tmp) == low(variants[2]))
                     // byte |= 0b11111101; //to Chinese
-                    byte |= 0b11111111;
+                    byte |= 0b00000011;
                 else
                     incorrect_data += get_string_possible_data(variants, key);
             }
@@ -505,9 +505,9 @@ void UTIL::convert_json_to_bits(const std::string &json)
                 const std::string key = "printSetCode"s;
                 bool tmp = str.at(key).as_bool();
                 if (tmp)
-                    byte |= 0b11111110;
+                    byte |= 0b00000000;
                 else
-                    byte |= 0b11111111;
+                    byte |= 0b00000001;
             }
             bytes.push_back(byte);
         }
@@ -563,14 +563,14 @@ void UTIL::convert_json_to_bits(const std::string &json)
                 const std::string key = "ctrlCharMode"s;
                 std::string tmp = str.at(key).as_string().c_str();
                 if (low(tmp) == low(variants[0]))
-                    byte |= 0b10000000;
+                    byte |= 0b00000000;
                 else if (low(tmp) == low(variants[1]))
-                    byte |= 0b10100000;
+                    byte |= 0b00100000;
                 else if (low(tmp) == low(variants[2]))
-                    byte |= 0b11000000;
+                    byte |= 0b01000000;
                 else if (low(tmp) == low(variants[3]))
                     // to Chinese
-                    byte |= 0b11111111;
+                    byte |= 0b01111111;
                 else
                     incorrect_data += get_string_possible_data(variants, key);
             }
@@ -578,29 +578,29 @@ void UTIL::convert_json_to_bits(const std::string &json)
                 const std::string key = "keypadNumLock"s;
                 bool tmp = str.at(key).as_bool();
                 if (tmp)
-                    byte |= 0b11110000;
+                    byte |= 0b00010000;
                 else
-                    byte |= 0b11100000;
+                    byte |= 0b00000000;
             }
             {
                 const std::string key = "keypadCalcSingal"s;
                 bool tmp = str.at(key).as_bool();
                 if (tmp)
-                    byte |= 0b11111000;
+                    byte |= 0b00001000;
                 else
-                    byte |= 0b11110000;
+                    byte |= 0b00000000;
             }
             {
                 // Reserved
-                byte |= 0b11111000;
+                byte |= 0b00000000;
             }
             {
                 const std::string key = "keyboardLead(Ctrl+Shift+R)"s;
                 bool tmp = str.at(key).as_bool();
                 if (tmp)
-                    byte |= 0b11111001;
+                    byte |= 0b00000001;
                 else
-                    byte |= 0b11111000;
+                    byte |= 0b00000000;
             }
             bytes.push_back(byte);
         }
@@ -638,9 +638,9 @@ void UTIL::convert_json_to_bits(const std::string &json)
                 const std::string key = "activeBuzzerWorkLevel"s;
                 std::string tmp = str.at(key).as_string().c_str();
                 if (low(tmp) == low(variants[0]))
-                    byte |= 0b00000110;
+                    byte |= 0b00000000;
                 else if (low(tmp) == low(variants[1]))
-                    byte |= 0b00000111;
+                    byte |= 0b00000001;
                 else
                     incorrect_data += get_string_possible_data(variants, key);
             }
@@ -656,22 +656,22 @@ void UTIL::convert_json_to_bits(const std::string &json)
                 const std::string key = "virtualKeyboard"s;
                 bool tmp = str.at(key).as_bool();
                 if (tmp)
-                    byte |= 0b11000000;
+                    byte |= 0b01000000;
                 else
-                    byte |= 0b10000000;
+                    byte |= 0b00000000;
             }
             {
                 std::vector<std::string> variants = {"GBK"s, "Unicode"s, "Raw"s, "UTF8"s, "BIG5"s};
                 const std::string key = "dataOutType"s;
                 std::string tmp = str.at(key).as_string().c_str();
                 if (low(tmp) == low(variants[0]))
-                    byte |= 0b11000000;
+                    byte |= 0b00000000;
                 else if (low(tmp) == low(variants[1]))
-                    byte |= 0b11010000;
+                    byte |= 0b00010000;
                 else if (low(tmp) == low(variants[2]))
-                    byte |= 0b11100000;
+                    byte |= 0b00100000;
                 else if (low(tmp) == low(variants[3]))
-                    byte |= 0b11110000;
+                    byte |= 0b00110000;
                 else
                     incorrect_data += get_string_possible_data(variants, key);
             }
@@ -680,17 +680,17 @@ void UTIL::convert_json_to_bits(const std::string &json)
                 const std::string key = "outMode"s;
                 std::string tmp = str.at(key).as_string().c_str();
                 if (low(tmp) == low(variants[0]))
-                    byte |= 0b11110000;
+                    byte |= 0b00000000;
                 else if (low(tmp) == low(variants[1]))
-                    byte |= 0b11110001;
+                    byte |= 0b00000001;
                 else if (low(tmp) == low(variants[2]))
-                    byte |= 0b11110011;
+                    byte |= 0b00000011;
                 else if (low(tmp) == low(variants[3]))
-                    byte |= 0b11110100;
+                    byte |= 0b00000100;
                 else if (low(tmp) == low(variants[4]))
-                    byte |= 0b11110101;
+                    byte |= 0b00000101;
                 else if (low(tmp) == low(variants[5]))
-                    byte |= 0b11110110;
+                    byte |= 0b00000110;
                 else
                     incorrect_data += get_string_possible_data(variants, key);
             }
@@ -700,8 +700,126 @@ void UTIL::convert_json_to_bits(const std::string &json)
             // FLAG 0x000E
             uint8_t byte = 0;
             {
-                
+                // Reserved
+                byte |= 0b00000000;
             }
+            {
+                const std::string key = "startBuzzer"s;
+                bool tmp = str.at(key).as_bool();
+                if (tmp)
+                    byte |= 0b00000000;
+                else
+                    byte |= 0b00001000;
+            }
+            {
+                const std::string key = "decodeSucessBuzzer"s;
+                bool tmp = str.at(key).as_bool();
+                if (tmp)
+                    byte |= 0b00000100;
+                else
+                    byte |= 0b00000000;
+            }
+            {
+                const std::string key = "setCodeBuzzer"s;
+                bool tmp = str.at(key).as_bool();
+                if (tmp)
+                    byte |= 0b00000000;
+                else
+                    byte |= 0b00000010;
+            }
+            {
+                // to Chinese
+            }
+            bytes.push_back(byte);
+        }
+        {
+            // FLAG 0x000F
+            uint8_t byte = 0;
+            {
+                const std::string key = "sensitivity1"s;
+                const uint8_t tmp = static_cast<uint8_t>(str.at(key).as_int64());
+                if (tmp < 0 || tmp > 255)
+                {
+                    incorrect_data += get_uint8_t_possible_data(key, 0, 255);
+                }
+                else
+                {
+                    byte |= tmp;
+                }
+            }
+            bytes.push_back(byte);
+        }
+        {
+            // FLAG 0x0010
+            uint8_t byte = 0;
+            {
+                const std::string key = "sensitivity2"s;
+                const uint8_t tmp = static_cast<uint8_t>(str.at(key).as_int64());
+                if (tmp < 0 || tmp > 255)
+                {
+                    incorrect_data += get_uint8_t_possible_data(key, 0, 255);
+                }
+                else
+                {
+                    byte |= tmp;
+                }
+            }
+            bytes.push_back(byte);
+        }
+        // --------from 0x0009 to 0x0010--------------------- //
+        set_of_bytes.push_back(std::move(bytes));
+        bytes.clear();
+        // --------from 0x0009 to 0x0010--------------------- //
+        {
+            // FLAG 0-x0013
+            uint8_t byte = 0;
+            {
+                const std::string key = "sameReadDelayState"s;
+                bool tmp = str.at(key).as_bool();
+                if (tmp)
+                    byte |= 0b10000000;
+                else
+                    byte |= 0b00000000;
+            }
+            {
+                const std::string key = "sameReadDelay"s;
+                const uint8_t tmp = static_cast<uint8_t>(str.at(key).as_int64() / 100);
+                if (tmp < 0 || tmp > 127)
+                {
+                    incorrect_data += get_uint8_t_possible_data(key, 0, 127);
+                }
+                else
+                {
+                    byte |= tmp;
+                }
+            }
+            bytes.push_back(byte);
+        }
+        {
+            // FLAG 0x0014
+            uint8_t byte = 0;
+            {
+                // to Chinese
+            }
+            bytes.push_back(byte);
+        }
+        {
+            // FLAG 0x0015
+            uint8_t byte = 0;
+            {
+                // Reserved
+                bytes |= 0b00000000;
+            }
+            {
+                // to Chinese
+            }
+            {
+                // to Chinese
+            }
+            {
+                bytes |= 0b00000000;
+            }
+            bytes.push_back(byte);
         }
     }
 }
@@ -721,11 +839,11 @@ std::string &UTIL::low(std::string &str)
     return str;
 }
 
-std::string UTIL::get_string_possible_data(const std::vector<std::string> &variants, const std::string &tmp)
+std::string UTIL::get_string_possible_data(const std::vector<std::string> &variants, const std::string &key)
 {
     std::string result;
     result += "\nPossible values for ";
-    result += tmp;
+    result += key;
     result += ": ";
     for (const auto &str : variants)
     {
@@ -735,12 +853,24 @@ std::string UTIL::get_string_possible_data(const std::vector<std::string> &varia
     return result;
 }
 
-std::string UTIL::get_bool_possible_data(const std::string &tmp)
+std::string UTIL::get_bool_possible_data(const std::string &key)
 {
     std::string result;
     result += "\nPossible values for ";
-    result += tmp;
+    result += key;
     result += ": true false";
+    return result;
+}
+
+std::string UTIL::get_uint8_t_possible_data(const std::string &key, const uint8_t from, const uint8_t to)
+{
+    std::string result;
+    result += "\nPossible values for ";
+    result += key;
+    result += ": ";
+    result += from;
+    result += " - ";
+    result += to;
     return result;
 }
 

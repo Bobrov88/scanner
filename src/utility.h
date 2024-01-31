@@ -87,7 +87,8 @@ namespace UTIL
 
     void convert_json_to_bits(const std::string &json);
     std::string& low(std::string &str);
-    std::string get_string_possible_data(const std::vector<std::string>& variants, const std::string& tmp);
-    std::string get_bool_possible_data(const std::string &tmp);
+    std::string get_string_possible_data(const std::vector<std::string>& variants, const std::string& key);
+    std::string get_bool_possible_data(const std::string &key;
+    std::string get_uint8_t_possible_data(const std::string &key, const uint8_t from, const uint8_t to);
     void merge_json(std::string &json);
 };
