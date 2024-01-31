@@ -499,7 +499,12 @@ void UTIL::convert_json_to_bits(const std::string &json)
                 // to Chinese
             }
             {
-                // to Chinese
+                const std::string key = "setCodeEnable"s;
+                bool tmp = str.at(key).as_bool();
+                if (tmp)
+                    byte |= 0b00000010;
+                else
+                    byte |= 0b00000000;
             }
             {
                 const std::string key = "printSetCode"s;
@@ -811,15 +816,149 @@ void UTIL::convert_json_to_bits(const std::string &json)
                 bytes |= 0b00000000;
             }
             {
-                // to Chinese
+                const std::string key = "motorEnabled"s;
+                bool tmp = str.at(key).as_bool();
+                if (tmp)
+                    byte |= 0b00000100;
+                else
+                    byte |= 0b00000000;
             }
             {
                 // to Chinese
             }
             {
+                // Reserved
                 bytes |= 0b00000000;
             }
             bytes.push_back(byte);
+        }
+        {
+            // FLAG 0x0016
+            uint8_t byte = 0;
+            {
+                // Reserved
+                byte |= 0b00000000;
+            }
+            {
+                const std::string key = "reflectProcess"s;
+                bool tmp = str.at(key).as_bool();
+                if (tmp)
+                    byte |= 0b00010000;
+                else
+                    byte |= 0b00000000;
+            }
+            {
+                // Reserved
+                byte |= 0b00000000;
+            }
+            {
+                const std::string key = "reinforcedRead"s;
+                bool tmp = str.at(key).as_bool();
+                if (tmp)
+                    byte |= 0b00000001;
+                else
+                    byte |= 0b00000000;
+            }
+            bytes.push_back(byte);
+        }
+        {
+            // FLAG 0x0017
+            uint8_t byte = 0;
+            {
+                // Reserved
+                byte |= 0b00000000;
+            }
+            {
+                // to Chinese
+            }
+            {
+                const std::string key = "code128Lead"s;
+                bool tmp = str.at(key).as_bool();
+                if (tmp)
+                    byte |= 0b00000100;
+                else
+                    byte |= 0b00000000;
+            }
+            {
+                const std::string key = "urlCodeReadEnable"s;
+                bool tmp = str.at(key).as_bool();
+                if (tmp)
+                    byte |= 0b00000000;
+                else
+                    byte |= 0b00000010;
+            }
+            {
+                const std::string key = "GSExchangeEanble"s;
+                bool tmp = str.at(key).as_bool();
+                if (tmp)
+                    byte |= 0b00000001;
+                else
+                    byte |= 0b00000000;
+            }
+            bytes.push_back(byte);
+        }
+        {
+            // FLAG 0x0018
+            uint8_t byte = 0;
+            {
+                std::vector<std::string> variants = {"1D"s};
+                const std::string key = "GSExchangeChar"s;
+                const std::string tmp = str.at(key).as_string().c_str();
+                if (low(tmp) == low(variants[0]))
+                    byte |= 0b00011101;
+                else
+                    incorrect_data += get_string_possible_data(variants, key);
+            }
+            bytes.push_back(byte);
+        }
+        // --------from 0x0013 to 0x0018--------------------- //
+        set_of_bytes.push_back(std::move(bytes));
+        bytes.clear();
+        // --------from 0x0013 to 0x0018--------------------- //
+        {
+            // FLAG 0x002A, 0x002B
+            // Ask Chinese about order of bytes
+            uint8_t byte = 0;
+            {
+                // Reserved
+                byte |= 0b00000000;
+            }
+            {
+                // to Chinese
+            }
+            {
+                // to Chinese
+            }
+            bytes.push_back(byte);
+        }
+        {
+            // FLAG 0x002C
+            uint8_t byte = 0;
+            {
+                // Reserved
+                byte |= 0b00000000;
+            }
+            {
+                std::vector<std::string> variants = {"default"s, "allDisable"s, "allEnable"s};
+                const std::string key = "decodeConfig"s;
+                const std::string tmp = str.at(key).as_string().c_str();
+                if (low(tmp) == low(variants[0]))
+                    byte |= 0b00000000;
+                else if (low(tmp) == low(variants[1]))
+                    byte |= 0b00000010;
+                else if (low(tmp) == low(variants[2]))
+                    byte |= 0b00000100;
+                else
+                    incorrect_data += get_string_possible_data(variants, key);
+            }
+            {
+                // Reserved
+                byte |= 0b00000000;
+            }
+            bytes.push_back(byte);
+        }
+        {
+            // 
         }
     }
 }
