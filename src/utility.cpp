@@ -77,35 +77,36 @@ ConsoleTable UTIL::getTableInitialSetup()
 
 std::vector<UTIL::AVAILABLE_COM> UTIL::get_available_linux_com_ports()
 {
-    namespace fs = std::filesystem;
     std::vector<UTIL::AVAILABLE_COM> com_ports;
-    fs::path p("/dev/serial/by-id");
-    try
-    {
-        if (!exists(p))
-        {
-            throw std::runtime_error(p.generic_string() + " does not exist");
-        }
-        else
-        {
-            for (const auto &dir : fs::directory_iterator(p))
-            {
-                if (is_symlink(dir.symlink_status()))
-                {
-                    fs::path symlink_points_at = read_symlink(dir);
-                    fs::path canonical_path = fs::canonical(p / symlink_points_at);
-                    com_ports.push_back({canonical_path.generic_string()});
-                }
-            }
-        }
-    }
-    catch (const fs::filesystem_error &ex)
-    {
-        std::cout << ex.what() << '\n';
-        throw ex;
-    }
-    std::sort(com_ports.begin(), com_ports.end(), [](const auto &first, const auto &second)
-              { return first.data_ < second.data_; });
+
+    // namespace fs = std::filesystem;
+    // fs::path p("/dev/tty");
+    // try
+    // {
+    //     if (!exists(p))
+    //     {
+    //         throw std::runtime_error(p.generic_string() + " does not exist");
+    //     }
+    //     else
+    //     {
+    //         for (const auto &dir : fs::directory_iterator(p))
+    //         {
+    //             if (is_symlink(dir.symlink_status()))
+    //             {
+    //                 fs::path symlink_points_at = read_symlink(dir);
+    //                 fs::path canonical_path = fs::canonical(p / symlink_points_at);
+    //                 com_ports.push_back({canonical_path.generic_string()});
+    //             }
+    //         }
+    //     }
+    // }
+    // catch (const fs::filesystem_error &ex)
+    // {
+    //     std::cout << ex.what() << '\n';
+    //     throw ex;
+    // }
+    // std::sort(com_ports.begin(), com_ports.end(), [](const auto &first, const auto &second)
+    //           { return first.data_ < second.data_; });
     return com_ports;
 }
 
@@ -367,607 +368,607 @@ void UTIL::convert_json_to_bits(const std::string &json)
     std::vector<std::vector<uint8_t>> set_of_bytes;
     bytes.reserve(60);
     std::string incorrect_data;
-
-    try
-    {
-        {
-            // FLAG 0x0000
-            uint8_t byte = 0;
-            {
-                const std::string key = "locateLed"s;
-                std::vector<std::string> variants = {"allwaysOff"s, "getPictureOn"s, "allwaysOn"s};
-                std::string tmp = str.at(key).as_string().c_str();
-                if (low(tmp) == low(variants[0]))
-                    byte |= 0b00000000;
-                else if (low(tmp) == low(variants[1]))
-                    byte |= 0b01000000;
-                else if (low(tmp) == low(variants[2]))
-                    byte |= 0b10000000;
-                else
-                    incorrect_data += UTIL::get_string_possible_data(variants, key);
-            }
-            {
-                const std::string key = "fillLed"s;
-                std::vector<std::string> variants = {"allwaysOff"s, "getPictureOn"s, "allwaysOn"s};
-                std::string tmp = str.at(key).as_string().c_str();
-                if (low(tmp) == low(variants[0]))
-                    byte |= 0b00000000;
-                else if (low(tmp) == low(variants[1]))
-                    byte |= 0b00010000;
-                else if (low(tmp) == low(variants[2]))
-                    byte |= 0b00100000;
-                else
-                    incorrect_data += UTIL::get_string_possible_data(variants, key);
-            }
-            {
-                const std::string key = "workMode";
-                std::vector<std::string> variants = {"keyTrig"s, "edgeTrig"s, "cmdTrig"s, "incuction"s, "noMoveNoRead"s, "continuous"s};
-                std::string tmp = str.at(key).as_string().c_str();
-                if (low(tmp) == low(variants[0]))
-                    byte |= 0b00000000;
-                else if (low(tmp) == low(variants[1]))
-                    byte |= 0b00000001;
-                else if (low(tmp) == low(variants[2]))
-                    byte |= 0b00000010;
-                else if (low(tmp) == low(variants[3]))
-                    byte |= 0b00000011;
-                else if (low(tmp) == low(variants[4]))
-                    byte |= 0b00000100;
-                else if (low(tmp) == low(variants[5]))
-                    byte |= 0b00000101;
-                else
-                    incorrect_data += UTIL::get_string_possible_data(variants, key);
-            }
-            bytes.push_back(byte);
-        }
-        {
-            // FLAG 0x0001
-            uint8_t byte = 0;
-            {
-                const std::string key = "cmdTrigAck"s;
-                bool tmp = str.at(key).as_bool();
-                if (tmp)
-                    byte |= 0b00000000;
-                else
-                    byte |= 0b10000000;
-            }
-            {
-                const std::string key = "muteEnable"s;
-                bool tmp = str.at(key).as_bool();
-                if (tmp)
-                    byte |= 0b00000000;
-                else
-                    byte |= 0b01000000;
-            }
-            {
-                const std::string key = "decodeLed"s;
-                bool tmp = str.at(key).as_bool();
-                if (tmp)
-                    byte |= 0b00100000;
-                else
-                    byte |= 0b00000000;
-            }
-            {
-                const std::string key = "continuousSwitch"s;
-                bool tmp = str.at(key).as_bool();
-                if (tmp)
-                    byte |= 0b00000000;
-                else
-                    byte |= 0b00010000;
-            }
-            // {
-            // to Chinese
-            //     const std::string key = "BIT 3-2 ???"s;
-            //     bool tmp = str.at(key).as_bool();
-            //     if (tmp)
-            //         byte |= 0b11100000;
-            //     else
-            //         byte |= 0b11110000;
-            // }
-            {
-                std::vector<std::string> variants = {"passive"s, "active"s, "mimicry"s};
-                const std::string key = "buzzerType"s;
-                std::string tmp = str.at(key).as_string().c_str();
-                if (low(tmp) == low(variants[0]))
-                    byte |= 0b00000000;
-                else if (low(tmp) == low(variants[1]))
-                    byte |= 0b00000001;
-                else if (low(tmp) == low(variants[2]))
-                    // byte |= 0b11111101; //to Chinese
-                    byte |= 0b00000011;
-                else
-                    incorrect_data += get_string_possible_data(variants, key);
-            }
-            bytes.push_back(byte);
-        }
-        {
-            // FLAG 0x0002
-            uint8_t byte = 0;
-            {
-                // Reserved
-                byte |= 0b00000000;
-            }
-            {
-                // to Chinese
-            }
-            bytes.push_back(byte);
-        }
-        {
-            // FLAG 0x0003
-            uint8_t byte = 0;
-            {
-                // to Chinese
-            }
-            {
-                const std::string key = "setCodeEnable"s;
-                bool tmp = str.at(key).as_bool();
-                if (tmp)
-                    byte |= 0b00000010;
-                else
-                    byte |= 0b00000000;
-            }
-            {
-                const std::string key = "printSetCode"s;
-                bool tmp = str.at(key).as_bool();
-                if (tmp)
-                    byte |= 0b00000000;
-                else
-                    byte |= 0b00000001;
-            }
-            bytes.push_back(byte);
-        }
-        {
-            // FLAG 0x0004
-            uint8_t byte = 0;
-            {
-                // to Chinese
-            }
-            bytes.push_back(byte);
-        }
-        {
-            // FLAG 0x0005
-            uint8_t byte = 0;
-            {
-                // to Chinese
-            }
-            bytes.push_back(byte);
-        }
-        {
-            // FLAG 0x0006
-            uint8_t byte = 0;
-            {
-                // to Chinese
-            }
-            bytes.push_back(byte);
-        }
-        // --------from 0x0000 to 0x0006--------------------- //
-        set_of_bytes.push_back(std::move(bytes));
-        bytes.clear();
-        // --------from 0x0000 to 0x0006--------------------- //
-        {
-            // FLAG 0x0009
-            uint8_t byte = 0;
-            {
-                // to Chinese
-            }
-            bytes.push_back(byte);
-        }
-        {
-            // FLAG 0x000A
-            uint8_t byte = 0;
-            {
-                const std::string key = "disableChinese"s;
-                bool tmp = str.at(key).as_bool();
-                if (tmp)
-                    byte |= 0b10000000;
-                else
-                    byte |= 0b00000000;
-            }
-            {
-                std::vector<std::string> variants = {"off"s, "ctrlMode"s, "altMode"s, "notOut"s};
-                const std::string key = "ctrlCharMode"s;
-                std::string tmp = str.at(key).as_string().c_str();
-                if (low(tmp) == low(variants[0]))
-                    byte |= 0b00000000;
-                else if (low(tmp) == low(variants[1]))
-                    byte |= 0b00100000;
-                else if (low(tmp) == low(variants[2]))
-                    byte |= 0b01000000;
-                else if (low(tmp) == low(variants[3]))
-                    // to Chinese
-                    byte |= 0b01111111;
-                else
-                    incorrect_data += get_string_possible_data(variants, key);
-            }
-            {
-                const std::string key = "keypadNumLock"s;
-                bool tmp = str.at(key).as_bool();
-                if (tmp)
-                    byte |= 0b00010000;
-                else
-                    byte |= 0b00000000;
-            }
-            {
-                const std::string key = "keypadCalcSingal"s;
-                bool tmp = str.at(key).as_bool();
-                if (tmp)
-                    byte |= 0b00001000;
-                else
-                    byte |= 0b00000000;
-            }
-            {
-                // Reserved
-                byte |= 0b00000000;
-            }
-            {
-                const std::string key = "keyboardLead(Ctrl+Shift+R)"s;
-                bool tmp = str.at(key).as_bool();
-                if (tmp)
-                    byte |= 0b00000001;
-                else
-                    byte |= 0b00000000;
-            }
-            bytes.push_back(byte);
-        }
-        {
-            // FLAG 0x000B
-            uint8_t byte = 0;
-            {
-                // to Chinese
-            }
-            bytes.push_back(byte);
-        }
-        {
-            // FLAG 0x000C
-            uint8_t byte = 0;
-            {
-                byte |= 0b00000000;
-            }
-            {
-                std::vector<std::string> variants = {"normal"s, "turn"s, "allwaysOn"s, "allwaysOff"s};
-                const std::string key = "capsLockMode"s;
-                std::string tmp = str.at(key).as_string().c_str();
-                if (low(tmp) == low(variants[0]))
-                    byte |= 0b00000000;
-                else if (low(tmp) == low(variants[1]))
-                    byte |= 0b00000010;
-                else if (low(tmp) == low(variants[2]))
-                    byte |= 0b00000100;
-                else if (low(tmp) == low(variants[3]))
-                    byte |= 0b00000110;
-                else
-                    incorrect_data += get_string_possible_data(variants, key);
-            }
-            {
-                std::vector<std::string> variants = {"High"s, "Low"s};
-                const std::string key = "activeBuzzerWorkLevel"s;
-                std::string tmp = str.at(key).as_string().c_str();
-                if (low(tmp) == low(variants[0]))
-                    byte |= 0b00000000;
-                else if (low(tmp) == low(variants[1]))
-                    byte |= 0b00000001;
-                else
-                    incorrect_data += get_string_possible_data(variants, key);
-            }
-            bytes.push_back(byte);
-        }
-        {
-            // FLAG 0x000D
-            uint8_t byte = 0;
-            {
-                // to Chinese
-            }
-            {
-                const std::string key = "virtualKeyboard"s;
-                bool tmp = str.at(key).as_bool();
-                if (tmp)
-                    byte |= 0b01000000;
-                else
-                    byte |= 0b00000000;
-            }
-            {
-                std::vector<std::string> variants = {"GBK"s, "Unicode"s, "Raw"s, "UTF8"s, "BIG5"s};
-                const std::string key = "dataOutType"s;
-                std::string tmp = str.at(key).as_string().c_str();
-                if (low(tmp) == low(variants[0]))
-                    byte |= 0b00000000;
-                else if (low(tmp) == low(variants[1]))
-                    byte |= 0b00010000;
-                else if (low(tmp) == low(variants[2]))
-                    byte |= 0b00100000;
-                else if (low(tmp) == low(variants[3]))
-                    byte |= 0b00110000;
-                else
-                    incorrect_data += get_string_possible_data(variants, key);
-            }
-            {
-                std::vector<std::string> variants = {"UART-TTL"s, "keyboard"s, "virtualCom"s, "pos"s, "composite"s, "UART-TTL&keyboard"s};
-                const std::string key = "outMode"s;
-                std::string tmp = str.at(key).as_string().c_str();
-                if (low(tmp) == low(variants[0]))
-                    byte |= 0b00000000;
-                else if (low(tmp) == low(variants[1]))
-                    byte |= 0b00000001;
-                else if (low(tmp) == low(variants[2]))
-                    byte |= 0b00000011;
-                else if (low(tmp) == low(variants[3]))
-                    byte |= 0b00000100;
-                else if (low(tmp) == low(variants[4]))
-                    byte |= 0b00000101;
-                else if (low(tmp) == low(variants[5]))
-                    byte |= 0b00000110;
-                else
-                    incorrect_data += get_string_possible_data(variants, key);
-            }
-            bytes.push_back(byte);
-        }
-        {
-            // FLAG 0x000E
-            uint8_t byte = 0;
-            {
-                // Reserved
-                byte |= 0b00000000;
-            }
-            {
-                const std::string key = "startBuzzer"s;
-                bool tmp = str.at(key).as_bool();
-                if (tmp)
-                    byte |= 0b00000000;
-                else
-                    byte |= 0b00001000;
-            }
-            {
-                const std::string key = "decodeSucessBuzzer"s;
-                bool tmp = str.at(key).as_bool();
-                if (tmp)
-                    byte |= 0b00000100;
-                else
-                    byte |= 0b00000000;
-            }
-            {
-                const std::string key = "setCodeBuzzer"s;
-                bool tmp = str.at(key).as_bool();
-                if (tmp)
-                    byte |= 0b00000000;
-                else
-                    byte |= 0b00000010;
-            }
-            {
-                // to Chinese
-            }
-            bytes.push_back(byte);
-        }
-        {
-            // FLAG 0x000F
-            uint8_t byte = 0;
-            {
-                const std::string key = "sensitivity1"s;
-                const uint8_t tmp = static_cast<uint8_t>(str.at(key).as_int64());
-                if (tmp < 0 || tmp > 255)
-                {
-                    incorrect_data += get_uint8_t_possible_data(key, 0, 255);
-                }
-                else
-                {
-                    byte |= tmp;
-                }
-            }
-            bytes.push_back(byte);
-        }
-        {
-            // FLAG 0x0010
-            uint8_t byte = 0;
-            {
-                const std::string key = "sensitivity2"s;
-                const uint8_t tmp = static_cast<uint8_t>(str.at(key).as_int64());
-                if (tmp < 0 || tmp > 255)
-                {
-                    incorrect_data += get_uint8_t_possible_data(key, 0, 255);
-                }
-                else
-                {
-                    byte |= tmp;
-                }
-            }
-            bytes.push_back(byte);
-        }
-        // --------from 0x0009 to 0x0010--------------------- //
-        set_of_bytes.push_back(std::move(bytes));
-        bytes.clear();
-        // --------from 0x0009 to 0x0010--------------------- //
-        {
-            // FLAG 0-x0013
-            uint8_t byte = 0;
-            {
-                const std::string key = "sameReadDelayState"s;
-                bool tmp = str.at(key).as_bool();
-                if (tmp)
-                    byte |= 0b10000000;
-                else
-                    byte |= 0b00000000;
-            }
-            {
-                const std::string key = "sameReadDelay"s;
-                const uint8_t tmp = static_cast<uint8_t>(str.at(key).as_int64() / 100);
-                if (tmp < 0 || tmp > 127)
-                {
-                    incorrect_data += get_uint8_t_possible_data(key, 0, 127);
-                }
-                else
-                {
-                    byte |= tmp;
-                }
-            }
-            bytes.push_back(byte);
-        }
-        {
-            // FLAG 0x0014
-            uint8_t byte = 0;
-            {
-                // to Chinese
-            }
-            bytes.push_back(byte);
-        }
-        {
-            // FLAG 0x0015
-            uint8_t byte = 0;
-            {
-                // Reserved
-                bytes |= 0b00000000;
-            }
-            {
-                const std::string key = "motorEnabled"s;
-                bool tmp = str.at(key).as_bool();
-                if (tmp)
-                    byte |= 0b00000100;
-                else
-                    byte |= 0b00000000;
-            }
-            {
-                // to Chinese
-            }
-            {
-                // Reserved
-                bytes |= 0b00000000;
-            }
-            bytes.push_back(byte);
-        }
-        {
-            // FLAG 0x0016
-            uint8_t byte = 0;
-            {
-                // Reserved
-                byte |= 0b00000000;
-            }
-            {
-                const std::string key = "reflectProcess"s;
-                bool tmp = str.at(key).as_bool();
-                if (tmp)
-                    byte |= 0b00010000;
-                else
-                    byte |= 0b00000000;
-            }
-            {
-                // Reserved
-                byte |= 0b00000000;
-            }
-            {
-                const std::string key = "reinforcedRead"s;
-                bool tmp = str.at(key).as_bool();
-                if (tmp)
-                    byte |= 0b00000001;
-                else
-                    byte |= 0b00000000;
-            }
-            bytes.push_back(byte);
-        }
-        {
-            // FLAG 0x0017
-            uint8_t byte = 0;
-            {
-                // Reserved
-                byte |= 0b00000000;
-            }
-            {
-                // to Chinese
-            }
-            {
-                const std::string key = "code128Lead"s;
-                bool tmp = str.at(key).as_bool();
-                if (tmp)
-                    byte |= 0b00000100;
-                else
-                    byte |= 0b00000000;
-            }
-            {
-                const std::string key = "urlCodeReadEnable"s;
-                bool tmp = str.at(key).as_bool();
-                if (tmp)
-                    byte |= 0b00000000;
-                else
-                    byte |= 0b00000010;
-            }
-            {
-                const std::string key = "GSExchangeEanble"s;
-                bool tmp = str.at(key).as_bool();
-                if (tmp)
-                    byte |= 0b00000001;
-                else
-                    byte |= 0b00000000;
-            }
-            bytes.push_back(byte);
-        }
-        {
-            // FLAG 0x0018
-            uint8_t byte = 0;
-            {
-                std::vector<std::string> variants = {"1D"s};
-                const std::string key = "GSExchangeChar"s;
-                const std::string tmp = str.at(key).as_string().c_str();
-                if (low(tmp) == low(variants[0]))
-                    byte |= 0b00011101;
-                else
-                    incorrect_data += get_string_possible_data(variants, key);
-            }
-            bytes.push_back(byte);
-        }
-        // --------from 0x0013 to 0x0018--------------------- //
-        set_of_bytes.push_back(std::move(bytes));
-        bytes.clear();
-        // --------from 0x0013 to 0x0018--------------------- //
-        {
-            // FLAG 0x002A, 0x002B
-            // Ask Chinese about order of bytes
-            uint8_t byte = 0;
-            {
-                // Reserved
-                byte |= 0b00000000;
-            }
-            {
-                // to Chinese
-            }
-            {
-                // to Chinese
-            }
-            bytes.push_back(byte);
-        }
-        {
-            // FLAG 0x002C
-            uint8_t byte = 0;
-            {
-                // Reserved
-                byte |= 0b00000000;
-            }
-            {
-                std::vector<std::string> variants = {"default"s, "allDisable"s, "allEnable"s};
-                const std::string key = "decodeConfig"s;
-                const std::string tmp = str.at(key).as_string().c_str();
-                if (low(tmp) == low(variants[0]))
-                    byte |= 0b00000000;
-                else if (low(tmp) == low(variants[1]))
-                    byte |= 0b00000010;
-                else if (low(tmp) == low(variants[2]))
-                    byte |= 0b00000100;
-                else
-                    incorrect_data += get_string_possible_data(variants, key);
-            }
-            {
-                // Reserved
-                byte |= 0b00000000;
-            }
-            bytes.push_back(byte);
-        }
-        {
-            // 
-        }
-    }
 }
-catch (...)
-{
-    return;
-}
-return;
-}
+//     try
+//     {
+//         {
+//             // FLAG 0x0000
+//             uint8_t byte = 0;
+//             {
+//                 const std::string key = "locateLed"s;
+//                 std::vector<std::string> variants = {"allwaysOff"s, "getPictureOn"s, "allwaysOn"s};
+//                 std::string tmp = str.at(key).as_string().c_str();
+//                 if (low(tmp) == low(variants[0]))
+//                     byte |= 0b00000000;
+//                 else if (low(tmp) == low(variants[1]))
+//                     byte |= 0b01000000;
+//                 else if (low(tmp) == low(variants[2]))
+//                     byte |= 0b10000000;
+//                 else
+//                     incorrect_data += UTIL::get_string_possible_data(variants, key);
+//             }
+//             {
+//                 const std::string key = "fillLed"s;
+//                 std::vector<std::string> variants = {"allwaysOff"s, "getPictureOn"s, "allwaysOn"s};
+//                 std::string tmp = str.at(key).as_string().c_str();
+//                 if (low(tmp) == low(variants[0]))
+//                     byte |= 0b00000000;
+//                 else if (low(tmp) == low(variants[1]))
+//                     byte |= 0b00010000;
+//                 else if (low(tmp) == low(variants[2]))
+//                     byte |= 0b00100000;
+//                 else
+//                     incorrect_data += UTIL::get_string_possible_data(variants, key);
+//             }
+//             {
+//                 const std::string key = "workMode";
+//                 std::vector<std::string> variants = {"keyTrig"s, "edgeTrig"s, "cmdTrig"s, "incuction"s, "noMoveNoRead"s, "continuous"s};
+//                 std::string tmp = str.at(key).as_string().c_str();
+//                 if (low(tmp) == low(variants[0]))
+//                     byte |= 0b00000000;
+//                 else if (low(tmp) == low(variants[1]))
+//                     byte |= 0b00000001;
+//                 else if (low(tmp) == low(variants[2]))
+//                     byte |= 0b00000010;
+//                 else if (low(tmp) == low(variants[3]))
+//                     byte |= 0b00000011;
+//                 else if (low(tmp) == low(variants[4]))
+//                     byte |= 0b00000100;
+//                 else if (low(tmp) == low(variants[5]))
+//                     byte |= 0b00000101;
+//                 else
+//                     incorrect_data += UTIL::get_string_possible_data(variants, key);
+//             }
+//             bytes.push_back(byte);
+//         }
+//         {
+//             // FLAG 0x0001
+//             uint8_t byte = 0;
+//             {
+//                 const std::string key = "cmdTrigAck"s;
+//                 bool tmp = str.at(key).as_bool();
+//                 if (tmp)
+//                     byte |= 0b00000000;
+//                 else
+//                     byte |= 0b10000000;
+//             }
+//             {
+//                 const std::string key = "muteEnable"s;
+//                 bool tmp = str.at(key).as_bool();
+//                 if (tmp)
+//                     byte |= 0b00000000;
+//                 else
+//                     byte |= 0b01000000;
+//             }
+//             {
+//                 const std::string key = "decodeLed"s;
+//                 bool tmp = str.at(key).as_bool();
+//                 if (tmp)
+//                     byte |= 0b00100000;
+//                 else
+//                     byte |= 0b00000000;
+//             }
+//             {
+//                 const std::string key = "continuousSwitch"s;
+//                 bool tmp = str.at(key).as_bool();
+//                 if (tmp)
+//                     byte |= 0b00000000;
+//                 else
+//                     byte |= 0b00010000;
+//             }
+//             // {
+//             // to Chinese
+//             //     const std::string key = "BIT 3-2 ???"s;
+//             //     bool tmp = str.at(key).as_bool();
+//             //     if (tmp)
+//             //         byte |= 0b11100000;
+//             //     else
+//             //         byte |= 0b11110000;
+//             // }
+//             {
+//                 std::vector<std::string> variants = {"passive"s, "active"s, "mimicry"s};
+//                 const std::string key = "buzzerType"s;
+//                 std::string tmp = str.at(key).as_string().c_str();
+//                 if (low(tmp) == low(variants[0]))
+//                     byte |= 0b00000000;
+//                 else if (low(tmp) == low(variants[1]))
+//                     byte |= 0b00000001;
+//                 else if (low(tmp) == low(variants[2]))
+//                     // byte |= 0b11111101; //to Chinese
+//                     byte |= 0b00000011;
+//                 else
+//                     incorrect_data += get_string_possible_data(variants, key);
+//             }
+//             bytes.push_back(byte);
+//         }
+//         {
+//             // FLAG 0x0002
+//             uint8_t byte = 0;
+//             {
+//                 // Reserved
+//                 byte |= 0b00000000;
+//             }
+//             {
+//                 // to Chinese
+//             }
+//             bytes.push_back(byte);
+//         }
+//         {
+//             // FLAG 0x0003
+//             uint8_t byte = 0;
+//             {
+//                 // to Chinese
+//             }
+//             {
+//                 const std::string key = "setCodeEnable"s;
+//                 bool tmp = str.at(key).as_bool();
+//                 if (tmp)
+//                     byte |= 0b00000010;
+//                 else
+//                     byte |= 0b00000000;
+//             }
+//             {
+//                 const std::string key = "printSetCode"s;
+//                 bool tmp = str.at(key).as_bool();
+//                 if (tmp)
+//                     byte |= 0b00000000;
+//                 else
+//                     byte |= 0b00000001;
+//             }
+//             bytes.push_back(byte);
+//         }
+//         {
+//             // FLAG 0x0004
+//             uint8_t byte = 0;
+//             {
+//                 // to Chinese
+//             }
+//             bytes.push_back(byte);
+//         }
+//         {
+//             // FLAG 0x0005
+//             uint8_t byte = 0;
+//             {
+//                 // to Chinese
+//             }
+//             bytes.push_back(byte);
+//         }
+//         {
+//             // FLAG 0x0006
+//             uint8_t byte = 0;
+//             {
+//                 // to Chinese
+//             }
+//             bytes.push_back(byte);
+//         }
+//         // --------from 0x0000 to 0x0006--------------------- //
+//         set_of_bytes.push_back(std::move(bytes));
+//         bytes.clear();
+//         // --------from 0x0000 to 0x0006--------------------- //
+//         {
+//             // FLAG 0x0009
+//             uint8_t byte = 0;
+//             {
+//                 // to Chinese
+//             }
+//             bytes.push_back(byte);
+//         }
+//         {
+//             // FLAG 0x000A
+//             uint8_t byte = 0;
+//             {
+//                 const std::string key = "disableChinese"s;
+//                 bool tmp = str.at(key).as_bool();
+//                 if (tmp)
+//                     byte |= 0b10000000;
+//                 else
+//                     byte |= 0b00000000;
+//             }
+//             {
+//                 std::vector<std::string> variants = {"off"s, "ctrlMode"s, "altMode"s, "notOut"s};
+//                 const std::string key = "ctrlCharMode"s;
+//                 std::string tmp = str.at(key).as_string().c_str();
+//                 if (low(tmp) == low(variants[0]))
+//                     byte |= 0b00000000;
+//                 else if (low(tmp) == low(variants[1]))
+//                     byte |= 0b00100000;
+//                 else if (low(tmp) == low(variants[2]))
+//                     byte |= 0b01000000;
+//                 else if (low(tmp) == low(variants[3]))
+//                     // to Chinese
+//                     byte |= 0b01111111;
+//                 else
+//                     incorrect_data += get_string_possible_data(variants, key);
+//             }
+//             {
+//                 const std::string key = "keypadNumLock"s;
+//                 bool tmp = str.at(key).as_bool();
+//                 if (tmp)
+//                     byte |= 0b00010000;
+//                 else
+//                     byte |= 0b00000000;
+//             }
+//             {
+//                 const std::string key = "keypadCalcSingal"s;
+//                 bool tmp = str.at(key).as_bool();
+//                 if (tmp)
+//                     byte |= 0b00001000;
+//                 else
+//                     byte |= 0b00000000;
+//             }
+//             {
+//                 // Reserved
+//                 byte |= 0b00000000;
+//             }
+//             {
+//                 const std::string key = "keyboardLead(Ctrl+Shift+R)"s;
+//                 bool tmp = str.at(key).as_bool();
+//                 if (tmp)
+//                     byte |= 0b00000001;
+//                 else
+//                     byte |= 0b00000000;
+//             }
+//             bytes.push_back(byte);
+//         }
+//         {
+//             // FLAG 0x000B
+//             uint8_t byte = 0;
+//             {
+//                 // to Chinese
+//             }
+//             bytes.push_back(byte);
+//         }
+//         {
+//             // FLAG 0x000C
+//             uint8_t byte = 0;
+//             {
+//                 byte |= 0b00000000;
+//             }
+//             {
+//                 std::vector<std::string> variants = {"normal"s, "turn"s, "allwaysOn"s, "allwaysOff"s};
+//                 const std::string key = "capsLockMode"s;
+//                 std::string tmp = str.at(key).as_string().c_str();
+//                 if (low(tmp) == low(variants[0]))
+//                     byte |= 0b00000000;
+//                 else if (low(tmp) == low(variants[1]))
+//                     byte |= 0b00000010;
+//                 else if (low(tmp) == low(variants[2]))
+//                     byte |= 0b00000100;
+//                 else if (low(tmp) == low(variants[3]))
+//                     byte |= 0b00000110;
+//                 else
+//                     incorrect_data += get_string_possible_data(variants, key);
+//             }
+//             {
+//                 std::vector<std::string> variants = {"High"s, "Low"s};
+//                 const std::string key = "activeBuzzerWorkLevel"s;
+//                 std::string tmp = str.at(key).as_string().c_str();
+//                 if (low(tmp) == low(variants[0]))
+//                     byte |= 0b00000000;
+//                 else if (low(tmp) == low(variants[1]))
+//                     byte |= 0b00000001;
+//                 else
+//                     incorrect_data += get_string_possible_data(variants, key);
+//             }
+//             bytes.push_back(byte);
+//         }
+//         {
+//             // FLAG 0x000D
+//             uint8_t byte = 0;
+//             {
+//                 // to Chinese
+//             }
+//             {
+//                 const std::string key = "virtualKeyboard"s;
+//                 bool tmp = str.at(key).as_bool();
+//                 if (tmp)
+//                     byte |= 0b01000000;
+//                 else
+//                     byte |= 0b00000000;
+//             }
+//             {
+//                 std::vector<std::string> variants = {"GBK"s, "Unicode"s, "Raw"s, "UTF8"s, "BIG5"s};
+//                 const std::string key = "dataOutType"s;
+//                 std::string tmp = str.at(key).as_string().c_str();
+//                 if (low(tmp) == low(variants[0]))
+//                     byte |= 0b00000000;
+//                 else if (low(tmp) == low(variants[1]))
+//                     byte |= 0b00010000;
+//                 else if (low(tmp) == low(variants[2]))
+//                     byte |= 0b00100000;
+//                 else if (low(tmp) == low(variants[3]))
+//                     byte |= 0b00110000;
+//                 else
+//                     incorrect_data += get_string_possible_data(variants, key);
+//             }
+//             {
+//                 std::vector<std::string> variants = {"UART-TTL"s, "keyboard"s, "virtualCom"s, "pos"s, "composite"s, "UART-TTL&keyboard"s};
+//                 const std::string key = "outMode"s;
+//                 std::string tmp = str.at(key).as_string().c_str();
+//                 if (low(tmp) == low(variants[0]))
+//                     byte |= 0b00000000;
+//                 else if (low(tmp) == low(variants[1]))
+//                     byte |= 0b00000001;
+//                 else if (low(tmp) == low(variants[2]))
+//                     byte |= 0b00000011;
+//                 else if (low(tmp) == low(variants[3]))
+//                     byte |= 0b00000100;
+//                 else if (low(tmp) == low(variants[4]))
+//                     byte |= 0b00000101;
+//                 else if (low(tmp) == low(variants[5]))
+//                     byte |= 0b00000110;
+//                 else
+//                     incorrect_data += get_string_possible_data(variants, key);
+//             }
+//             bytes.push_back(byte);
+//         }
+//         {
+//             // FLAG 0x000E
+//             uint8_t byte = 0;
+//             {
+//                 // Reserved
+//                 byte |= 0b00000000;
+//             }
+//             {
+//                 const std::string key = "startBuzzer"s;
+//                 bool tmp = str.at(key).as_bool();
+//                 if (tmp)
+//                     byte |= 0b00000000;
+//                 else
+//                     byte |= 0b00001000;
+//             }
+//             {
+//                 const std::string key = "decodeSucessBuzzer"s;
+//                 bool tmp = str.at(key).as_bool();
+//                 if (tmp)
+//                     byte |= 0b00000100;
+//                 else
+//                     byte |= 0b00000000;
+//             }
+//             {
+//                 const std::string key = "setCodeBuzzer"s;
+//                 bool tmp = str.at(key).as_bool();
+//                 if (tmp)
+//                     byte |= 0b00000000;
+//                 else
+//                     byte |= 0b00000010;
+//             }
+//             {
+//                 // to Chinese
+//             }
+//             bytes.push_back(byte);
+//         }
+//         {
+//             // FLAG 0x000F
+//             uint8_t byte = 0;
+//             {
+//                 const std::string key = "sensitivity1"s;
+//                 const uint8_t tmp = static_cast<uint8_t>(str.at(key).as_int64());
+//                 if (tmp < 0 || tmp > 255)
+//                 {
+//                     incorrect_data += get_uint8_t_possible_data(key, 0, 255);
+//                 }
+//                 else
+//                 {
+//                     byte |= tmp;
+//                 }
+//             }
+//             bytes.push_back(byte);
+//         }
+//         {
+//             // FLAG 0x0010
+//             uint8_t byte = 0;
+//             {
+//                 const std::string key = "sensitivity2"s;
+//                 const uint8_t tmp = static_cast<uint8_t>(str.at(key).as_int64());
+//                 if (tmp < 0 || tmp > 255)
+//                 {
+//                     incorrect_data += get_uint8_t_possible_data(key, 0, 255);
+//                 }
+//                 else
+//                 {
+//                     byte |= tmp;
+//                 }
+//             }
+//             bytes.push_back(byte);
+//         }
+//         // --------from 0x0009 to 0x0010--------------------- //
+//         set_of_bytes.push_back(std::move(bytes));
+//         bytes.clear();
+//         // --------from 0x0009 to 0x0010--------------------- //
+//         {
+//             // FLAG 0-x0013
+//             uint8_t byte = 0;
+//             {
+//                 const std::string key = "sameReadDelayState"s;
+//                 bool tmp = str.at(key).as_bool();
+//                 if (tmp)
+//                     byte |= 0b10000000;
+//                 else
+//                     byte |= 0b00000000;
+//             }
+//             {
+//                 const std::string key = "sameReadDelay"s;
+//                 const uint8_t tmp = static_cast<uint8_t>(str.at(key).as_int64() / 100);
+//                 if (tmp < 0 || tmp > 127)
+//                 {
+//                     incorrect_data += get_uint8_t_possible_data(key, 0, 127);
+//                 }
+//                 else
+//                 {
+//                     byte |= tmp;
+//                 }
+//             }
+//             bytes.push_back(byte);
+//         }
+//         {
+//             // FLAG 0x0014
+//             uint8_t byte = 0;
+//             {
+//                 // to Chinese
+//             }
+//             bytes.push_back(byte);
+//         }
+//         {
+//             // FLAG 0x0015
+//             uint8_t byte = 0;
+//             {
+//                 // Reserved
+//                 bytes |= 0b00000000;
+//             }
+//             {
+//                 const std::string key = "motorEnabled"s;
+//                 bool tmp = str.at(key).as_bool();
+//                 if (tmp)
+//                     byte |= 0b00000100;
+//                 else
+//                     byte |= 0b00000000;
+//             }
+//             {
+//                 // to Chinese
+//             }
+//             {
+//                 // Reserved
+//                 bytes |= 0b00000000;
+//             }
+//             bytes.push_back(byte);
+//         }
+//         {
+//             // FLAG 0x0016
+//             uint8_t byte = 0;
+//             {
+//                 // Reserved
+//                 byte |= 0b00000000;
+//             }
+//             {
+//                 const std::string key = "reflectProcess"s;
+//                 bool tmp = str.at(key).as_bool();
+//                 if (tmp)
+//                     byte |= 0b00010000;
+//                 else
+//                     byte |= 0b00000000;
+//             }
+//             {
+//                 // Reserved
+//                 byte |= 0b00000000;
+//             }
+//             {
+//                 const std::string key = "reinforcedRead"s;
+//                 bool tmp = str.at(key).as_bool();
+//                 if (tmp)
+//                     byte |= 0b00000001;
+//                 else
+//                     byte |= 0b00000000;
+//             }
+//             bytes.push_back(byte);
+//         }
+//         {
+//             // FLAG 0x0017
+//             uint8_t byte = 0;
+//             {
+//                 // Reserved
+//                 byte |= 0b00000000;
+//             }
+//             {
+//                 // to Chinese
+//             }
+//             {
+//                 const std::string key = "code128Lead"s;
+//                 bool tmp = str.at(key).as_bool();
+//                 if (tmp)
+//                     byte |= 0b00000100;
+//                 else
+//                     byte |= 0b00000000;
+//             }
+//             {
+//                 const std::string key = "urlCodeReadEnable"s;
+//                 bool tmp = str.at(key).as_bool();
+//                 if (tmp)
+//                     byte |= 0b00000000;
+//                 else
+//                     byte |= 0b00000010;
+//             }
+//             {
+//                 const std::string key = "GSExchangeEanble"s;
+//                 bool tmp = str.at(key).as_bool();
+//                 if (tmp)
+//                     byte |= 0b00000001;
+//                 else
+//                     byte |= 0b00000000;
+//             }
+//             bytes.push_back(byte);
+//         }
+//         {
+//             // FLAG 0x0018
+//             uint8_t byte = 0;
+//             {
+//                 std::vector<std::string> variants = {"1D"s};
+//                 const std::string key = "GSExchangeChar"s;
+//                 const std::string tmp = str.at(key).as_string().c_str();
+//                 if (low(tmp) == low(variants[0]))
+//                     byte |= 0b00011101;
+//                 else
+//                     incorrect_data += get_string_possible_data(variants, key);
+//             }
+//             bytes.push_back(byte);
+//         }
+//         // --------from 0x0013 to 0x0018--------------------- //
+//         set_of_bytes.push_back(std::move(bytes));
+//         bytes.clear();
+//         // --------from 0x0013 to 0x0018--------------------- //
+//         {
+//             // FLAG 0x002A, 0x002B
+//             // Ask Chinese about order of bytes
+//             uint8_t byte = 0;
+//             {
+//                 // Reserved
+//                 byte |= 0b00000000;
+//             }
+//             {
+//                 // to Chinese
+//             }
+//             {
+//                 // to Chinese
+//             }
+//             bytes.push_back(byte);
+//         }
+//         {
+//             // FLAG 0x002C
+//             uint8_t byte = 0;
+//             {
+//                 // Reserved
+//                 byte |= 0b00000000;
+//             }
+//             {
+//                 std::vector<std::string> variants = {"default"s, "allDisable"s, "allEnable"s};
+//                 const std::string key = "decodeConfig"s;
+//                 const std::string tmp = str.at(key).as_string().c_str();
+//                 if (low(tmp) == low(variants[0]))
+//                     byte |= 0b00000000;
+//                 else if (low(tmp) == low(variants[1]))
+//                     byte |= 0b00000010;
+//                 else if (low(tmp) == low(variants[2]))
+//                     byte |= 0b00000100;
+//                 else
+//                     incorrect_data += get_string_possible_data(variants, key);
+//             }
+//             {
+//                 // Reserved
+//                 byte |= 0b00000000;
+//             }
+//             bytes.push_back(byte);
+//         }
+//         {
+//             // 
+//         }
+//     }
+// }
+// catch (...)
+// {
+//     return;
+// }
+// return;
+// }
 
 std::string &UTIL::low(std::string &str)
 {

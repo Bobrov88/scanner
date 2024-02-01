@@ -5,10 +5,10 @@ int HID::save_to_internal_flash(hid_device *handle)
     uint8_t c[64] = {0};
     // SEQ::save_to_internal_flash_command(c);
     //  TODO several trues to do
-  //  check_operation_result(FUNC::SAVE_TO_INTERNAL_FLASH, hid_write(handle, c, 64), handle);
+    //  check_operation_result(FUNC::SAVE_TO_INTERNAL_FLASH, hid_write(handle, c, 64), handle);
     uint8_t r[64] = {0};
     // todo call check result write cause error
- //   check_operation_result(FUNC::READ_AS_RESPONSE, hid_read_timeout(handle, r, 64, 100), handle, r);
+    //   check_operation_result(FUNC::READ_AS_RESPONSE, hid_read_timeout(handle, r, 64, 100), handle, r);
     return 0;
 }
 
@@ -74,9 +74,9 @@ int HID::restore_to_factory_settings(hid_device *handle)
 
 bool HID::testing_connect_for_erasing_duplicates(hid_device *handle)
 {
-    uint8_t c[30] = {0};
+    uint8_t c[64] = {0};
     SEQ::testing_connect_for_erasing_duplicates_command(c);
-    hid_write(handle, c, 30);
+    hid_write(handle, c, 64);
     uint8_t r[64] = {0};
     hid_read_timeout(handle, r, 64, 100);
     if (r[5] == 0x02 &&
@@ -87,4 +87,17 @@ bool HID::testing_connect_for_erasing_duplicates(hid_device *handle)
         return true;
     }
     return false;
+}
+
+bool HID::testing_to_pass_HID_from_COM(const std::string &com, size_t size)
+{
+    uint8_t c[9] = {0};
+    SEQ::test_com_devices_is_scanner_command(c);
+    std::cout<<"\ncom="<<com;
+    boost::asio::io_service io;
+    boost::asio::serial_port s_port(io, com);
+    s_port.set_option(boost::asio::serial_port::baud_rate(9600));
+    boost::asio::write(s_port, boost::asio::buffer(c, 9));
+
+    return size < UTIL::get_available_linux_com_ports().size();
 }

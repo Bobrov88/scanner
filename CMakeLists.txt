@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CONAN_DISABLE_CHECK_COMPILER "1")
 set(SOURCES
     src/main.cpp
+    src/menu.cpp
     src/utility.cpp
     src/commands.cpp
     src/commands_sequencies.cpp
@@ -16,6 +17,7 @@ set(HEADERS
     src/enums/function_name.h
     src/commands_sequencies.h
     src/commands.h
+    src/menu.h
     src/utility.h
     src/CppConsoleTable/CppConsoleTable.hpp
     src/enums/conf-1.enums.h
@@ -58,16 +60,11 @@ find_package(Boost COMPONENTS REQUIRED)
 set(BUILD_SHARED_LIBS FALSE)
 
 if(Boost_FOUND)
-    message("Boost found... Linking...")
+    message("-- Boost found... Linking...")
     include_directories(${Boost_INCLUDE_DIRS})
 
-    # if(hidapi_FOUND)
-    message("hidapi found... Linking...")
-
-    # include_directories(${libusb_INCLUDE_DIRS})
     add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
-    # target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} Threads::Threads)
     target_link_libraries(${PROJECT_NAME} utf8cpp hidapi::hidapi)
     target_link_libraries(${PROJECT_NAME} Boost::thread Boost::system Boost::json Boost::log)
 endif()
