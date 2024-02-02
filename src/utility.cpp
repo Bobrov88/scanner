@@ -959,7 +959,7 @@ void UTIL::convert_json_to_bits(const std::string &json)
 //             bytes.push_back(byte);
 //         }
 //         {
-//             // 
+//             //
 //         }
 //     }
 // }
@@ -1030,4 +1030,15 @@ void UTIL::merge_json(std::string &json)
     }
     json.clear();
     json = merged_json;
+}
+
+void UTIL::trim(std::string &str)
+{
+    const char space = ' ';
+    const size_t first(str.find_first_not_of(space));
+    if (std::string::npos != first)
+    {
+        const size_t last(str.find_last_not_of(space));
+        str = str.substr(first, (last - first + 1));
+    }
 }

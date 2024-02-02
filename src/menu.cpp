@@ -49,8 +49,9 @@ void MENU::SaveSettings()
 {
     auto hids = MENU::PrintAvailableUSB();
     std::string scanner_numbers;
+    // todo REGEX
     const std::regex int_number{"[0-9]+"};
-    const std::regex vid_number{"(0x[0-9A-Fa-f]{4})+[ ]*"};
+    //  const std::regex vid_number{"([0]{1}[x]{1}[0-9A-Fa-f]{4}[ ]+)+"};
     std::vector<int> ints;
     std::vector<std::string> vids;
     std::vector<int> scanner_to_proceed;
@@ -61,27 +62,37 @@ void MENU::SaveSettings()
         std::cout << "or enter VIDs with a space to save settings from scanner with these VIDs. E.g.: 0x34eb 0x53da\n";
         std::cout << "----------->: ";
         std::getline(std::cin, scanner_numbers);
+        UTIL::trim(scanner_numbers);
         for (std::sregex_iterator rBegin{scanner_numbers.begin(), scanner_numbers.end(), int_number}, rEnd;
              rBegin != rEnd;
              ++rBegin)
-            ints.push_back(std::stoi(rBegin->str()));
-        for (std::sregex_iterator rBegin{scanner_numbers.begin(), scanner_numbers.end(), vid_number}, rEnd;
-             rBegin != rEnd;
-             ++rBegin)
-            vids.push_back(rBegin->str());
-
-        if (!vids.empty() || !ints.empty()) is_correct_cin = true;
+            ints.push_back(std::stoi(rBegin->str())-1);
+            // if number == 0
+        std::cout << "INTS " << ints.size();
+        // for (std::sregex_iterator rBegin{scanner_numbers.begin(), scanner_numbers.end(), vid_number}, rEnd;
+        //      rBegin != rEnd;
+        //      ++rBegin)
+        //     vids.push_back(rBegin->str());
+        // std::cout << "\nVIDS " << vids.size();
+        if ( //! vids.empty() ||
+            !ints.empty())
+            is_correct_cin = true;
     }
     scanner_to_proceed.assign(ints.begin(), ints.end());
-    for (const auto &vid : vids)
-    {
-        for (int i = 0; i < hids.size(); ++i)
-        {
-            if (UTIL::hex_view(hids[i].vid_) == vid)
-            {
-                scanner_to_proceed.push_back(i);
-            }
-        }
-    }
+    // for (const auto &vid : vids)
+    // {
+    //     for (int i = 0; i < hids.size(); ++i)
+    //     {
+    //         if (UTIL::hex_view(hids[i].vid_) == vid)
+    //         {
+    //             scanner_to_proceed.push_back(i);
+    //         }
+    //     }
+    // }
+    std::sort(scanner_to_proceed.begin(), scanner_to_proceed.end());
     std::unique(scanner_to_proceed.begin(), scanner_to_proceed.end());
+
+    std::cout << "\n\n";
+    std::for_each(scanner_to_proceed.begin(), scanner_to_proceed.end(), [&hids](int n)
+                  { std::cout << UTIL::hex_view(hids[n].vid_) << " "; });
 }

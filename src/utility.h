@@ -91,4 +91,5 @@ namespace UTIL
     std::string get_bool_possible_data(const std::string &key);
     std::string get_uint8_t_possible_data(const std::string &key, const uint8_t from, const uint8_t to);
     void merge_json(std::string &json);
+    void trim(std::string & str);
 };

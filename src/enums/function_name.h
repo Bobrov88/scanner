@@ -1,0 +1,7 @@
+#pragma once
+
+enum FUNC {
+    SAVE_TO_INTERNAL_FLASH = 1,
+    RESTORE_TO_FACTORY_SETTINGS,
+    READ_AS_RESPONSE
+};
