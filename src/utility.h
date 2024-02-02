@@ -8,7 +8,7 @@
 #include <hidapi.h>
 #include <iostream>
 #include <fstream>
-#include "CppConsoleTable/CppConsoleTable.hpp"
+#include "CppConsoleTable.hpp"
 #include "commands.h"
 #include "commands_sequencies.h"
 

@@ -2,7 +2,7 @@
 #include <string>
 #include <boost/asio.hpp>
 #include <regex>
-#include "CppConsoleTable/CppConsoleTable.hpp"
+#include "CppConsoleTable.hpp"
 #include "utility.h"
 
 namespace MENU {
