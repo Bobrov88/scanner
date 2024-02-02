@@ -15,6 +15,11 @@ int main(int argc, char *argv[])
         MENU::PrintAvailableUSB();
         return 0;
     }
+        if (argc == 2 && (strcmp(argv[1], "-s") == 0 || strcmp(argv[1], "--save") == 0))
+    {
+        MENU::SaveSettings();
+        return 0;
+    }
     // if (hid_init() != 0)
     // {
     //     std::cout << "HIDAPI library cannot be initialized! Reason: ";
