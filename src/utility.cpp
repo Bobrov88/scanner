@@ -1002,7 +1002,7 @@ void UTIL::convert_json_to_bits(const std::string &json)
         };
 
 
-        //---------------------FROM 0x0060 to 0x00AE -----------------//
+        //---------------------FROM 0x002E to 0x00AE -----------------//
         //-----EAN13
         // FLAG 0x002E
         {
@@ -1521,7 +1521,11 @@ void UTIL::convert_json_to_bits(const std::string &json)
             // }
             {
                 const std::string key = "GS1DatabarLimitedAIBracket"s;
-                set_bit_if_key_bool_true(byte,7,key);
+                bool tmp = str.at(key).as_bool();
+                if (tmp)
+                    byte |= 0b00000000;
+                else
+                    byte |= 0b10000000;
             }
             bytes.push_back(byte);             
         }        
@@ -1538,7 +1542,11 @@ void UTIL::convert_json_to_bits(const std::string &json)
             // }
             {
                 const std::string key = "GS1DatabarExpansionAIBracket"s;
-                set_bit_if_key_bool_true(byte,7,key);
+                bool tmp = str.at(key).as_bool();
+                if (tmp)
+                    byte |= 0b00000000;
+                else
+                    byte |= 0b10000000;
             }
             bytes.push_back(byte);             
         }
@@ -1791,10 +1799,10 @@ void UTIL::convert_json_to_bits(const std::string &json)
             bytes.push_back(byte);
         }
 
-        //---------------------FROM 0x0060 to 0x00AE -----------------//
+        //---------------------FROM 0x002E to 0x00AE -----------------//
 
 
-        //---------------------FROM 0x00B0 to 0x00B4 -----------------//
+        //---------------------FROM 0x00B0 to 0x00B4 -----------------// B3 - под вопросом.
         // FLAG 0x00B0
         {   
             uint8_t byte = 0;
