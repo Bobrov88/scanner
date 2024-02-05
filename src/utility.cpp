@@ -311,7 +311,7 @@ std::vector<uint8_t> UTIL::read_json_piece(hid_device *handle)
     return json_bytes;
 }
 
-std::string UTIL::send_command_for_json_response(hid_device *handle)
+std::string UTIL::get_full_json_response(hid_device *handle)
 {
     std::string result;
     uint8_t ch[64] = {0};
@@ -1022,6 +1022,7 @@ void UTIL::merge_json(std::string &json)
     {
         if (*it == '}' && *(it + 1) == '{')
         {
+            // todo comma to be lift
             merged_json.push_back(',');
             it += 2;
         }

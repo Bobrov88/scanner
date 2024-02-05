@@ -19,7 +19,7 @@ void MENU::PrintStartMenu()
 
 std::vector<UTIL::AVAILABLE_HID> MENU::PrintAvailableUSB()
 {
-    std::cout << "Note:         Scanners found as COM-devices will automatically be passed to HID-devices\n";
+    std::cout << "Note:         Scanners found as COM-devices will automatically be put into to HID-devices\n";
     std::cout << "Примечание:   Сканеры в режиме COM будут автоматически переведены в режим HID\n";
     // std::vector<UTIL::AVAILABLE_COM> COMS = UTIL::get_available_linux_com_ports();
 
@@ -66,9 +66,8 @@ void MENU::SaveSettings()
         for (std::sregex_iterator rBegin{scanner_numbers.begin(), scanner_numbers.end(), int_number}, rEnd;
              rBegin != rEnd;
              ++rBegin)
-            ints.push_back(std::stoi(rBegin->str())-1);
-            // if number == 0
-        std::cout << "INTS " << ints.size();
+            ints.push_back(std::stoi(rBegin->str()) - 1);
+        // if number == 0
         // for (std::sregex_iterator rBegin{scanner_numbers.begin(), scanner_numbers.end(), vid_number}, rEnd;
         //      rBegin != rEnd;
         //      ++rBegin)
@@ -93,6 +92,17 @@ void MENU::SaveSettings()
     std::unique(scanner_to_proceed.begin(), scanner_to_proceed.end());
 
     std::cout << "\n\n";
-    std::for_each(scanner_to_proceed.begin(), scanner_to_proceed.end(), [&hids](int n)
-                  { std::cout << UTIL::hex_view(hids[n].vid_) << " "; });
+    std::for_each(scanner_to_proceed.begin(), scanner_to_proceed.end(), [&hids](const auto n)
+                  {
+                    hid_device *handle = hid_open_path(hids[n].path_);
+                    std::string json = UTIL::get_full_json_response(handle);
+                    std::string out_file_name = UTIL::str(hids[n].serial_number_) + ".json"s;
+                    hid_close(handle);
+                    std::ofstream out;
+                    out.open(out_file_name);
+                    if (out)
+                    out << json;
+                    else std::cerr<<"Unable to create file: "<<out_file_name<<"\n";
+                    out.close(); 
+                    });
 }

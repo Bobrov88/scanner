@@ -82,7 +82,7 @@ namespace UTIL
     std::string read_json_settings(hid_device *handle);
 
     std::string get_firmware_device_name_model(hid_device *handle);
-    std::string send_command_for_json_response(hid_device *handle);
+    std::string get_full_json_response(hid_device *handle);
     void detect_all_com_linux_devices();
 
     void convert_json_to_bits(const std::string &json);
