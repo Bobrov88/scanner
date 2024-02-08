@@ -85,11 +85,11 @@ namespace UTIL
     std::string get_full_json_response(hid_device *handle);
     void detect_all_com_linux_devices();
 
-    void convert_json_to_bits(const std::string &json);
+    std::vector<std::vector<uint8_t>> convert_json_to_bits(const std::string &json);
     std::string& low(std::string &str);
     std::string get_string_possible_data(const std::vector<std::string>& variants, const std::string& key);
     std::string get_bool_possible_data(const std::string &key);
-    std::string get_uint8_t_possible_data(const std::string &key, const uint8_t from, const uint8_t to);
+    std::string get_uint8_t_possible_data(const std::string &key, const uint8_t from, const int to);
     void merge_json(std::string &json);
     void trim(std::string & str);
 };

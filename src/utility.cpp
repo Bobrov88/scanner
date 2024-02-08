@@ -361,13 +361,31 @@ int HID_WRITE(hid_device *handle, uint8_t *c, int size)
     return 0;
 }
 
-void UTIL::convert_json_to_bits(const std::string &json)
+std::vector<std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::string &json)
 {
     boost::json::value str = boost::json::parse(json);
     std::vector<uint8_t> bytes;
     std::vector<std::vector<uint8_t>> set_of_bytes;
     bytes.reserve(60);
     std::string incorrect_data;
+
+    auto set_bytes_from_symbols = [&str](const std::string &key, size_t length)
+    {
+        std::string tmp = str.at(key).as_string().c_str();
+        std::vector<uint8_t> byte;
+        if (tmp.size() > length)
+        {
+            throw std::string{key + " incorrect value, string length must be less than "s + std::to_string(length) + " symbols"s};
+        }
+        else
+        {
+            for (auto &c : tmp)
+            {
+                byte.push_back(static_cast<uint8_t>(std::move(c)));
+            }
+        }
+        return byte;
+    };
 
     auto set_byte_if_key_uint_byte = [&str](uint8_t &byte, const std::string &key)
     {
@@ -518,17 +536,10 @@ void UTIL::convert_json_to_bits(const std::string &json)
         }
         bytes.push_back(byte);
     }
-    {
-        // FLAG 0x0002
-        uint8_t byte = 0;
-        {
-            // Reserved 7-1
-        }
-        {
-            // to Chinese
-        }
-        bytes.push_back(byte);
-    }
+    // --------from 0x0000 to 0x0001--------------------- //
+    set_of_bytes.push_back(std::move(bytes));
+    bytes.clear();
+    // --------from 0x0000 to 0x0001--------------------- //
     {
         // FLAG 0x0003
         uint8_t byte = 0;
@@ -540,7 +551,6 @@ void UTIL::convert_json_to_bits(const std::string &json)
             set_bit_if_key_bool_true(byte, 1, key);
         }
         {
-            // todo Chinese
             const std::string key = "printSetCode"s;
             set_bit_if_key_bool_true(byte, 0, key);
         }
@@ -602,6 +612,10 @@ void UTIL::convert_json_to_bits(const std::string &json)
             {
                 byte |= (tmp << 2);
             }
+        }
+        {
+            const std::string key = "pictureTurn"s;
+            set_bit_if_key_bool_true(byte, 0, key);
         }
         bytes.push_back(byte);
     }
@@ -666,7 +680,7 @@ void UTIL::convert_json_to_bits(const std::string &json)
         // FLAG 0x000C
         uint8_t byte = 0;
         {
-            byte |= 0b00000000;
+            // Reserved 7-3;
         }
         {
             std::vector<std::string> variants = {"normal"s, "turn"s, "allwaysOn"s, "allwaysOff"s};
@@ -942,7 +956,6 @@ void UTIL::convert_json_to_bits(const std::string &json)
         {
             {
                 // Reserved 7-1
-                //  to Chinese
             }
             {
                 const std::string key = "keyContinuous"s;
@@ -1018,8 +1031,7 @@ void UTIL::convert_json_to_bits(const std::string &json)
     // --------from 0x001E to 0x001E--------------------- //
     {
         // FLAG 0x002A, 0x002B
-        // Ask Chinese about order of bytes
-        uint8_t byte = 0;
+        uint16_t byte = 0;
         {
             // Reserved 15-13
         }
@@ -1685,23 +1697,22 @@ void UTIL::convert_json_to_bits(const std::string &json)
         bytes.push_back(byte);
     }
     {
-    // FLAG 0x0052
+        // FLAG 0x0052
         uint8_t byte = 0;
         const std::string key = "GS1DatabarExpansionMessageMinLen"s;
         set_byte_if_key_uint_byte(byte, key);
         bytes.push_back(byte);
     }
     {
-    // FLAG 0x0053
+        // FLAG 0x0053
         uint8_t byte = 0;
         const std::string key = "GS1DatabarExpansionMessageMaxLen"s;
         set_byte_if_key_uint_byte(byte, key);
         bytes.push_back(byte);
     }
-
-    // DM
-    //  FLAG 0x0054
     {
+        //  FLAG 0x0054
+        // DM
         uint8_t byte = 0;
         {
             const std::string key = "DMEnable"s;
@@ -1712,63 +1723,104 @@ void UTIL::convert_json_to_bits(const std::string &json)
             set_bit_if_key_bool_true(byte, 1, key);
         }
         {
+            // Reserved 5-2
+        }
+        {
             const std::string key = "DMBracketOut"s;
             set_bit_if_key_bool_true(byte, 6, key);
         }
+        {
+            // Reserved 7
+        }
         bytes.push_back(byte);
     }
-    // FLAG 0x0055
     {
+        // FLAG 0x0055
         uint8_t byte = 0;
-        const std::string key = "PDF417Enable"s;
-        set_bit_if_key_bool_true(byte, 0, key);
+        {
+            // Reserved 7-1
+        }
+        {
+            const std::string key = "PDF417Enable"s;
+            set_bit_if_key_bool_true(byte, 0, key);
+        }
         bytes.push_back(byte);
     }
-    // FLAG 0x0056
     {
+        // FLAG 0x0056
         uint8_t byte = 0;
-        const std::string key = "HanXinEnable"s;
-        set_bit_if_key_bool_true(byte, 0, key);
+        {
+            // Reserved 7-1
+        }
+        {
+            const std::string key = "HanXinEnable"s;
+            set_bit_if_key_bool_true(byte, 0, key);
+        }
         bytes.push_back(byte);
     }
-    // FLAG 0x0057
     {
+        // FLAG 0x0057
         uint8_t byte = 0;
-        const std::string key = "MicroPDF417Enable"s;
-        set_bit_if_key_bool_true(byte, 0, key);
+        {
+            // Reserved 7-1
+        }
+        {
+            const std::string key = "MicroPDF417Enable"s;
+            set_bit_if_key_bool_true(byte, 0, key);
+        }
         bytes.push_back(byte);
     }
-    // FLAG 0x0058
     {
+        // FLAG 0x0058
         uint8_t byte = 0;
-        const std::string key = "MicroQREnable"s;
-        set_bit_if_key_bool_true(byte, 0, key);
+        {
+            // Reserved 7-1
+        }
+        {
+            const std::string key = "MicroQREnable"s;
+            set_bit_if_key_bool_true(byte, 0, key);
+        }
         bytes.push_back(byte);
     }
-    // FLAG 0x0059
     {
+        // FLAG 0x0059
         uint8_t byte = 0;
-        const std::string key = "MaxiCodeEnable"s;
-        set_bit_if_key_bool_true(byte, 0, key);
+        {
+            // Reserved 7-1
+        }
+        {
+            const std::string key = "MaxiCodeEnable"s;
+            set_bit_if_key_bool_true(byte, 0, key);
+        }
         bytes.push_back(byte);
     }
-    // FLAG 0x005A
     {
+        // FLAG 0x005A
         uint8_t byte = 0;
         {
             const std::string key = "AztecEnable"s;
             set_bit_if_key_bool_true(byte, 0, key);
         }
         {
+            // Reserved 5-1
+        }
+        {
             const std::string key = "AztecAIBracketOut"s;
-            set_bit_if_key_bool_true(byte, 6, key);
+            bool tmp = str.at(key).as_bool();
+            if (tmp)
+                byte |= 0b00000000;
+            else
+                byte |= 0b01000000;
+        }
+        {
+            // Reserved 7
         }
         bytes.push_back(byte);
     }
 
-    // standart25
-    //  FLAG 0x005B
     {
+        // standart25
+        //  FLAG 0x005B
         uint8_t byte = 0;
         {
             {
@@ -1783,27 +1835,29 @@ void UTIL::convert_json_to_bits(const std::string &json)
                 const std::string key = "standard25ParityMod10"s;
                 set_bit_if_key_bool_true(byte, 2, key);
             }
+            {
+                // Reserved 7-3
+            }
         }
         bytes.push_back(byte);
     }
-    // FLAG 0x005C
     {
+        // FLAG 0x005C
         uint8_t byte = 0;
         const std::string key = "standard25MessageMinLen"s;
         set_byte_if_key_uint_byte(byte, key);
         bytes.push_back(byte);
     }
-    // FLAG 0x005D
     {
+        // FLAG 0x005D
         uint8_t byte = 0;
         const std::string key = "standard25MessageMaxLen"s;
         set_byte_if_key_uint_byte(byte, key);
         bytes.push_back(byte);
     }
-
-    // GS1
-    // FLAG 0x005E
     {
+        // GS1
+        // FLAG 0x005E
         uint8_t byte = 0;
         {
             {
@@ -1811,38 +1865,95 @@ void UTIL::convert_json_to_bits(const std::string &json)
                 set_bit_if_key_bool_true(byte, 0, key);
             }
             {
+                // Reserved 5-1
+            }
+            {
                 const std::string key = "GS1CompositeAIBracketOut"s;
-                set_bit_if_key_bool_true(byte, 6, key);
+                bool tmp = str.at(key).as_bool();
+                if (tmp)
+                    byte |= 0b00000000;
+                else
+                    byte |= 0b01000000;
+            }
+            {
+                // Reserved 7
             }
         }
         bytes.push_back(byte);
     }
-    // add reserved everywhere
-    // GM
-    // FLAG 0x005F
     {
+        // GM
+        // FLAG 0x005F
         uint8_t byte = 0;
         {
             const std::string key = "GMEnable"s;
             set_bit_if_key_bool_true(byte, 0, key);
         }
         {
+            // Reserved 5-1
+        }
+        {
             const std::string key = "GMAIBracketOut"s;
-            set_bit_if_key_bool_true(byte, 6, key);
+            bool tmp = str.at(key).as_bool();
+            if (tmp)
+                byte |= 0b00000000;
+            else
+                byte |= 0b01000000;
+        }
+        {
+            // Reserved 7
         }
         bytes.push_back(byte);
     }
-
-    // FLAG 0x0060
     {
-        // todo
+        // FLAG 0x0060
         uint8_t byte = 0;
-        const std::string key = "TTL&VCOMOutProtocol"s;
-        set_bit_if_key_bool_true(byte, 0, key);
+        {
+            const std::string key = "TTL&VCOMOutProtocol"s;
+            set_bit_if_key_bool_true(byte, 7, key);
+        }
+        {
+            std::vector<std::string> variants = {
+                "CR",
+                "CRLF",
+                "TAB",
+                "None"};
+            const std::string key = "suffixType"s;
+            std::string tmp = str.at(key).as_string().c_str();
+            if (low(tmp) == low(variants[0]))
+                byte |= 0b00000000;
+            else if (low(tmp) == low(variants[1]))
+                byte |= 0b00100000;
+            else if (low(tmp) == low(variants[2]))
+                byte |= 0b01000000;
+            else if (low(tmp) == low(variants[3]))
+                byte |= 0b01100000;
+            else
+                incorrect_data += get_string_possible_data(variants, key);
+        }
+        {
+            const std::string key = "RFEnable"s;
+            set_bit_if_key_bool_true(byte, 4, key);
+        }
+        {
+            const std::string key = "prefixEnable"s;
+            set_bit_if_key_bool_true(byte, 3, key);
+        }
+        {
+            const std::string key = "codeIDEnable"s;
+            set_bit_if_key_bool_true(byte, 2, key);
+        }
+        {
+            const std::string key = "suffixEnable"s;
+            set_bit_if_key_bool_true(byte, 1, key);
+        }
+        {
+            // to Chinese
+        }
         bytes.push_back(byte);
     }
-    // FLAG 0x0061
     {
+        // FLAG 0x0061
         uint8_t byte = 0;
         {
             std::vector<std::string> variants = {
@@ -1932,14 +2043,53 @@ void UTIL::convert_json_to_bits(const std::string &json)
         }
         bytes.push_back(byte);
     }
-
-    //---------------------FROM 0x002E to 0x00AE -----------------//
-
-    //---------------------FROM 0x00B0 to 0x00B4 -----------------// B3 - под вопросом.
-    // FLAG 0x00B0
+    // --------from 0x002E to 0x0061--------------------- //
+    set_of_bytes.push_back(std::move(bytes));
+    bytes.clear();
+    // --------from 0x002E to 0x0061--------------------- //
     {
+        // FLAG 0x0063-0x0071
+        const std::string key = "prefix"s;
+        std::string tmp = str.at(key).as_string().c_str();
+        auto byte = set_bytes_from_symbols(key, 15);
+        std::copy(byte.begin(), byte.end(), std::back_inserter(bytes));
+    }
+    {
+        // FLAG 0x0072-0x0080
+        const std::string key = "prefix"s;
+        std::string tmp = str.at(key).as_string().c_str();
+        auto byte = set_bytes_from_symbols(key, 15);
+        std::copy(byte.begin(), byte.end(), std::back_inserter(bytes));
+    }
+    // --------from 0x0063 to 0x0080--------------------- //
+    set_of_bytes.push_back(std::move(bytes));
+    bytes.clear();
+    // --------from 0x0063 to 0x0080--------------------- //
+    {
+        // FLAG 0x0082-0x0090
+        const std::string key = "RFInfo"s;
+        std::string tmp = str.at(key).as_string().c_str();
+        auto byte = set_bytes_from_symbols(key, 15);
+        std::copy(byte.begin(), byte.end(), std::back_inserter(bytes));
+    }
+    {
+        // FLAG 0x0082-0x0090
+        const std::string key = "codeID"s;
+        std::string tmp = str.at(key).as_string().c_str();
+        auto byte = set_bytes_from_symbols(key, 31);
+        std::copy(byte.begin(), byte.end(), std::back_inserter(bytes));
+    }
+    // --------from 0x0082 to 0x00AF--------------------- //
+    set_of_bytes.push_back(std::move(bytes));
+    bytes.clear();
+    // --------from 0x0082 to 0x00AF--------------------- //
+    {
+        // FLAG 0x00B0
         uint8_t byte = 0;
         {
+            {
+                // Reserved 7-1
+            }
             std::vector<std::string> variants = {
                 "SendAll",
                 "SendFirstNBytes",
@@ -1960,8 +2110,8 @@ void UTIL::convert_json_to_bits(const std::string &json)
         }
         bytes.push_back(byte);
     }
-    // FLAG 0x00B1
     {
+        // FLAG 0x00B1
         uint8_t byte = 0;
         {
             const std::string key = "dataCutBeforeLen"s;
@@ -1969,8 +2119,8 @@ void UTIL::convert_json_to_bits(const std::string &json)
         }
         bytes.push_back(byte);
     }
-    // FLAG 0x00B2
     {
+        // FLAG 0x00B2
         uint8_t byte = 0;
         {
             const std::string key = "dataCutAfterLen"s;
@@ -1978,21 +2128,23 @@ void UTIL::convert_json_to_bits(const std::string &json)
         }
         bytes.push_back(byte);
     }
-
-    // FLAG 0x00B3
     {
+        // FLAG 0x00B3
         uint8_t byte = 0;
         {
+            // to Chinese
             // todo revise after new manual
             // const std::string key = "dataCutCenterLen"s;
             // set_byte_if_key_uint_byte(byte, key);
         }
         bytes.push_back(byte);
     }
-
-    // FLAG 0x00B4
     {
+        // FLAG 0x00B4
         uint8_t byte = 0;
+        {
+            // Reserved 7-4
+        }
         {
             const std::string key = "AIMPrefixEnable"s;
             set_bit_if_key_bool_true(byte, 0, key);
@@ -2024,32 +2176,32 @@ void UTIL::convert_json_to_bits(const std::string &json)
         }
         bytes.push_back(byte);
     }
+    //---------------------FROM 0x00B0 to 0x00B4 -----------------//
     set_of_bytes.push_back(std::move(bytes));
     bytes.clear();
     //---------------------FROM 0x00B0 to 0x00B4 -----------------//
-
-    //---------------------FROM 0x00BB to 0x00C6 -----------------//
-    // FLAG 0x00BB
     {
+        // FLAG 0x00BB
         uint8_t byte = 0;
         {
-            {
-                const std::string key = "plesseyEnable"s;
-                set_bit_if_key_bool_true(byte, 0, key);
-            }
-            {
-                const std::string key = "plesseyParityBitOut"s;
-                set_bit_if_key_bool_true(byte, 1, key);
-            }
-            {
-                const std::string key = "plesseyParityProcess"s;
-                set_bit_if_key_bool_true(byte, 2, key);
-            }
+            // Reserved 7-3
+        }
+        {
+            const std::string key = "plesseyEnable"s;
+            set_bit_if_key_bool_true(byte, 0, key);
+        }
+        {
+            const std::string key = "plesseyParityBitOut"s;
+            set_bit_if_key_bool_true(byte, 1, key);
+        }
+        {
+            const std::string key = "plesseyParityProcess"s;
+            set_bit_if_key_bool_true(byte, 2, key);
         }
         bytes.push_back(byte);
     }
-    // FLAG 0x00BC
     {
+        // FLAG 0x00BC
         uint8_t byte = 0;
         {
             const std::string key = "plesseyMessageMinLen"s;
@@ -2057,8 +2209,8 @@ void UTIL::convert_json_to_bits(const std::string &json)
         }
         bytes.push_back(byte);
     }
-    // FLAG 0x00BD
     {
+        // FLAG 0x00BD
         uint8_t byte = 0;
         {
             const std::string key = "plesseyMessageMaxLen"s;
@@ -2066,28 +2218,29 @@ void UTIL::convert_json_to_bits(const std::string &json)
         }
         bytes.push_back(byte);
     }
-    // ChinaPost25
-    //  FLAG 0x00BE
     {
+        // ChinaPost25
+        //  FLAG 0x00BE
         uint8_t byte = 0;
         {
-            {
-                const std::string key = "chinaPost25Enable"s;
-                set_bit_if_key_bool_true(byte, 0, key);
-            }
-            {
-                const std::string key = "chinaPost25ParityBitOut"s;
-                set_bit_if_key_bool_true(byte, 1, key);
-            }
-            {
-                const std::string key = "chinaPost25ParityProcess"s;
-                set_bit_if_key_bool_true(byte, 2, key);
-            }
+            // Reserved 7-3
+        }
+        {
+            const std::string key = "chinaPost25Enable"s;
+            set_bit_if_key_bool_true(byte, 0, key);
+        }
+        {
+            const std::string key = "chinaPost25ParityBitOut"s;
+            set_bit_if_key_bool_true(byte, 1, key);
+        }
+        {
+            const std::string key = "chinaPost25ParityProcess"s;
+            set_bit_if_key_bool_true(byte, 2, key);
         }
         bytes.push_back(byte);
     }
-    // FLAG 0x00BF
     {
+        // FLAG 0x00BF
         uint8_t byte = 0;
         {
             const std::string key = "chinaPost25MessageMinLen"s;
@@ -2108,6 +2261,9 @@ void UTIL::convert_json_to_bits(const std::string &json)
     {
         // FLAG 0x00C1
         uint8_t byte = 0;
+        {
+            // Reserved 7-1
+        }
         {
             const std::string key = "code16KEnable"s;
             set_bit_if_key_bool_true(byte, 0, key);
@@ -2137,6 +2293,9 @@ void UTIL::convert_json_to_bits(const std::string &json)
         // FLAG 0x00C4
         uint8_t byte = 0;
         {
+            // Reserved 7-1
+        }
+        {
             const std::string key = "code49Enable"s;
             set_bit_if_key_bool_true(byte, 0, key);
         }
@@ -2160,8 +2319,50 @@ void UTIL::convert_json_to_bits(const std::string &json)
         }
         bytes.push_back(byte);
     }
+    // --------from 0x00BB to 0x00C6--------------------- //
+    set_of_bytes.push_back(std::move(bytes));
+    bytes.clear();
+    // --------from 0x00BB to 0x00C6--------------------- //
     // todo add compare if max <= min
-    return;
+    {
+        // FLAG 0x0100
+        uint8_t byte = 0;
+        {
+            // Reserved 7-1
+        }
+        {
+            const std::string key = "strExchangeEnable"s;
+            bool tmp = str.at(key).as_bool();
+            if (tmp)
+                byte |= 0b00000000;
+            else
+                byte |= 0b00000001;
+        }
+        bytes.push_back(byte);
+    }
+    {
+        // FLAG 0x0102-0x0121
+        const std::string key = "strExchangeBefore"s;
+        std::string tmp = str.at(key).as_string().c_str();
+        auto byte = set_bytes_from_symbols(key, 15);
+        std::copy(byte.begin(), byte.end(), std::back_inserter(bytes));
+    }
+    // --------from 0x0100 to 0x0121--------------------- //
+    set_of_bytes.push_back(std::move(bytes));
+    bytes.clear();
+    // --------from 0x0100 to 0x0121--------------------- //
+    {
+        // FLAG 0x0123-0x142
+        const std::string key = "strExchangeAfter"s;
+        std::string tmp = str.at(key).as_string().c_str();
+        auto byte = set_bytes_from_symbols(key, 15);
+        std::copy(byte.begin(), byte.end(), std::back_inserter(bytes));
+    }
+    // --------from 0x0123 to 0x0142--------------------- //
+    set_of_bytes.push_back(std::move(bytes));
+    bytes.clear();
+    // --------from 0x0123 to 0x0142--------------------- //
+    return set_of_bytes;
 }
 
 std::string &UTIL::low(std::string &str)
@@ -2196,7 +2397,7 @@ std::string UTIL::get_bool_possible_data(const std::string &key)
     return result;
 }
 
-std::string UTIL::get_uint8_t_possible_data(const std::string &key, const uint8_t from, const uint8_t to)
+std::string UTIL::get_uint8_t_possible_data(const std::string &key, const uint8_t from, const int to)
 {
     std::string result;
     result += "\nPossible values for ";
