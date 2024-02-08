@@ -2,6 +2,8 @@
 #include "utility.h"
 #include "commands.h"
 #include "menu.h"
+#include "spdlog/spdlog.h"
+#include "fwdlinterface.h"
 
 int main(int argc, char *argv[])
 {
@@ -20,6 +22,9 @@ int main(int argc, char *argv[])
         MENU::SaveSettings();
         return 0;
     }
+    spdlog::warn("Message");
+    stop_download();
+    
     // if (hid_init() != 0)
     // {
     //     std::cout << "HIDAPI library cannot be initialized! Reason: ";

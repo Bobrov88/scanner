@@ -5,6 +5,7 @@ message("Building project: " ${PROJECT_NAME})
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CONAN_DISABLE_CHECK_COMPILER "1")
+
 set(SOURCES
     src/main.cpp
     src/menu.cpp
@@ -39,34 +40,35 @@ else()
     message(WARNING "The file conanbuildinfo.cmake doesn't exist, you have to run conan install first")
 endif()
 
-# set(modules "${CMAKE_SOURCE_DIR}/cmake/Modules")
-# file(MAKE_DIRECTORY ${modules})
-# set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${modules}")
-# file(COPY ${CMAKE_BINARY_DIR}/Findhidapi.cmake DESTINATION ${modules})
-# file(COPY ${CMAKE_BINARY_DIR}/Findlibudev.cmake DESTINATION ${modules})
-# file(COPY ${CMAKE_BINARY_DIR}/Findlibusb.cmake DESTINATION ${modules})
+set(modules "${CMAKE_SOURCE_DIR}/cmake/Modules")
+file(MAKE_DIRECTORY ${modules})
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${modules}")
+file(COPY ${CMAKE_BINARY_DIR}/Findspdlog.cmake DESTINATION ${modules})
+file(COPY ${CMAKE_BINARY_DIR}/Findfmt.cmake DESTINATION ${modules})
 
-# set(HIDAPI_STATIC_LIB ON CACHE BOOL "Build hidapi library as static" FORCE)
-
-# find_package(hidapi REQUIRED)
-find_package(Boost REQUIRED COMPONENTS thread system json log)
+include(FindPkgConfig)
 find_package(Threads REQUIRED)
+find_package(spdlog REQUIRED)
 
 list(APPEND CMAKE_FIND_ROOT_PATH ${CONAN_BOOST_ROOT})
 set(Boost_USE_STATIC_LIBS ON)
 add_compile_definitions(_WIN32_WINNT=0x0601)
 
-find_package(Boost COMPONENTS REQUIRED)
+find_package(Boost COMPONENTS json log system REQUIRED)
 set(BUILD_SHARED_LIBS FALSE)
 
+find_library(LIB_TO_INCLUDE appdownload.a src/lib)
+find_path(LIB_INCLUDES fwdlinterface.h src/include)
+include_directories(${LIB_INCLUDES})
+
 if(Boost_FOUND)
-    message("-- Boost found... Linking...")
-    include_directories(${Boost_INCLUDE_DIRS})
+message("-- Boost found... Linking...")
+include_directories(${Boost_INCLUDE_DIRS})
+add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
-    add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
-
-    target_link_libraries(${PROJECT_NAME} utf8cpp hidapi::hidapi)
-    target_link_libraries(${PROJECT_NAME} Boost::thread Boost::system Boost::json Boost::log)
+target_link_libraries(${PROJECT_NAME} utf8cpp hidapi::hidapi spdlog::spdlog)
+target_link_libraries(${PROJECT_NAME} Boost::thread Boost::system Boost::json Boost::log)
+target_link_libraries(${PROJECT_NAME} ${LIB_TO_INCLUDE})
 endif()
 
 # endif()
