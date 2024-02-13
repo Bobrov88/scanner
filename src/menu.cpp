@@ -21,11 +21,11 @@ void MENU::PrintStartMenu()
 
 void MENU::PrintAttentionComToHID()
 {
-    std::cout << "Note:         Scanners found as COM-devices will automatically be put into to HID-devices\n";
-    std::cout << "Примечание:   Сканеры в режиме COM будут автоматически переведены в режим HID\n";
+    std::cout << "Note:         Scanners found as COM-devices (if exist) will automatically be put into to HID-devices\n";
+    std::cout << "Примечание:   Сканеры в режиме COM (если таковые имеются) будут автоматически переведены в режим HID\n";
 }
 
-std::string MENU::ChooseScannerToProceed()
+std::string MENU::ChooseScannerToProceed() // take this function out of MENU namespace
 {
     std::cout << "Enter scanner numbers with a space for selective saving settings.         E.g.: 1 4 5 \n";
     std::cout << "or enter VIDs with a space to save settings from scanner with these VIDs. E.g.: 0x34eb 0x53da\n";
@@ -35,11 +35,19 @@ std::string MENU::ChooseScannerToProceed()
     return scanner_numbers;
 }
 
-void MENU::PrintAvailableUSB()
+void MENU::PrintAvailableDevices()
 {
-    auto comm = UTIL::detect_all_com_linux_devices();
-    auto hids = UTIL::detect_all_hid_linux_devices();
-
+    std::cout << "HID-devices\n";
+    std::cout << "HID-устройства\n";
+    std::vector<UTIL::AVAILABLE_HID> hids = UTIL::get_available_hid_devices();
+    UTIL::print_all_hid_linux_devices(hids);
+    // pass to HID
+    // revise if error
+    // saving with printing lists
+    std::cout << "COM-devices\n";
+    std::cout << "COM-устройства\n";
+    std::vector<UTIL::AVAILABLE_COM> coms = UTIL::get_available_linux_com_ports();
+    UTIL::print_all_com_linux_devices(coms);
     // uint8_t c[9] = {0};
     // SEQ::test_com_devices_is_scanner_command(c);
     //  std::string message_com_to_hid;
@@ -62,7 +70,10 @@ void MENU::PrintAvailableUSB()
 
 void MENU::SaveSettings()
 {
-    auto hids = UTIL::detect_all_hid_linux_devices();
+    MENU::PrintAttentionComToHID();
+
+    std::vector<UTIL::AVAILABLE_HID> hids = UTIL::get_available_hid_devices();
+    UTIL::print_all_hid_linux_devices(hids);
     std::string scanner_numbers = ChooseScannerToProceed();
     // todo REGEX
     const std::regex int_number{"[0-9]+"};
@@ -116,4 +127,16 @@ void MENU::SaveSettings()
                     out << json;
                     else std::cerr<<"Unable to create file: "<<out_file_name<<"\n";
                     out.close(); });
+}
+
+void MENU::WriteFromJson()
+{
+    auto jsons = UTIL::get_json_file_list();
+    UTIL::print_all_json_files(jsons);
+    auto hids = UTIL::get_available_hid_devices();
+    // todo choose scanners, temporarily we chose the single one
+    // todo choose a file, temporarily we chose single one
+    auto settings = UTIL::convert_json_to_bits("F23450001.json");
+    hid_device *handle = hid_open_path(hids[0].path_);
+    int write_result = write_settings_from_json(settings, handle);
 }

@@ -11,6 +11,7 @@ namespace MENU {
     void PrintStartMenu();
     void PrintAttentionComToHID();
     std::string ChooseScannerToProceed();
-    void PrintAvailableUSB();
+    void PrintAvailableDevices();
     void SaveSettings();
+    void WriteFromJson();
 }

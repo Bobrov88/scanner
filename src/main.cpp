@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
     }
     if (argc == 2 && (strcmp(argv[1], "-i") == 0 || strcmp(argv[1], "--info") == 0))
     {
-        MENU::PrintAvailableUSB();
+        MENU::PrintAvailableDevices();
         return 0;
     }
     if (argc == 2 && (strcmp(argv[1], "-s") == 0 || strcmp(argv[1], "--save") == 0))
@@ -38,10 +38,9 @@ int main(int argc, char *argv[])
         MENU::SaveSettings();
         return 0;
     }
-    if (argc == 2 && (strcmp(argv[1], "-u") == 0 || strcmp(argv[1], "--update") == 0))
+    if (argc == 2 && (strcmp(argv[1], "-w") == 0 || strcmp(argv[1], "--write") == 0))
     {
-        // MENU::UpdateFirmware();
-        std::cout << "Temporarily unavailable\n";
+        MENU::WriteFromJson();
         return 0;
     }
     // uint8_t c[9] = {0};

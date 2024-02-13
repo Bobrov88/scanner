@@ -79,15 +79,10 @@ std::vector<UTIL::AVAILABLE_COM> UTIL::get_available_linux_com_ports()
 {
     std::vector<UTIL::AVAILABLE_COM> com_ports;
 
-    namespace fs = std::filesystem;
     fs::path p("/dev/serial/by-id");
     try
     {
-        if (!exists(p))
-        {
-            throw std::runtime_error(p.generic_string() + " does not exist");
-        }
-        else
+        if (exists(p))
         {
             for (const auto &dir : fs::directory_iterator(p))
             {
@@ -98,6 +93,10 @@ std::vector<UTIL::AVAILABLE_COM> UTIL::get_available_linux_com_ports()
                     com_ports.push_back({canonical_path.generic_string()});
                 }
             }
+            std::sort(com_ports.begin(), com_ports.end(), [](const auto &first, const auto &second)
+                      { return first.data_ < second.data_; });
+
+            remove_com_devices_if_not_scanner(com_ports);
         }
     }
     catch (const fs::filesystem_error &ex)
@@ -105,9 +104,38 @@ std::vector<UTIL::AVAILABLE_COM> UTIL::get_available_linux_com_ports()
         std::cout << ex.what() << '\n';
         throw ex;
     }
-    std::sort(com_ports.begin(), com_ports.end(), [](const auto &first, const auto &second)
-              { return first.data_ < second.data_; });
+
     return com_ports;
+}
+
+void UTIL::remove_com_devices_if_not_scanner(std::vector<AVAILABLE_COM> &coms)
+{
+    std::vector<UTIL::AVAILABLE_COM> really_scanner;
+    for (auto &com : coms)
+    {
+        boost::asio::io_service io;
+        boost::asio::serial_port s_port(io, com.data_);
+        uint8_t c[9] = {0};
+        SEQ::testing_com_connect_for_erasing_duplicates_command(c);
+        boost::asio::write(s_port, boost::asio::buffer(c, 9));
+
+        uint8_t r[7] = {0};
+        boost::asio::read(s_port, boost::asio::buffer(r, 7));
+        s_port.close();
+
+        if (r[0] == 0x02 &&
+            r[1] == 0x00 &&
+            r[2] == 0x00 &&
+            r[3] == 0x01)
+        {
+            really_scanner.push_back(std::move(com));
+        }
+    }
+    if (!coms.empty())
+    {
+        coms.clear();
+        coms.assign(really_scanner.begin(), really_scanner.end());
+    }
 }
 
 std::vector<UTIL::AVAILABLE_HID> UTIL::get_available_hid_devices()
@@ -162,9 +190,8 @@ void UTIL::remove_dublicates_of_hid_devices(std::vector<AVAILABLE_HID> &hids)
     hids.assign(unique_hids.begin(), unique_hids.end());
 }
 
-std::vector<UTIL::AVAILABLE_HID> UTIL::detect_all_hid_linux_devices()
+void UTIL::print_all_hid_linux_devices(const std::vector<UTIL::AVAILABLE_HID> &hids)
 {
-    std::vector<UTIL::AVAILABLE_HID> hids = get_available_hid_devices();
     ConsoleTable table = getTableInitialSetup();
 
     if (!hids.empty())
@@ -176,6 +203,7 @@ std::vector<UTIL::AVAILABLE_HID> UTIL::detect_all_hid_linux_devices()
         table[0][4] = "Serial Number";
         table[0][5] = "Model";
         table[0][6] = "Firmware Version";
+
         int row = 1;
         for (const auto &hid : hids)
         {
@@ -196,43 +224,41 @@ std::vector<UTIL::AVAILABLE_HID> UTIL::detect_all_hid_linux_devices()
     }
 
     std::cout << table;
-    return hids;
 }
 
-std::vector<UTIL::AVAILABLE_COM> UTIL::detect_all_com_linux_devices()
+void UTIL::print_all_com_linux_devices(const std::vector<UTIL::AVAILABLE_COM> &coms)
 {
-    std::vector<UTIL::AVAILABLE_COM> coms = get_available_linux_com_ports();
-    std::string data = get_json_responce_for_com_detection(coms[0].data_);
-
     ConsoleTable table = getTableInitialSetup();
-    table[0][0] = "#";
-    table[0][1] = "COM";
-    table[0][2] = "Product";
-    table[0][3] = "Model";
-    table[0][4] = "Serial number";
-    table[0][5] = "Firmware Version";
 
-    if (coms.empty())
+    if (!coms.empty())
     {
-        table[1][0] = "HID Devices not found\n";
-        return {};
+        table[0][0] = "#";
+        table[0][1] = "COM";
+        table[0][2] = "Product";
+        table[0][3] = "Model";
+        table[0][4] = "Serial number";
+        table[0][5] = "Firmware Version";
+
+        int row = 1;
+        for (const auto &com : coms)
+        {
+            std::string data = get_json_responce_for_com_detection(com.data_);
+            table[row][0] = row;
+            table[row][1] = com.data_;
+            boost::json::value obj = boost::json::parse(data);
+            table[row][2] = obj.at("FID").as_string().c_str();
+            table[row][3] = obj.at("deviceName").as_string().c_str();
+            table[row][4] = obj.at("deviceID").as_string().c_str();
+            table[row][5] = obj.at("FwVer").as_string().c_str();
+            ++row;
+        }
     }
-
-    int row = 1;
-    for (const auto &com : coms)
+    else
     {
-        table[row][0] = row;
-        table[row][1] = com.data_;
-        boost::json::value obj = boost::json::parse(data);
-        table[row][2] = obj.at("FID").as_string().c_str();
-        table[row][3] = obj.at("deviceName").as_string().c_str();
-        table[row][4] = obj.at("deviceID").as_string().c_str();
-        table[row][5] = obj.at("FwVer").as_string().c_str();
-        ++row;
+        table[0][0] = "Scanners not found";
     }
 
     std::cout << table;
-    return coms;
 }
 
 std::string UTIL::str(const std::wstring &src)
@@ -381,17 +407,24 @@ std::string UTIL::read_json_settings(hid_device *handle)
 
 int HID_WRITE(hid_device *handle, uint8_t *c, int size)
 {
-    int write_result = hid_write(handle, c, size);
+    hid_write(handle, c, size);
     // write to log
     // bytes
     // result with error
     uint8_t r[64] = {0};
-    int read_result = hid_read_timeout(handle, r, 64, 100);
+    hid_read_timeout(handle, r, 64, 100);
     // write to log
     // bytes
     // result with error
     // TODO
-    return 0;
+    if (r[5] == 0x02 &&
+        r[6] == 0x00 &&
+        r[7] == 0x00 &&
+        r[8] == 0x01)
+    {
+        return 0;
+    }
+    return -1; // todo error
 }
 
 std::vector<std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::string &json)
@@ -2451,7 +2484,8 @@ void UTIL::merge_json(std::string &json)
         if (*it == '}' && *(it + 1) == '{')
         {
             // todo comma to be lift
-            merged_json.push_back(',');
+            merged_json.back() = ',';
+            merged_json.push_back('\n');
             it += 2;
         }
         else
@@ -2470,4 +2504,64 @@ void UTIL::trim(std::string &str)
         const size_t last(str.find_last_not_of(space));
         str = str.substr(first, (last - first + 1));
     }
+}
+
+std::vector<std::pair<std::string, std::string>> UTIL::get_json_file_list()
+{
+    std::vector<std::pair<std::string, std::string>> json_files;
+    for (const auto &entry : fs::directory_iterator(fs::current_path()))
+    {
+        if (entry.is_regular_file() && entry.path().extension() == ".json")
+        {
+            std::string file = entry.path().filename().string();
+            std::string parse_result = parse_json_file(file);
+            json_files.push_back({std::move(file), std::move(parse_result)});
+        }
+    }
+    return json_files;
+}
+
+std::string UTIL::parse_json_file(const std::string &source)
+{
+    boost::json::error_code ec;
+    auto value = boost::json::parse(source, ec);
+    // if (ec)
+    // {
+    //     return std::string{"Parsing failed. Error: "s + std::to_string(ec.code())};
+    // }
+    // else
+    // {
+    return std::string{"OK"};
+    //} //todo think about parsing
+}
+
+void UTIL::print_all_json_files(std::vector<std::pair<std::string, std::string>> &json_list)
+{
+    ConsoleTable table = getTableInitialSetup();
+
+    if (!json_list.empty())
+    {
+        table[0][0] = "#";
+        table[0][1] = "Json file name";
+        table[0][2] = "Status";
+
+        int row = 1;
+        for (const auto &[name, status] : json_list)
+        {
+            table[row][0] = row;
+            table[row][1] = name;
+            table[row][2] = status;
+            ++row;
+        }
+    }
+    else
+    {
+        table[0][0] = "Json files not found";
+    }
+
+    std::cout << table;
+}
+
+int UTIL::write_settings_from_json(const std::vector<std::vector<uint8_t>> &settings, hid_device *handle) {
+
 }

@@ -85,6 +85,20 @@ void SEQ::testing_connect_for_erasing_duplicates_command(uint8_t *c)
     c[11] = crc & 0x00ff;
 }
 
+void SEQ::testing_com_connect_for_erasing_duplicates_command(uint8_t *c)
+{
+    c[0] = 0x7e;
+    c[1] = 0x00;
+    c[2] = 0x07;
+    c[3] = 0x01;
+    c[4] = 0x00;
+    c[5] = 0xE1;
+    c[6] = 0x01;
+    uint16_t crc = crc_16(&c[2], 5);
+    c[7] = crc >> 8;
+    c[8] = crc & 0x00ff;
+}
+
 void SEQ::test_com_devices_is_scanner_command(uint8_t *c)
 {
     c[0] = 0x7e;
