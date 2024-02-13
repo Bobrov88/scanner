@@ -15,13 +15,30 @@ void MENU::PrintStartMenu()
     std::cout << "\t                     \t\tвосстановить заводские настройки сканера\n";
     std::cout << "\t -u --restore-user   \t\trestore scanner to user default\n";
     std::cout << "\t                     \t\tвосстановить пользовательские настройки сканера\n";
+    std::cout << "\t -d --download       \t\tupdate scanner firmware\n";
+    std::cout << "\t                     \t\tобновить прошивку сканера\n";
 }
 
-std::vector<UTIL::AVAILABLE_HID> MENU::PrintAvailableUSB()
+void MENU::PrintAttentionComToHID()
 {
     std::cout << "Note:         Scanners found as COM-devices will automatically be put into to HID-devices\n";
     std::cout << "Примечание:   Сканеры в режиме COM будут автоматически переведены в режим HID\n";
-    // std::vector<UTIL::AVAILABLE_COM> COMS = UTIL::get_available_linux_com_ports();
+}
+
+std::string MENU::ChooseScannerToProceed()
+{
+    std::cout << "Enter scanner numbers with a space for selective saving settings.         E.g.: 1 4 5 \n";
+    std::cout << "or enter VIDs with a space to save settings from scanner with these VIDs. E.g.: 0x34eb 0x53da\n";
+    std::cout << "----------->: ";
+    std::string scanner_numbers;
+    std::getline(std::cin, scanner_numbers);
+    return scanner_numbers;
+}
+
+void MENU::PrintAvailableUSB()
+{
+    auto comm = UTIL::detect_all_com_linux_devices();
+    auto hids = UTIL::detect_all_hid_linux_devices();
 
     // uint8_t c[9] = {0};
     // SEQ::test_com_devices_is_scanner_command(c);
@@ -41,14 +58,12 @@ std::vector<UTIL::AVAILABLE_HID> MENU::PrintAvailableUSB()
     // {
     //     std::cout << message_com_to_hid;
     // }
-    auto hids = UTIL::detect_all_hid_linux_devices();
-    return hids;
 }
 
 void MENU::SaveSettings()
 {
-    auto hids = MENU::PrintAvailableUSB();
-    std::string scanner_numbers;
+    auto hids = UTIL::detect_all_hid_linux_devices();
+    std::string scanner_numbers = ChooseScannerToProceed();
     // todo REGEX
     const std::regex int_number{"[0-9]+"};
     //  const std::regex vid_number{"([0]{1}[x]{1}[0-9A-Fa-f]{4}[ ]+)+"};
@@ -58,10 +73,7 @@ void MENU::SaveSettings()
     bool is_correct_cin = false;
     while (!is_correct_cin)
     {
-        std::cout << "Enter scanner numbers with a space for selective saving settings.         E.g.: 1 4 5 \n";
-        std::cout << "or enter VIDs with a space to save settings from scanner with these VIDs. E.g.: 0x34eb 0x53da\n";
-        std::cout << "----------->: ";
-        std::getline(std::cin, scanner_numbers);
+        // std::string scanners_string = Choose
         UTIL::trim(scanner_numbers);
         for (std::sregex_iterator rBegin{scanner_numbers.begin(), scanner_numbers.end(), int_number}, rEnd;
              rBegin != rEnd;
@@ -103,6 +115,5 @@ void MENU::SaveSettings()
                     if (out)
                     out << json;
                     else std::cerr<<"Unable to create file: "<<out_file_name<<"\n";
-                    out.close(); 
-                    });
+                    out.close(); });
 }

@@ -12,4 +12,5 @@ namespace SEQ
     void testing_connect_for_erasing_duplicates_command(uint8_t *c);
     void get_config_command(uint8_t *c, const uint8_t suffix);
     void test_com_devices_is_scanner_command(uint8_t *c);
+    void get_config02_command(uint8_t *c);
 }

@@ -21,13 +21,6 @@ set(HEADERS
     src/menu.h
     src/utility.h
     src/CppConsoleTable.hpp
-    src/enums/conf-1.enums.h
-    src/enums/conf-2.enums.h
-    src/enums/conf-3.enums.h
-    src/enums/function_name.h
-    src/config1_data.h
-    src/config2_data.h
-    src/config3_data.h
 )
 
 add_subdirectory(src/utfcpp)
@@ -46,10 +39,16 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${modules}")
 file(COPY ${CMAKE_BINARY_DIR}/Findspdlog.cmake DESTINATION ${modules})
 file(COPY ${CMAKE_BINARY_DIR}/Findfmt.cmake DESTINATION ${modules})
 
+# file(COPY ${CMAKE_BINARY_DIR}/Findhidapi.cmake DESTINATION ${modules})
+# file(COPY ${CMAKE_BINARY_DIR}/Findlibusb.cmake DESTINATION ${modules})
+# file(COPY ${CMAKE_BINARY_DIR}/Findlibudev.cmake DESTINATION ${modules})
 include(FindPkgConfig)
 find_package(Threads REQUIRED)
 find_package(spdlog REQUIRED)
 
+# find_package(hidapi REQUIRED)
+# find_package(libusb REQUIRED)
+# find_package(libudev REQUIRED)
 list(APPEND CMAKE_FIND_ROOT_PATH ${CONAN_BOOST_ROOT})
 set(Boost_USE_STATIC_LIBS ON)
 add_compile_definitions(_WIN32_WINNT=0x0601)
@@ -57,18 +56,22 @@ add_compile_definitions(_WIN32_WINNT=0x0601)
 find_package(Boost COMPONENTS json log system REQUIRED)
 set(BUILD_SHARED_LIBS FALSE)
 
-find_library(LIB_TO_INCLUDE appdownload.a src/lib)
-find_path(LIB_INCLUDES fwdlinterface.h src/include)
-include_directories(${LIB_INCLUDES})
+# -------- Firmware downloal library ---------- #
+find_library(FWLIB_TO_INCLUDE appdownload.a src/lib)
+find_path(FWLIB_INCLUDES fwdlinterface.h src/include)
+include_directories(${FWLIB_INCLUDES})
 
+# -------- Firmware downloal library ---------- #
+
+# include_directories(${hidapi_INCLUDES})
 if(Boost_FOUND)
-message("-- Boost found... Linking...")
-include_directories(${Boost_INCLUDE_DIRS})
-add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+    message("-- Boost found... Linking...")
+    include_directories(${Boost_INCLUDE_DIRS})
 
-target_link_libraries(${PROJECT_NAME} utf8cpp hidapi::hidapi spdlog::spdlog)
-target_link_libraries(${PROJECT_NAME} Boost::thread Boost::system Boost::json Boost::log)
-target_link_libraries(${PROJECT_NAME} ${LIB_TO_INCLUDE})
+    # include_directories(${hidapi_INCLUDE_DIRS})
+    add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+
+    target_link_libraries(${PROJECT_NAME} utf8cpp hidapi::hidapi spdlog::spdlog)
+    target_link_libraries(${PROJECT_NAME} Boost::thread Boost::system Boost::json Boost::log)
+    target_link_libraries(${PROJECT_NAME} ${FWLIB_TO_INCLUDE})
 endif()
-
-# endif()

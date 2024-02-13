@@ -117,3 +117,19 @@ void SEQ::get_config_command(uint8_t *c, const uint8_t suffix)
     c[13] = 0x30 + suffix;
     c[14] = 0x2E;
 }
+
+void SEQ::get_config02_command(uint8_t *c)
+{
+    c[0] = 0x47;
+    c[1] = 0x65;
+    c[2] = 0x74;
+    c[3] = 0x43;
+    c[4] = 0x6F;
+    c[5] = 0x6E;
+    c[6] = 0x66;
+    c[7] = 0x69;
+    c[8] = 0x67;
+    c[9] = 0x30;
+    c[10] = 0x32;
+    c[11] = 0x2E;
+}

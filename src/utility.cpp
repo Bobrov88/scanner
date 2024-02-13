@@ -79,34 +79,34 @@ std::vector<UTIL::AVAILABLE_COM> UTIL::get_available_linux_com_ports()
 {
     std::vector<UTIL::AVAILABLE_COM> com_ports;
 
-    // namespace fs = std::filesystem;
-    // fs::path p("/dev/tty");
-    // try
-    // {
-    //     if (!exists(p))
-    //     {
-    //         throw std::runtime_error(p.generic_string() + " does not exist");
-    //     }
-    //     else
-    //     {
-    //         for (const auto &dir : fs::directory_iterator(p))
-    //         {
-    //             if (is_symlink(dir.symlink_status()))
-    //             {
-    //                 fs::path symlink_points_at = read_symlink(dir);
-    //                 fs::path canonical_path = fs::canonical(p / symlink_points_at);
-    //                 com_ports.push_back({canonical_path.generic_string()});
-    //             }
-    //         }
-    //     }
-    // }
-    // catch (const fs::filesystem_error &ex)
-    // {
-    //     std::cout << ex.what() << '\n';
-    //     throw ex;
-    // }
-    // std::sort(com_ports.begin(), com_ports.end(), [](const auto &first, const auto &second)
-    //           { return first.data_ < second.data_; });
+    namespace fs = std::filesystem;
+    fs::path p("/dev/serial/by-id");
+    try
+    {
+        if (!exists(p))
+        {
+            throw std::runtime_error(p.generic_string() + " does not exist");
+        }
+        else
+        {
+            for (const auto &dir : fs::directory_iterator(p))
+            {
+                if (is_symlink(dir.symlink_status()))
+                {
+                    fs::path symlink_points_at = read_symlink(dir);
+                    fs::path canonical_path = fs::canonical(p / symlink_points_at);
+                    com_ports.push_back({canonical_path.generic_string()});
+                }
+            }
+        }
+    }
+    catch (const fs::filesystem_error &ex)
+    {
+        std::cout << ex.what() << '\n';
+        throw ex;
+    }
+    std::sort(com_ports.begin(), com_ports.end(), [](const auto &first, const auto &second)
+              { return first.data_ < second.data_; });
     return com_ports;
 }
 
@@ -175,7 +175,7 @@ std::vector<UTIL::AVAILABLE_HID> UTIL::detect_all_hid_linux_devices()
         table[0][3] = "Product";
         table[0][4] = "Serial Number";
         table[0][5] = "Model";
-        table[0][6] = "FirmwareVersion";
+        table[0][6] = "Firmware Version";
         int row = 1;
         for (const auto &hid : hids)
         {
@@ -199,18 +199,23 @@ std::vector<UTIL::AVAILABLE_HID> UTIL::detect_all_hid_linux_devices()
     return hids;
 }
 
-void UTIL::detect_all_com_linux_devices()
+std::vector<UTIL::AVAILABLE_COM> UTIL::detect_all_com_linux_devices()
 {
     std::vector<UTIL::AVAILABLE_COM> coms = get_available_linux_com_ports();
+    std::string data = get_json_responce_for_com_detection(coms[0].data_);
 
     ConsoleTable table = getTableInitialSetup();
     table[0][0] = "#";
     table[0][1] = "COM";
+    table[0][2] = "Product";
+    table[0][3] = "Model";
+    table[0][4] = "Serial number";
+    table[0][5] = "Firmware Version";
 
     if (coms.empty())
     {
         table[1][0] = "HID Devices not found\n";
-        return;
+        return {};
     }
 
     int row = 1;
@@ -218,10 +223,16 @@ void UTIL::detect_all_com_linux_devices()
     {
         table[row][0] = row;
         table[row][1] = com.data_;
+        boost::json::value obj = boost::json::parse(data);
+        table[row][2] = obj.at("FID").as_string().c_str();
+        table[row][3] = obj.at("deviceName").as_string().c_str();
+        table[row][4] = obj.at("deviceID").as_string().c_str();
+        table[row][5] = obj.at("FwVer").as_string().c_str();
         ++row;
     }
 
     std::cout << table;
+    return coms;
 }
 
 std::string UTIL::str(const std::wstring &src)
@@ -280,7 +291,7 @@ std::string UTIL::hex_view(const unsigned short number)
     return str_hex.str();
 }
 
-std::string UTIL::convert_from_bytes_to_string(std::vector<uint8_t> from)
+std::string UTIL::convert_from_bytes_to_string(std::vector<uint8_t> &from)
 {
     std::string str;
     size_t size = from.size();
@@ -309,6 +320,28 @@ std::vector<uint8_t> UTIL::read_json_piece(hid_device *handle)
         json_bytes.push_back(*(&response[5] + i));
     }
     return json_bytes;
+}
+
+std::string UTIL::get_json_responce_for_com_detection(const std::string &com)
+{
+    uint8_t buf[12] = {0};
+    SEQ::get_config02_command(buf); // GetConfig02.
+
+    boost::asio::io_service io;
+    boost::asio::serial_port s_port(io, com);
+    boost::asio::write(s_port, boost::asio::buffer(buf, sizeof(buf)));
+
+    std::vector<uint8_t> v;
+    uint8_t u;
+    do
+    {
+        boost::asio::read(s_port, boost::asio::buffer(&u, 1));
+        v.push_back(u);
+    } while (static_cast<char>(u) != '}');
+
+    s_port.close();
+    std::string str = convert_from_bytes_to_string(v);
+    return str;
 }
 
 std::string UTIL::get_full_json_response(hid_device *handle)

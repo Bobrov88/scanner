@@ -9,6 +9,8 @@
 
 namespace MENU {
     void PrintStartMenu();
-    std::vector<UTIL::AVAILABLE_HID> PrintAvailableUSB();
+    void PrintAttentionComToHID();
+    std::string ChooseScannerToProceed();
+    void PrintAvailableUSB();
     void SaveSettings();
 }

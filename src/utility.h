@@ -5,7 +5,7 @@
 #include <string>
 #include <filesystem>
 #include <utf8.h>
-#include <hidapi.h>
+#include "hidapi.h"
 #include <iostream>
 #include <fstream>
 #include "CppConsoleTable.hpp"
@@ -69,7 +69,8 @@ namespace UTIL
     std::vector<AVAILABLE_COM> get_available_windows_com_ports();
     std::vector<AVAILABLE_COM> get_available_linux_com_ports();
     std::vector<AVAILABLE_HID> get_available_hid_devices();
-    std::vector<AVAILABLE_HID> detect_all_hid_linux_devices();
+    [[maybe_unused]] std::vector<AVAILABLE_HID> detect_all_hid_linux_devices();
+    [[maybe_unused]] std::vector<AVAILABLE_COM> detect_all_com_linux_devices();
     void remove_dublicates_of_hid_devices(std::vector<AVAILABLE_HID> &hids);
 
     std::wstring wstr(const std::string &src);
@@ -77,13 +78,13 @@ namespace UTIL
     std::string str(const wchar_t *ws);
     std::string hex_view(const unsigned short number);
 
-    std::string convert_from_bytes_to_string(std::vector<uint8_t> from);
+    std::string convert_from_bytes_to_string(std::vector<uint8_t>& from);
     std::vector<uint8_t> read_json_piece(hid_device *handle);
     std::string read_json_settings(hid_device *handle);
+    std::string get_json_responce_for_com_detection(const std::string& com);
 
     std::string get_firmware_device_name_model(hid_device *handle);
     std::string get_full_json_response(hid_device *handle);
-    void detect_all_com_linux_devices();
 
     std::vector<std::vector<uint8_t>> convert_json_to_bits(const std::string &json);
     std::string& low(std::string &str);
