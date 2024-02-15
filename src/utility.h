@@ -1,10 +1,12 @@
 #pragma once
+
 #include <vector>
 #include <boost/json.hpp>
 #include <boost/system/error_code.hpp>
 #include <algorithm>
 #include <string>
 #include <filesystem>
+#include <fstream>
 #include <utf8.h>
 #include "hidapi.h"
 #include <iostream>
@@ -12,6 +14,10 @@
 #include "CppConsoleTable.hpp"
 #include "commands.h"
 #include "commands_sequencies.h"
+#include "reconnect.h"
+#include <thread>
+#include <chrono>
+#include "handler.h"
 
 using ConsoleTable = samilton::ConsoleTable;
 using namespace std::string_literals;
@@ -22,6 +28,7 @@ namespace UTIL
     struct AVAILABLE_COM
     {
         std::string data_ = "";
+        // todo from JSON straight to here
         AVAILABLE_COM(std::string data) : data_(data) {}
     };
 
@@ -63,7 +70,7 @@ namespace UTIL
 
     ConsoleTable getTableInitialSetup();
 
-    int HID_WRITE(hid_device *handle, uint8_t *c);
+    int HID_WRITE(handler &device, uint8_t *c);
     int HID_SAVE(hid_device *handle);
     int HID_RESTORE(hid_device *handle);
     std::vector<uint8_t> HID_READ(hid_device *handle);
@@ -71,12 +78,13 @@ namespace UTIL
     std::vector<AVAILABLE_COM> get_available_windows_com_ports();
     std::vector<AVAILABLE_COM> get_available_linux_com_ports();
     std::vector<AVAILABLE_HID> get_available_hid_devices();
+    std::vector<UTIL::AVAILABLE_HID> list_all_hid();
     void print_all_hid_linux_devices(const std::vector<UTIL::AVAILABLE_HID> &hids);
     void print_all_com_linux_devices(const std::vector<UTIL::AVAILABLE_COM> &coms);
     void print_all_json_files(std::vector<std::pair<std::string, std::string>> &json_list);
     void remove_dublicates_of_hid_devices(std::vector<AVAILABLE_HID> &hids);
     void remove_com_devices_if_not_scanner(std::vector<AVAILABLE_COM> &coms);
-    int write_settings_from_json(const std::vector<std::vector<uint8_t>>& settings, hid_device *handle);
+    int write_settings_from_json(const std::map<uint16_t, std::vector<uint8_t>>& settings, handler &device);
 
     std::wstring wstr(const std::string &src);
     std::string str(const std::wstring &src);
@@ -91,7 +99,7 @@ namespace UTIL
     std::string get_firmware_device_name_model(hid_device *handle);
     std::string get_full_json_response(hid_device *handle);
 
-    std::vector<std::vector<uint8_t>> convert_json_to_bits(const std::string &json);
+    std::map<uint16_t, std::vector<uint8_t>> convert_json_to_bits(const std::string &json);
     std::string &low(std::string &str);
     std::string get_string_possible_data(const std::vector<std::string> &variants, const std::string &key);
     std::string get_bool_possible_data(const std::string &key);
@@ -101,4 +109,6 @@ namespace UTIL
 
     std::vector<std::pair<std::string, std::string>> get_json_file_list();
     std::string parse_json_file(const std::string &source);
+    std::string read_device_info();
+    std::string get_string_from_source(std::ifstream& file);
 };

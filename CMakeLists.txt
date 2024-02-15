@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CONAN_DISABLE_CHECK_COMPILER "1")
 
 set(SOURCES
+    src/reconnect.cpp
     src/main.cpp
     src/menu.cpp
     src/utility.cpp
@@ -15,6 +16,8 @@ set(SOURCES
 )
 
 set(HEADERS
+    src/reconnect.h
+    src/handler.h
     src/enums/function_name.h
     src/commands_sequencies.h
     src/commands.h

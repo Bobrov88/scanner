@@ -34,6 +34,14 @@ std::string SEQ::to_hex(uint8_t *response, size_t size)
     return oss.str();
 }
 
+std::string SEQ::to_hex(const std::vector<uint8_t>& bytes)
+{
+    std::ostringstream oss;
+    for (const auto byte : bytes)
+        oss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte) << " ";
+    return oss.str();
+}
+
 void SEQ::save_to_internal_flash_command(uint8_t *c)
 {
     c[0] = 0xfd;
@@ -146,4 +154,49 @@ void SEQ::get_config02_command(uint8_t *c)
     c[9] = 0x30;
     c[10] = 0x32;
     c[11] = 0x2E;
+}
+
+void SEQ::read_device_info_command(uint8_t *c)
+{
+    c[0] = 0xfd;
+    c[1] = 0x0f;
+    c[2] = 0xff;
+    c[3] = 0x52;
+    c[4] = 0x65;
+    c[5] = 0x61;
+    c[6] = 0x64;
+    c[7] = 0x44;
+    c[8] = 0x65;
+    c[9] = 0x76;
+    c[10] = 0x69;
+    c[11] = 0x63;
+    c[12] = 0x65;
+    c[13] = 0x49;
+    c[14] = 0x6E;
+    c[15] = 0x66;
+    c[16] = 0x6F;
+    c[17] = 0x2E;
+}
+
+void SEQ::create_subcommand(const uint16_t flag, const std::vector<uint8_t> &bits, uint8_t *c)
+{
+    c[0] = 0xfd;
+    c[1] = static_cast<uint8_t>(bits.size() + 8); // 0x7e 0x00 0x08 0xbits.size() 0xbyte of flag 0xbyte of flag
+    c[2] = 0xff;
+    c[3] = 0x7e;
+    c[4] = 0x00;
+    c[5] = 0x08;
+    c[6] = (uint8_t)bits.size();
+    c[7] = flag >> 8;
+    c[8] = flag & 0x00ff;
+    
+    int i = 0;
+    for (; i < bits.size(); ++i)
+    {
+        c[i + 9] = bits[i];
+    }
+    uint16_t crc = crc_16(&c[5], bits.size() + 4);
+
+    c[9+i++] = crc >> 8;
+    c[9+i] = crc & 0x00ff;
 }

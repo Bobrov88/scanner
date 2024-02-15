@@ -43,6 +43,7 @@ int main(int argc, char *argv[])
         MENU::WriteFromJson();
         return 0;
     }
+    //std::cout << UTIL::read_device_info();
     // uint8_t c[9] = {0};
     // c[0] = 0x7e;
     // c[1] = 0x00;

@@ -13,8 +13,8 @@ RUN yum update -y && \
     yum install -y xz-lzma-compat && \
     yum install -y bzip2-devel && \
     yum install -y libX11-devel
- #   yum install -y libudev-devel && \
- #   yum install boost boost-thread boost-devel -y
+#   yum install -y libudev-devel && \
+#   yum install boost boost-thread boost-devel -y
 #yum install -y qt5-qtbase-devel && \
 #yum install -y qt-devel qt-config && \
 #yum-builddep -y qt5-qtbase-devel
@@ -49,7 +49,9 @@ RUN cd /build/ && \
 
 RUN cd / && \
     PYTHON_VERSION=3.8.12 && \
-    wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz && \
+    wget https://mirrors.huaweicloud.com/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz && \
+    #wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz && \
+    #wget https://github.com/Bobrov88/Old_packages/blob/master/Python-${PYTHON_VERSION}.tgz && \
     tar -xzf Python-${PYTHON_VERSION}.tgz && \
     cd Python-${PYTHON_VERSION}/ && ./configure --enable-optimizations --enable-loadable-sqlite-extensions && make && make install && \
     cd .. && \

@@ -137,6 +137,8 @@ void MENU::WriteFromJson()
     // todo choose scanners, temporarily we chose the single one
     // todo choose a file, temporarily we chose single one
     auto settings = UTIL::convert_json_to_bits("F23450001.json");
-    hid_device *handle = hid_open_path(hids[0].path_);
-    int write_result = write_settings_from_json(settings, handle);
+    handler device {hid_open_path(hids[0].path_), hids[0].path_, UTIL::str(hids[0].serial_number_)};
+    int write_result = UTIL::write_settings_from_json(settings, device);
+    if (write_result == 0) std::cout<<"Success\n";
+    else std::cout<<"Failed\n";
 }
