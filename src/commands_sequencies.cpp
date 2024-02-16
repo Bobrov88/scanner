@@ -26,22 +26,6 @@ uint16_t SEQ::crc_16(uint8_t *data, uint16_t len)
     return crc16;
 }
 
-std::string SEQ::to_hex(uint8_t *response, size_t size)
-{
-    std::ostringstream oss;
-    for (int i = 0; i < size; i++)
-        oss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(response[i]) << " ";
-    return oss.str();
-}
-
-std::string SEQ::to_hex(const std::vector<uint8_t>& bytes)
-{
-    std::ostringstream oss;
-    for (const auto byte : bytes)
-        oss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte) << " ";
-    return oss.str();
-}
-
 void SEQ::save_to_internal_flash_command(uint8_t *c)
 {
     c[0] = 0xfd;

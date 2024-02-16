@@ -7,6 +7,7 @@
 #include <hidapi.h>
 #include "CppConsoleTable.hpp"
 #include "utility.h"
+#include "print.h"
 
 namespace MENU {
     void PrintStartMenu();

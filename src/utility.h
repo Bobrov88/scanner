@@ -7,29 +7,30 @@
 #include <string>
 #include <filesystem>
 #include <fstream>
-#include <utf8.h>
 #include "hidapi.h"
 #include <iostream>
 #include <fstream>
-#include "CppConsoleTable.hpp"
 #include "commands.h"
 #include "commands_sequencies.h"
 #include "reconnect.h"
 #include <thread>
 #include <chrono>
 #include "handler.h"
+#include <map>
 
-using ConsoleTable = samilton::ConsoleTable;
-using namespace std::string_literals;
 namespace fs = std::filesystem;
 
 namespace UTIL
 {
     struct AVAILABLE_COM
     {
-        std::string data_ = "";
+        std::string port_ = "";
+        std::string product_ = "";
+        std::string model_ = "";
+        std::string serial_number_="";
+        std::string firmware_ = "";
         // todo from JSON straight to here
-        AVAILABLE_COM(std::string data) : data_(data) {}
+        AVAILABLE_COM(std::string port) : port_(port) {}
     };
 
     struct AVAILABLE_HID
@@ -68,8 +69,6 @@ namespace UTIL
         }
     };
 
-    ConsoleTable getTableInitialSetup();
-
     int HID_WRITE(handler &device, uint8_t *c);
     int HID_SAVE(hid_device *handle);
     int HID_RESTORE(hid_device *handle);
@@ -79,19 +78,10 @@ namespace UTIL
     std::vector<AVAILABLE_COM> get_available_linux_com_ports();
     std::vector<AVAILABLE_HID> get_available_hid_devices();
     std::vector<UTIL::AVAILABLE_HID> list_all_hid();
-    void print_all_hid_linux_devices(const std::vector<UTIL::AVAILABLE_HID> &hids);
-    void print_all_com_linux_devices(const std::vector<UTIL::AVAILABLE_COM> &coms);
-    void print_all_json_files(std::vector<std::pair<std::string, std::string>> &json_list);
     void remove_dublicates_of_hid_devices(std::vector<AVAILABLE_HID> &hids);
     void remove_com_devices_if_not_scanner(std::vector<AVAILABLE_COM> &coms);
     int write_settings_from_json(const std::map<uint16_t, std::vector<uint8_t>>& settings, handler &device);
 
-    std::wstring wstr(const std::string &src);
-    std::string str(const std::wstring &src);
-    std::string str(const wchar_t *ws);
-    std::string hex_view(const unsigned short number);
-
-    std::string convert_from_bytes_to_string(std::vector<uint8_t> &from);
     std::vector<uint8_t> read_json_piece(hid_device *handle);
     std::string read_json_settings(hid_device *handle);
     std::string get_json_responce_for_com_detection(const std::string &com);
@@ -100,7 +90,6 @@ namespace UTIL
     std::string get_full_json_response(hid_device *handle);
 
     std::map<uint16_t, std::vector<uint8_t>> convert_json_to_bits(const std::string &json);
-    std::string &low(std::string &str);
     std::string get_string_possible_data(const std::vector<std::string> &variants, const std::string &key);
     std::string get_bool_possible_data(const std::string &key);
     std::string get_uint8_t_possible_data(const std::string &key, const uint8_t from, const int to);

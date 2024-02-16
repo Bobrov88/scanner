@@ -22,13 +22,13 @@ int HID::restore_to_factory_settings(hid_device *handle)
     if (write_result == -1)
     {
         std::cout << "Save to internal flash failed. Reason: ";
-        std::cout << UTIL::str(hid_error(handle));
+        std::cout << CONVERT::str(hid_error(handle));
         return -1;
     }
     if (write_result < 64)
     {
         std::cout << "The device received fewer bytes than it sent.";
-        std::cout << UTIL::str(hid_error(handle));
+        std::cout << CONVERT::str(hid_error(handle));
         return 1;
     }
 
@@ -37,19 +37,19 @@ int HID::restore_to_factory_settings(hid_device *handle)
     if (read_result == -1)
     {
         std::cout << "Reading result of saving to internal flash failed. Reason: ";
-        std::cout << UTIL::str(hid_error(handle));
+        std::cout << CONVERT::str(hid_error(handle));
         return -1;
     }
     if (read_result == 0)
     {
         std::cout << "No available packets to read. Reason: ";
-        std::cout << UTIL::str(hid_error(handle));
+        std::cout << CONVERT::str(hid_error(handle));
         return 1;
     }
     if (read_result < 64)
     {
         std::cout << "Response is not complete. Reason: ";
-        std::cout << UTIL::str(hid_error(handle));
+        std::cout << CONVERT::str(hid_error(handle));
         return 2;
     }
     // todo

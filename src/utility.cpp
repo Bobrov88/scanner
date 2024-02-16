@@ -52,29 +52,6 @@ std::vector<UTIL::AVAILABLE_COM> UTIL::get_available_windows_com_ports()
 }
 #endif
 
-ConsoleTable UTIL::getTableInitialSetup()
-{
-    ConsoleTable table;
-
-    ConsoleTable::TableChars chars;
-    chars.topDownSimple = '-';
-    chars.leftRightSimple = '|';
-    chars.centreSeparation = '+';
-    chars.topSeparation = '-';
-    chars.downSeparation = '-';
-    chars.leftSeparation = '|';
-    chars.rightSeparation = '|';
-    chars.topLeft = '*';
-    chars.topRight = '*';
-    chars.downLeft = '*';
-    chars.downRight = '*';
-    table.setTableChars(chars);
-
-    table.setAlignment(samilton::Alignment::centre);
-    table.setIndent(1, 1);
-    return table;
-}
-
 std::vector<UTIL::AVAILABLE_COM> UTIL::get_available_linux_com_ports()
 {
     std::vector<UTIL::AVAILABLE_COM> com_ports;
@@ -94,7 +71,7 @@ std::vector<UTIL::AVAILABLE_COM> UTIL::get_available_linux_com_ports()
                 }
             }
             std::sort(com_ports.begin(), com_ports.end(), [](const auto &first, const auto &second)
-                      { return first.data_ < second.data_; });
+                      { return first.port_ < second.port_; });
 
             remove_com_devices_if_not_scanner(com_ports);
         }
@@ -114,14 +91,13 @@ void UTIL::remove_com_devices_if_not_scanner(std::vector<AVAILABLE_COM> &coms)
     for (auto &com : coms)
     {
         boost::asio::io_service io;
-        boost::asio::serial_port s_port(io, com.data_);
+        boost::asio::serial_port s_port(io, com.port_);
         uint8_t c[9] = {0};
         SEQ::testing_com_connect_for_erasing_duplicates_command(c);
         boost::asio::write(s_port, boost::asio::buffer(c, 9));
 
         uint8_t r[7] = {0};
         boost::asio::read(s_port, boost::asio::buffer(r, 7));
-        s_port.close();
 
         if (r[0] == 0x02 &&
             r[1] == 0x00 &&
@@ -129,7 +105,15 @@ void UTIL::remove_com_devices_if_not_scanner(std::vector<AVAILABLE_COM> &coms)
             r[3] == 0x01)
         {
             really_scanner.push_back(std::move(com));
+            auto &current_com = really_scanner.back();
+            std::string data = get_json_responce_for_com_detection(current_com.port_);
+            boost::json::value obj = boost::json::parse(data);
+            current_com.product_ = obj.at("FID").as_string().c_str();
+            current_com.model_ = obj.at("deviceName").as_string().c_str();
+            current_com.serial_number_ = obj.at("deviceID").as_string().c_str();
+            current_com.firmware_ = obj.at("FwVer").as_string().c_str();
         }
+        s_port.close();
     }
     if (!coms.empty())
     {
@@ -142,6 +126,7 @@ std::vector<UTIL::AVAILABLE_HID> UTIL::list_all_hid()
     std::vector<UTIL::AVAILABLE_HID> device;
     struct hid_device_info *cur_dev;
     cur_dev = hid_enumerate(0x0, 0x0);
+    // todo in separate function
     while (cur_dev)
     {
         if (cur_dev->vendor_id != 0 && cur_dev->product_id != 0)
@@ -195,145 +180,6 @@ void UTIL::remove_dublicates_of_hid_devices(std::vector<AVAILABLE_HID> &hids)
     hids.assign(unique_hids.begin(), unique_hids.end());
 }
 
-void UTIL::print_all_hid_linux_devices(const std::vector<UTIL::AVAILABLE_HID> &hids)
-{
-    ConsoleTable table = getTableInitialSetup();
-
-    if (!hids.empty())
-    {
-        table[0][0] = "#";
-        table[0][1] = "VID";
-        table[0][2] = "PID";
-        table[0][3] = "Product";
-        table[0][4] = "Serial Number";
-        table[0][5] = "Model";
-        table[0][6] = "Firmware Version";
-
-        int row = 1;
-        for (const auto &hid : hids)
-        {
-            table[row][0] = row;
-            table[row][1] = hex_view(hid.vid_);
-            table[row][2] = hex_view(hid.pid_);
-            table[row][3] = str(hid.product_);
-            table[row][4] = str(hid.serial_number_);
-            boost::json::value obj = boost::json::parse(get_firmware_device_name_model(hid_open_path(hid.path_)));
-            table[row][5] = obj.at("deviceName").as_string().c_str();
-            table[row][6] = obj.at("FwVer").as_string().c_str();
-            ++row;
-        }
-    }
-    else
-    {
-        table[0][0] = "Scanners not found";
-    }
-
-    std::cout << table;
-}
-
-void UTIL::print_all_com_linux_devices(const std::vector<UTIL::AVAILABLE_COM> &coms)
-{
-    ConsoleTable table = getTableInitialSetup();
-
-    if (!coms.empty())
-    {
-        table[0][0] = "#";
-        table[0][1] = "COM";
-        table[0][2] = "Product";
-        table[0][3] = "Model";
-        table[0][4] = "Serial number";
-        table[0][5] = "Firmware Version";
-
-        int row = 1;
-        for (const auto &com : coms)
-        {
-            std::string data = get_json_responce_for_com_detection(com.data_);
-            table[row][0] = row;
-            table[row][1] = com.data_;
-            boost::json::value obj = boost::json::parse(data);
-            table[row][2] = obj.at("FID").as_string().c_str();
-            table[row][3] = obj.at("deviceName").as_string().c_str();
-            table[row][4] = obj.at("deviceID").as_string().c_str();
-            table[row][5] = obj.at("FwVer").as_string().c_str();
-            ++row;
-        }
-    }
-    else
-    {
-        table[0][0] = "Scanners not found";
-    }
-
-    std::cout << table;
-}
-
-std::string UTIL::str(const std::wstring &src)
-{
-    if (src.empty())
-        return "";
-
-    std::vector<char> dest;
-
-    try
-    {
-        for (size_t i = 0; i < src.length(); ++i)
-            utf8::append((uint32_t)src[i], std::back_inserter(dest));
-    }
-    catch (...)
-    {
-    }
-
-    if (dest.empty())
-        return "";
-    return std::string(&dest[0], dest.size());
-}
-
-std::wstring UTIL::wstr(const std::string &src)
-{
-    std::wstring dest;
-    size_t i = 0;
-
-    if ((src.length() > 3) && (src[0] == (char)0xEF) && (src[1] == (char)0xBB) && (src[2] == (char)0xBF))
-        i = 3;
-
-    std::vector<char> srcV(src.length() - i);
-    memcpy(&srcV[0], src.c_str() + i, srcV.size());
-    std::vector<char>::iterator current = srcV.begin();
-    try
-    {
-        while (current != srcV.end())
-            dest.push_back(utf8::next(current, srcV.end()));
-    }
-    catch (...)
-    {
-    }
-    return dest;
-}
-
-std::string UTIL::str(const wchar_t *ws)
-{
-    std::wstring w(ws);
-    return str(w);
-}
-
-std::string UTIL::hex_view(const unsigned short number)
-{
-    std::stringstream str_hex;
-    str_hex << "0x" << std::setfill('0') << std::setw(4) << std::hex << number;
-    return str_hex.str();
-}
-
-std::string UTIL::convert_from_bytes_to_string(std::vector<uint8_t> &from)
-{
-    std::string str;
-    size_t size = from.size();
-    str.reserve(size);
-    for (size_t i = 0; i < size; ++i)
-    {
-        str += static_cast<char>(from[i]);
-    }
-    return str;
-}
-
 std::vector<uint8_t> UTIL::read_json_piece(hid_device *handle)
 {
     uint8_t response[64] = {0};
@@ -371,7 +217,7 @@ std::string UTIL::get_json_responce_for_com_detection(const std::string &com)
     } while (static_cast<char>(u) != '}');
 
     s_port.close();
-    std::string str = convert_from_bytes_to_string(v);
+    std::string str = CONVERT::convert_from_bytes_to_string(v);
     return str;
 }
 
@@ -407,7 +253,7 @@ std::string UTIL::read_json_settings(hid_device *handle)
             break;
         result.insert(result.end(), tmp.begin(), tmp.end());
     }
-    return convert_from_bytes_to_string(result);
+    return CONVERT::convert_from_bytes_to_string(result);
 }
 
 int HID_WRITE(handler &device, uint8_t *c, int size)
@@ -419,11 +265,12 @@ int HID_WRITE(handler &device, uint8_t *c, int size)
     uint8_t r[64] = {0};
     // using namespace std::chrono_literals;
     device.ptr = RECONNECT::hid_reconnect(device.serial_number);
-    if (device.ptr == NULL) {
+    if (device.ptr == NULL)
+    {
         return -1;
     }
     hid_read_timeout(device.ptr, r, 64, 300);
-    std::cout << "Responce " << SEQ::to_hex(r, sizeof(r)) << "\n";
+    std::cout << "Responce " << CONVERT::to_hex(r, sizeof(r)) << "\n";
     // write to log
     // bytes
     // result with error
@@ -527,11 +374,11 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
                 const std::string key = "locateLed"s;
                 std::vector<std::string> variants = {"allwaysOff"s, "getPictureOn"s, "allwaysOn"s};
                 std::string tmp = str.at(key).as_string().c_str();
-                if (low(tmp) == low(variants[0]))
+                if (CONVERT::low(tmp) == CONVERT::low(variants[0]))
                     byte |= 0b00000000;
-                else if (low(tmp) == low(variants[1]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[1]))
                     byte |= 0b01000000;
-                else if (low(tmp) == low(variants[2]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[2]))
                     byte |= 0b10000000;
                 else
                     incorrect_data += UTIL::get_string_possible_data(variants, key);
@@ -540,11 +387,11 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
                 const std::string key = "fillLed"s;
                 std::vector<std::string> variants = {"allwaysOff"s, "getPictureOn"s, "allwaysOn"s};
                 std::string tmp = str.at(key).as_string().c_str();
-                if (low(tmp) == low(variants[0]))
+                if (CONVERT::low(tmp) == CONVERT::low(variants[0]))
                     byte |= 0b00000000;
-                else if (low(tmp) == low(variants[1]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[1]))
                     byte |= 0b00010000;
-                else if (low(tmp) == low(variants[2]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[2]))
                     byte |= 0b00100000;
                 else
                     incorrect_data += UTIL::get_string_possible_data(variants, key);
@@ -553,17 +400,17 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
                 const std::string key = "workMode";
                 std::vector<std::string> variants = {"keyTrig"s, "edgeTrig"s, "cmdTrig"s, "incuction"s, "noMoveNoRead"s, "continuous"s};
                 std::string tmp = str.at(key).as_string().c_str();
-                if (low(tmp) == low(variants[0]))
+                if (CONVERT::low(tmp) == CONVERT::low(variants[0]))
                     byte |= 0b00000000;
-                else if (low(tmp) == low(variants[1]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[1]))
                     byte |= 0b00000001;
-                else if (low(tmp) == low(variants[2]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[2]))
                     byte |= 0b00000010;
-                else if (low(tmp) == low(variants[3]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[3]))
                     byte |= 0b00000011;
-                else if (low(tmp) == low(variants[4]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[4]))
                     byte |= 0b00000100;
-                else if (low(tmp) == low(variants[5]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[5]))
                     byte |= 0b00000101;
                 else
                     incorrect_data += UTIL::get_string_possible_data(variants, key);
@@ -597,11 +444,11 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
                 std::vector<std::string> variants = {"1.7KHz"s, "2.0KHz"s, "2.7KHz"s, "3.7KHz"s};
                 const std::string key = "buzzerFreq"s;
                 std::string tmp = str.at(key).as_string().c_str();
-                if (low(tmp) == low(variants[0]))
+                if (CONVERT::low(tmp) == CONVERT::low(variants[0]))
                     byte |= 0b00000000;
-                else if (low(tmp) == low(variants[1]) || low(tmp) == low(variants[2]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[1]) || CONVERT::low(tmp) == CONVERT::low(variants[2]))
                     byte |= 0b00000100;
-                else if (low(tmp) == low(variants[3]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[3]))
                     byte |= 0b00001000;
                 else
                     incorrect_data += UTIL::get_string_possible_data(variants, key);
@@ -610,9 +457,9 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
                 std::vector<std::string> variants = {"passive"s, "active"s};
                 const std::string key = "buzzerType"s;
                 std::string tmp = str.at(key).as_string().c_str();
-                if (low(tmp) == low(variants[0]))
+                if (CONVERT::low(tmp) == CONVERT::low(variants[0]))
                     byte |= 0b00000000;
-                else if (low(tmp) == low(variants[1]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[1]))
                     byte |= 0b00000001;
                 else // to Chinese third available value - mimicry, no mapped bit
                     incorrect_data += get_string_possible_data(variants, key);
@@ -713,13 +560,13 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
                 std::vector<std::string> variants = {"off"s, "ctrlMode"s, "altMode"s, "notOut"s};
                 const std::string key = "ctrlCharMode"s;
                 std::string tmp = str.at(key).as_string().c_str();
-                if (low(tmp) == low(variants[0]))
+                if (CONVERT::low(tmp) == CONVERT::low(variants[0]))
                     byte |= 0b00000000;
-                else if (low(tmp) == low(variants[1]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[1]))
                     byte |= 0b00100000;
-                else if (low(tmp) == low(variants[2]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[2]))
                     byte |= 0b01000000;
-                else if (low(tmp) == low(variants[3]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[3]))
                     // to Chinese
                     byte |= 0b01111111;
                 else
@@ -769,24 +616,24 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
                 std::vector<std::string> variants = {"normal"s, "turn"s, "allwaysOn"s, "allwaysOff"s};
                 const std::string key = "capsLockMode"s;
                 std::string tmp = str.at(key).as_string().c_str();
-                if (low(tmp) == low(variants[0]))
+                if (CONVERT::low(tmp) == CONVERT::low(variants[0]))
                     byte |= 0b00000000;
-                else if (low(tmp) == low(variants[1]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[1]))
                     byte |= 0b00000010;
-                else if (low(tmp) == low(variants[2]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[2]))
                     byte |= 0b00000100;
-                else if (low(tmp) == low(variants[3]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[3]))
                     byte |= 0b00000110;
                 else
                     incorrect_data += get_string_possible_data(variants, key);
             }
             {
-                std::vector<std::string> variants = {"High"s, "Low"s};
+                std::vector<std::string> variants = {"High"s, "CONVERT::low"s};
                 const std::string key = "activeBuzzerWorkLevel"s;
                 std::string tmp = str.at(key).as_string().c_str();
-                if (low(tmp) == low(variants[0]))
+                if (CONVERT::low(tmp) == CONVERT::low(variants[0]))
                     byte |= 0b00000000;
-                else if (low(tmp) == low(variants[1]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[1]))
                     byte |= 0b00000001;
                 else
                     incorrect_data += get_string_possible_data(variants, key);
@@ -815,15 +662,15 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
                 std::vector<std::string> variants = {"UART-TTL"s, "keyboard"s, "virtualCom"s, "pos"s, "composite"s};
                 const std::string key = "outMode"s;
                 std::string tmp = str.at(key).as_string().c_str();
-                if (low(tmp) == low(variants[0]))
+                if (CONVERT::low(tmp) == CONVERT::low(variants[0]))
                     byte |= 0b00000000;
-                else if (low(tmp) == low(variants[1]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[1]))
                     byte |= 0b00000001;
-                else if (low(tmp) == low(variants[2]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[2]))
                     byte |= 0b00000011;
-                else if (low(tmp) == low(variants[3]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[3]))
                     byte |= 0b00000100;
-                else if (low(tmp) == low(variants[4]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[4]))
                     byte |= 0b00000101;
                 else
                     incorrect_data += get_string_possible_data(variants, key);
@@ -952,9 +799,9 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
                 std::vector<std::string> variants = {"Bracket"s, "Handheld"s};
                 const std::string key = "placeMode"s;
                 std::string tmp = str.at(key).as_string().c_str();
-                if (low(tmp) == low(variants[0]))
+                if (CONVERT::low(tmp) == CONVERT::low(variants[0]))
                     byte |= 0b00000100;
-                else if (low(tmp) == low(variants[1]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[1]))
                     byte |= 0b00000000;
                 else
                     incorrect_data += get_string_possible_data(variants, key);
@@ -1022,7 +869,7 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
                 std::vector<std::string> variants = {"1D"s};
                 const std::string key = "GSExchangeChar"s;
                 std::string tmp = str.at(key).as_string().c_str();
-                if (low(tmp) == low(variants[0]))
+                if (CONVERT::low(tmp) == CONVERT::low(variants[0]))
                     byte |= 0b00011101;
                 else
                     incorrect_data += get_string_possible_data(variants, key);
@@ -1056,12 +903,12 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
             uint8_t byte = 0;
             {
                 {
-                    std::vector<std::string> variants = {"High"s, "Low"s};
+                    std::vector<std::string> variants = {"High"s, "CONVERT::low"s};
                     const std::string key = "ledWorkLevel"s;
                     std::string tmp = str.at(key).as_string().c_str();
-                    if (low(tmp) == low(variants[0]))
+                    if (CONVERT::low(tmp) == CONVERT::low(variants[0]))
                         byte |= 0b00000000;
-                    else if (low(tmp) == low(variants[1]))
+                    else if (CONVERT::low(tmp) == CONVERT::low(variants[1]))
                         byte |= 0b10000000;
                     else
                         incorrect_data += get_string_possible_data(variants, key);
@@ -1092,15 +939,15 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
                     std::vector<std::string> variants = {"GBK"s, "Unicode"s, "Raw"s, "UTF8"s, "BIG5"s};
                     const std::string key = "dataOutType"s;
                     std::string tmp = str.at(key).as_string().c_str();
-                    if (low(tmp) == low(variants[0]))
+                    if (CONVERT::low(tmp) == CONVERT::low(variants[0]))
                         byte |= 0b00000000;
-                    else if (low(tmp) == low(variants[1]))
+                    else if (CONVERT::low(tmp) == CONVERT::low(variants[1]))
                         byte |= 0b00000001;
-                    else if (low(tmp) == low(variants[2]))
+                    else if (CONVERT::low(tmp) == CONVERT::low(variants[2]))
                         byte |= 0b00000010;
-                    else if (low(tmp) == low(variants[3]))
+                    else if (CONVERT::low(tmp) == CONVERT::low(variants[3]))
                         byte |= 0b00000011;
-                    else if (low(tmp) == low(variants[4]))
+                    else if (CONVERT::low(tmp) == CONVERT::low(variants[4]))
                         byte |= 0b00000100;
                     else
                         incorrect_data += get_string_possible_data(variants, key);
@@ -1167,11 +1014,11 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
                 std::vector<std::string> variants = {"default"s, "allDisable"s, "allEnable"s};
                 const std::string key = "decodeConfig"s;
                 std::string tmp = str.at(key).as_string().c_str();
-                if (low(tmp) == low(variants[0]))
+                if (CONVERT::low(tmp) == CONVERT::low(variants[0]))
                     byte |= 0b00000000;
-                else if (low(tmp) == low(variants[1]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[1]))
                     byte |= 0b00000010;
-                else if (low(tmp) == low(variants[2]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[2]))
                     byte |= 0b00000100;
                 else
                     incorrect_data += get_string_possible_data(variants, key);
@@ -1475,13 +1322,13 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
                     "double"};
                 const std::string key = "codeBarParityProcess"s;
                 std::string tmp = str.at(key).as_string().c_str();
-                if (low(tmp) == low(variants[0]))
+                if (CONVERT::low(tmp) == CONVERT::low(variants[0]))
                     byte |= 0b00000000;
-                else if (low(tmp) == low(variants[1]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[1]))
                     byte |= 0b00000100;
-                else if (low(tmp) == low(variants[2]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[2]))
                     byte |= 0b00001000;
-                else if (low(tmp) == low(variants[3]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[3]))
                     byte |= 0b00001100;
                 else
                     incorrect_data += get_string_possible_data(variants, key);
@@ -1549,9 +1396,9 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
                 std::vector<std::string> variants = {"None"s, "Mod10"s};
                 const std::string key = "interleaved2of5ParityProcess"s;
                 std::string tmp = str.at(key).as_string().c_str();
-                if (low(tmp) == low(variants[0]))
+                if (CONVERT::low(tmp) == CONVERT::low(variants[0]))
                     byte |= 0b00000000;
-                else if (low(tmp) == low(variants[1]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[1]))
                     byte |= 0b00000100;
                 else
                     incorrect_data += get_string_possible_data(variants, key);
@@ -1592,9 +1439,9 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
                 std::vector<std::string> variants = {"None"s, "Mod10"s};
                 const std::string key = "industrial25ParityProcess"s;
                 std::string tmp = str.at(key).as_string().c_str();
-                if (low(tmp) == low(variants[0]))
+                if (CONVERT::low(tmp) == CONVERT::low(variants[0]))
                     byte |= 0b00000000;
-                else if (low(tmp) == low(variants[1]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[1]))
                     byte |= 0b00000100;
                 else
                     incorrect_data += get_string_possible_data(variants, key);
@@ -1635,9 +1482,9 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
                 std::vector<std::string> variants = {"None"s, "Mod10"s};
                 const std::string key = "matrix2of5ParityProcess"s;
                 std::string tmp = str.at(key).as_string().c_str();
-                if (low(tmp) == low(variants[0]))
+                if (CONVERT::low(tmp) == CONVERT::low(variants[0]))
                     byte |= 0b00000000;
-                else if (low(tmp) == low(variants[1]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[1]))
                     byte |= 0b00000100;
                 else
                     incorrect_data += get_string_possible_data(variants, key);
@@ -1677,9 +1524,9 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
                 std::vector<std::string> variants = {"1bit(C/K)"s, "2bits(C+K)"s};
                 const std::string key = "code11ParityProcess"s;
                 std::string tmp = str.at(key).as_string().c_str();
-                if (low(tmp) == low(variants[0]))
+                if (CONVERT::low(tmp) == CONVERT::low(variants[0]))
                     byte |= 0b00000000;
-                else if (low(tmp) == low(variants[1]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[1]))
                     byte |= 0b00000100;
                 else
                     incorrect_data += get_string_possible_data(variants, key);
@@ -1719,9 +1566,9 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
                 std::vector<std::string> variants = {"singleMod10"s, "doubleMod10"s};
                 const std::string key = "MSIParityProcess"s;
                 std::string tmp = str.at(key).as_string().c_str();
-                if (low(tmp) == low(variants[0]))
+                if (CONVERT::low(tmp) == CONVERT::low(variants[0]))
                     byte |= 0b00000000;
-                else if (low(tmp) == low(variants[1]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[1]))
                     byte |= 0b00000100;
                 else
                     incorrect_data += get_string_possible_data(variants, key);
@@ -2038,13 +1885,13 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
                     "None"};
                 const std::string key = "suffixType"s;
                 std::string tmp = str.at(key).as_string().c_str();
-                if (low(tmp) == low(variants[0]))
+                if (CONVERT::low(tmp) == CONVERT::low(variants[0]))
                     byte |= 0b00000000;
-                else if (low(tmp) == low(variants[1]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[1]))
                     byte |= 0b00100000;
-                else if (low(tmp) == low(variants[2]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[2]))
                     byte |= 0b01000000;
-                else if (low(tmp) == low(variants[3]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[3]))
                     byte |= 0b01100000;
                 else
                     incorrect_data += get_string_possible_data(variants, key);
@@ -2084,77 +1931,77 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
                     "Estonia", "Lithuania", "Irish", "Faeroese", "Portugal", "Portugal-Brazil"};
                 const std::string key = "keyboardLayout"s;
                 std::string tmp = str.at(key).as_string().c_str();
-                if (low(tmp) == low(variants[0]))
+                if (CONVERT::low(tmp) == CONVERT::low(variants[0]))
                     byte = 0x00;
-                else if (low(tmp) == low(variants[1]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[1]))
                     byte = 0x01;
-                else if (low(tmp) == low(variants[2]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[2]))
                     byte = 0x02;
-                else if (low(tmp) == low(variants[3]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[3]))
                     byte = 0x03;
-                else if (low(tmp) == low(variants[4]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[4]))
                     byte = 0x04;
-                else if (low(tmp) == low(variants[5]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[5]))
                     byte = 0x05;
-                else if (low(tmp) == low(variants[6]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[6]))
                     byte = 0x06; // Japan not in json, in case of emergency
-                else if (low(tmp) == low(variants[7]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[7]))
                     byte = 0x07;
-                else if (low(tmp) == low(variants[8]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[8]))
                     byte = 0x08;
-                else if (low(tmp) == low(variants[9]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[9]))
                     byte = 0x09;
-                else if (low(tmp) == low(variants[10]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[10]))
                     byte = 0x0A;
-                else if (low(tmp) == low(variants[11]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[11]))
                     byte = 0x0B;
-                else if (low(tmp) == low(variants[12]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[12]))
                     byte = 0x0C;
-                else if (low(tmp) == low(variants[13]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[13]))
                     byte = 0x0D;
-                else if (low(tmp) == low(variants[14]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[14]))
                     byte = 0x0E;
-                else if (low(tmp) == low(variants[15]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[15]))
                     byte = 0x0F;
-                else if (low(tmp) == low(variants[16]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[16]))
                     byte = 0x10;
-                else if (low(tmp) == low(variants[17]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[17]))
                     byte = 0x11;
-                else if (low(tmp) == low(variants[18]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[18]))
                     byte = 0x12;
-                else if (low(tmp) == low(variants[19]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[19]))
                     byte = 0x13;
-                else if (low(tmp) == low(variants[20]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[20]))
                     byte = 0x14;
-                else if (low(tmp) == low(variants[21]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[21]))
                     byte = 0x15;
-                else if (low(tmp) == low(variants[22]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[22]))
                     byte = 0x16;
-                else if (low(tmp) == low(variants[23]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[23]))
                     byte = 0x17;
-                else if (low(tmp) == low(variants[24]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[24]))
                     byte = 0x18;
-                else if (low(tmp) == low(variants[25]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[25]))
                     byte = 0x19;
-                else if (low(tmp) == low(variants[26]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[26]))
                     byte = 0x1A;
-                else if (low(tmp) == low(variants[27]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[27]))
                     byte = 0x1B;
-                else if (low(tmp) == low(variants[28]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[28]))
                     byte = 0x1C;
-                else if (low(tmp) == low(variants[29]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[29]))
                     byte = 0x1D;
-                else if (low(tmp) == low(variants[30]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[30]))
                     byte = 0x1E;
-                else if (low(tmp) == low(variants[31]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[31]))
                     byte = 0x1F;
-                else if (low(tmp) == low(variants[32]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[32]))
                     byte = 0x20;
-                else if (low(tmp) == low(variants[33]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[33]))
                     byte = 0x21;
-                else if (low(tmp) == low(variants[34]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[34]))
                     byte = 0x22;
-                else if (low(tmp) == low(variants[35]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[35]))
                     byte = 0x23;
                 else
                     incorrect_data += get_string_possible_data(variants, key);
@@ -2215,13 +2062,13 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
                     "SendMiddleNBytes"};
                 const std::string key = "dataCutSetOut"s;
                 std::string tmp = str.at(key).as_string().c_str();
-                if (low(tmp) == low(variants[0]))
+                if (CONVERT::low(tmp) == CONVERT::low(variants[0]))
                     byte |= 0b00000000;
-                else if (low(tmp) == low(variants[1]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[1]))
                     byte |= 0b00000001;
-                else if (low(tmp) == low(variants[2]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[2]))
                     byte |= 0b00000010;
-                else if (low(tmp) == low(variants[3]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[3]))
                     byte |= 0b00000011;
                 else
                     incorrect_data += get_string_possible_data(variants, key);
@@ -2277,17 +2124,17 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
                     "custom+AIM+codeID"};
                 const std::string key = "AIMPrefixType"s;
                 std::string tmp = str.at(key).as_string().c_str();
-                if (low(tmp) == low(variants[0]))
+                if (CONVERT::low(tmp) == CONVERT::low(variants[0]))
                     byte |= 0b00000000;
-                else if (low(tmp) == low(variants[1]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[1]))
                     byte |= 0b00000010;
-                else if (low(tmp) == low(variants[2]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[2]))
                     byte |= 0b00000100;
-                else if (low(tmp) == low(variants[3]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[3]))
                     byte |= 0b00000110;
-                else if (low(tmp) == low(variants[4]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[4]))
                     byte |= 0b00001000;
-                else if (low(tmp) == low(variants[5]))
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[5]))
                     byte |= 0b00001010;
                 else
                     incorrect_data += get_string_possible_data(variants, key);
@@ -2502,15 +2349,6 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
     return set_of_bytes;
 }
 
-std::string &UTIL::low(std::string &str)
-{
-    std::for_each(str.begin(),
-                  str.end(),
-                  [](auto &ch)
-                  { ch = std::tolower(ch); });
-    return str;
-}
-
 std::string UTIL::get_string_possible_data(const std::vector<std::string> &variants, const std::string &key)
 {
     std::cout << "get_string_possible_data\n";
@@ -2610,45 +2448,18 @@ std::string UTIL::parse_json_file(const std::string &source)
     }
 }
 
-void UTIL::print_all_json_files(std::vector<std::pair<std::string, std::string>> &json_list)
-{
-    ConsoleTable table = getTableInitialSetup();
-
-    if (!json_list.empty())
-    {
-        table[0][0] = "#";
-        table[0][1] = "Json file name";
-        table[0][2] = "Status";
-
-        int row = 1;
-        for (const auto &[name, status] : json_list)
-        {
-            table[row][0] = row;
-            table[row][1] = name;
-            table[row][2] = status;
-            ++row;
-        }
-    }
-    else
-    {
-        table[0][0] = "Json files not found";
-    }
-
-    std::cout << table;
-}
-
 int UTIL::write_settings_from_json(const std::map<uint16_t, std::vector<uint8_t>> &settings, handler &device)
 {
     for (const auto &[flag, bits] : settings)
     {
         uint8_t c[64] = {0};
         std::cout << "Flag " << std::hex << flag << std::dec << "\t";
-        std::cout << SEQ::to_hex(bits) << "\n";
+        std::cout << CONVERT::to_hex(bits) << "\n";
         SEQ::create_subcommand(flag, bits, c);
-        std::cout << "Request " << SEQ::to_hex(c, sizeof(c)) << "\n";
+        std::cout << "Request " << CONVERT::to_hex(c, sizeof(c)) << "\n";
         if (-1 == HID_WRITE(device, c, 64))
         {
-            std::cout << "Hid_error: " << UTIL::str(hid_error(device.ptr)) << "\n";
+            std::cout << "Hid_error: " << CONVERT::str(hid_error(device.ptr)) << "\n";
             return -1;
         }
     }

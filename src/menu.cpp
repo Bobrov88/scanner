@@ -40,24 +40,24 @@ void MENU::PrintAvailableDevices()
     std::cout << "HID-devices\n";
     std::cout << "HID-устройства\n";
     std::vector<UTIL::AVAILABLE_HID> hids = UTIL::get_available_hid_devices();
-    UTIL::print_all_hid_linux_devices(hids);
+    PRINT::print_all_hid_linux_devices(hids);
     // pass to HID
     // revise if error
     // saving with printing lists
     std::cout << "COM-devices\n";
     std::cout << "COM-устройства\n";
     std::vector<UTIL::AVAILABLE_COM> coms = UTIL::get_available_linux_com_ports();
-    UTIL::print_all_com_linux_devices(coms);
+    PRINT::print_all_com_linux_devices(coms);
     // uint8_t c[9] = {0};
     // SEQ::test_com_devices_is_scanner_command(c);
     //  std::string message_com_to_hid;
 
     // for (const auto &com : COMS)
     // {
-    //     if (HID::testing_to_pass_HID_from_COM(com.data_, COMS.size()))
+    //     if (HID::testing_to_pass_HID_from_COM(com.port_, COMS.size()))
     //     {
     //         message_com_to_hid += "\n";
-    //         message_com_to_hid += com.data_;
+    //         message_com_to_hid += com.port_;
     //         message_com_to_hid += ": switched to HID";
     //     }
     // }
@@ -73,7 +73,7 @@ void MENU::SaveSettings()
     MENU::PrintAttentionComToHID();
 
     std::vector<UTIL::AVAILABLE_HID> hids = UTIL::get_available_hid_devices();
-    UTIL::print_all_hid_linux_devices(hids);
+    PRINT::print_all_hid_linux_devices(hids);
     std::string scanner_numbers = ChooseScannerToProceed();
     // todo REGEX
     const std::regex int_number{"[0-9]+"};
@@ -105,7 +105,7 @@ void MENU::SaveSettings()
     // {
     //     for (int i = 0; i < hids.size(); ++i)
     //     {
-    //         if (UTIL::hex_view(hids[i].vid_) == vid)
+    //         if (CONVERT::hex_view(hids[i].vid_) == vid)
     //         {
     //             scanner_to_proceed.push_back(i);
     //         }
@@ -119,7 +119,7 @@ void MENU::SaveSettings()
                   {
                     hid_device *handle = hid_open_path(hids[n].path_);
                     std::string json = UTIL::get_full_json_response(handle);
-                    std::string out_file_name = UTIL::str(hids[n].serial_number_) + ".json"s;
+                    std::string out_file_name = CONVERT::str(hids[n].serial_number_) + ".json"s;
                     hid_close(handle);
                     std::ofstream out;
                     out.open(out_file_name);
@@ -132,12 +132,12 @@ void MENU::SaveSettings()
 void MENU::WriteFromJson()
 {
     auto jsons = UTIL::get_json_file_list();
-    UTIL::print_all_json_files(jsons);
+    PRINT::print_all_json_files(jsons);
     auto hids = UTIL::get_available_hid_devices();
     // todo choose scanners, temporarily we chose the single one
     // todo choose a file, temporarily we chose single one
     auto settings = UTIL::convert_json_to_bits("F23450001.json");
-    handler device {hid_open_path(hids[0].path_), hids[0].path_, UTIL::str(hids[0].serial_number_)};
+    handler device {hid_open_path(hids[0].path_), hids[0].path_, CONVERT::str(hids[0].serial_number_)};
     int write_result = UTIL::write_settings_from_json(settings, device);
     if (write_result == 0) std::cout<<"Success\n";
     else std::cout<<"Failed\n";
