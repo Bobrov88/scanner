@@ -258,30 +258,51 @@ std::string UTIL::read_json_settings(hid_device *handle)
 
 int HID_WRITE(handler &device, uint8_t *c, int size)
 {
-    hid_write(device.ptr, c, size);
-    // write to log
-    // bytes
-    // result with error
-    uint8_t r[64] = {0};
-    // using namespace std::chrono_literals;
-    device.ptr = RECONNECT::hid_reconnect(device.serial_number);
-    if (device.ptr == NULL)
+    while (true)
     {
-        return -1;
+        int attempt = 10;
+        while (true)
+        {
+            if (attempt == 0)
+            {
+                return -1;
+            }
+            int write_result = hid_write(device.ptr, c, size);
+            --attempt;
+            if (write_result < size)
+            {
+                device.ptr = RECONNECT::hid_reconnect(device.serial_number);
+                continue;
+            }
+            else
+                break;
+        }
+        // write to log
+        // bytes
+        // result with error
+        uint8_t r[64] = {0};
+        while (true)
+        {
+            int a = hid_read_timeout(device.ptr, r, 64, 100);
+            if (a == -1 || r[0] == 0)
+            {
+                device.ptr = RECONNECT::hid_reconnect(device.serial_number);
+                break;
+            }
+            else if (r[5] == 0x02 &&
+                     r[6] == 0x00 &&
+                     r[7] == 0x00 &&
+                     r[8] == 0x01)
+            {
+                return 0;
+            }
+        }
     }
-    hid_read_timeout(device.ptr, r, 64, 300);
-    std::cout << "Responce " << CONVERT::to_hex(r, sizeof(r)) << "\n";
+
     // write to log
     // bytes
     // result with error
     // TODO
-    if (r[5] == 0x02 &&
-        r[6] == 0x00 &&
-        r[7] == 0x00 &&
-        r[8] == 0x01)
-    {
-        return 0;
-    }
     return -1; // todo error
 }
 
@@ -299,16 +320,16 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
         auto set_bytes_from_symbols = [&str](const std::string &key, size_t length)
         {
             std::string tmp = str.at(key).as_string().c_str();
-            std::vector<uint8_t> byte;
+            std::vector<uint8_t> byte(length, 0);
             if (tmp.size() > length)
             {
                 throw std::string{key + " incorrect value, string length must be less than "s + std::to_string(length) + " symbols"s};
             }
             else
             {
-                for (auto &c : tmp)
+                for (int i = 0; i < length; ++i)
                 {
-                    byte.push_back(static_cast<uint8_t>(std::move(c)));
+                    byte[i] = static_cast<uint8_t>(tmp[i]);
                 }
             }
             return byte;
@@ -2004,14 +2025,12 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
         {
             // FLAG 0x0063-0x0071
             const std::string key = "prefix"s;
-            std::string tmp = str.at(key).as_string().c_str();
             auto byte = set_bytes_from_symbols(key, 15);
             std::copy(byte.begin(), byte.end(), std::back_inserter(bytes));
         }
         {
             // FLAG 0x0072-0x0080
-            const std::string key = "prefix"s;
-            std::string tmp = str.at(key).as_string().c_str();
+            const std::string key = "suffix"s;
             auto byte = set_bytes_from_symbols(key, 15);
             std::copy(byte.begin(), byte.end(), std::back_inserter(bytes));
         }
@@ -2022,14 +2041,12 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
         {
             // FLAG 0x0082-0x0090
             const std::string key = "RFInfo"s;
-            std::string tmp = str.at(key).as_string().c_str();
             auto byte = set_bytes_from_symbols(key, 15);
             std::copy(byte.begin(), byte.end(), std::back_inserter(bytes));
         }
         {
             // FLAG 0x0082-0x0090
             const std::string key = "codeID"s;
-            std::string tmp = str.at(key).as_string().c_str();
             auto byte = set_bytes_from_symbols(key, 31);
             std::copy(byte.begin(), byte.end(), std::back_inserter(bytes));
         }
@@ -2436,10 +2453,7 @@ int UTIL::write_settings_from_json(const std::map<uint16_t, std::vector<uint8_t>
     for (const auto &[flag, bits] : settings)
     {
         uint8_t c[64] = {0};
-        std::cout << "Flag " << std::hex << flag << std::dec << "\t";
-        std::cout << CONVERT::to_hex(bits) << "\n";
         SEQ::create_subcommand(flag, bits, c);
-        std::cout << "Request " << CONVERT::to_hex(c, sizeof(c)) << "\n";
         if (-1 == HID_WRITE(device, c, 64))
         {
             std::cout << "Hid_error: " << CONVERT::str(hid_error(device.ptr)) << "\n";
