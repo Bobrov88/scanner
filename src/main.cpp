@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
     //     MENU::WriteFromJson();
     //     return 0;
     // }
-    //std::cout << UTIL::read_device_info();
+    // std::cout << UTIL::read_device_info();
     // uint8_t c[9] = {0};
     // c[0] = 0x7e;
     // c[1] = 0x00;
@@ -72,13 +72,12 @@ int main(int argc, char *argv[])
     //     std::cerr << ec.message() << '\n';
     // }
 
-    char firmware[45] = "QR_APP_003_BGA65_HModuleFC_QM3503_V1.2.0.sig";
+    s_port.set_option(boost::asio::serial_port::baud_rate(9600));
+    char firmware[45] = "FFFFF.sig";
     int fw_parse_result = firmware_parse_pro(firmware);
     if (fw_parse_result == 0)
     {
         std::cout << "Parsing SUCCESS\n";
-
-        s_port.set_option(boost::asio::serial_port::baud_rate(9600));
         while (true)
         {
             int fw_download_start = firmware_download_start(pSend, pReceive, false);
@@ -88,20 +87,19 @@ int main(int argc, char *argv[])
                 std::cout << "Download FAILED\n";
             double persent;
             DownloadState state;
-            bool enter = false;
             while (persent < 100)
             {
                 get_download_state(&persent, &state);
                 std::cout << "\r" << persent << "% -- Status: " << state;
-                if (state == 0 || state < 0)
+                if (state == DownloadState::SUCCESS || state < DownloadState::SUCCESS)
                 {
-                    if (state == -4)
+                    if (state == DownloadState::RECONNECTDEVICE)
                     {
                         std::cout << "Closing\n";
                         s_port.close();
                         std::cout << "Reconnecting\n";
                         char a;
-                        std::cin>>a;
+                        std::cin >> a;
                         com.pop_back();
                         com.push_back(a);
                         s_port.open(com);

@@ -461,7 +461,7 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
                     byte |= 0b00000000;
                 else if (CONVERT::low(tmp) == CONVERT::low(variants[1]))
                     byte |= 0b00000001;
-                else // to Chinese third available value - mimicry, no mapped bit
+                else // third parameter "mimicry" is not supported (Chinese answer)
                     incorrect_data += get_string_possible_data(variants, key);
             }
             bytes.push_back(byte);
@@ -474,7 +474,7 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
             // FLAG 0x0003
             uint8_t byte = 0;
             {
-                // to Chinese
+                // Invalid settings (Chinese answer)
             }
             {
                 const std::string key = "setCodeEnable"s;
@@ -557,7 +557,7 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
                 set_bit_if_key_bool_true(byte, 7, key);
             }
             {
-                std::vector<std::string> variants = {"off"s, "ctrlMode"s, "altMode"s, "notOut"s};
+                std::vector<std::string> variants = {"off"s, "ctrlMode"s, "altMode"s /*, "notOut"s (Chinese answer)*/};
                 const std::string key = "ctrlCharMode"s;
                 std::string tmp = str.at(key).as_string().c_str();
                 if (CONVERT::low(tmp) == CONVERT::low(variants[0]))
@@ -566,9 +566,6 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
                     byte |= 0b00100000;
                 else if (CONVERT::low(tmp) == CONVERT::low(variants[2]))
                     byte |= 0b01000000;
-                else if (CONVERT::low(tmp) == CONVERT::low(variants[3]))
-                    // to Chinese
-                    byte |= 0b01111111;
                 else
                     incorrect_data += get_string_possible_data(variants, key);
             }
@@ -704,8 +701,7 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
                     byte |= 0b00000010;
             }
             {
-                // to Chinese
-                byte |= 0b00000000;
+                // Not supported
             }
             bytes.push_back(byte);
         }
@@ -837,8 +833,7 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
                 // Reserved 7-5
             }
             {
-                // to Chinese
-                // bit 4
+                // Chinese answer (left to think)
             }
             {
                 const std::string key = "QRLead"s;
@@ -1600,11 +1595,9 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
                 const std::string key = "GS1DatabarEnable"s;
                 set_bit_if_key_bool_true(byte, 0, key);
             }
-            // {
-            // to Chinese
-            //     const std::string key = "???????"s;
-            //     set_bit_if_key_bool_true(byte,1,key);
-            // }
+            {
+                // Chinese answer (left to think)
+            }
             {
                 // Reserved 6-2
             }
@@ -1621,11 +1614,9 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
                 const std::string key = "GS1DatabarLimitedEnable"s;
                 set_bit_if_key_bool_true(byte, 0, key);
             }
-            // {
-            // to Chinese
-            //     const std::string key = "???????"s;
-            //     set_bit_if_key_bool_true(byte,1,key);
-            // }
+            {
+                // Chinese answer (left to think)
+            }
             {
                 // Reserved 6-2
             }
@@ -1646,11 +1637,9 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
                 const std::string key = "GS1DatabarExpansionEnable"s;
                 set_bit_if_key_bool_true(byte, 0, key);
             }
-            // {
-            // to Chinese
-            //     const std::string key = "???????"s;
-            //     set_bit_if_key_bool_true(byte,1,key);
-            // }
+            {
+                // Chinese answer (left to think)
+            }
             {
                 const std::string key = "GS1DatabarExpansionAIBracket"s;
                 bool tmp = str.at(key).as_bool();
@@ -1913,7 +1902,7 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
                 set_bit_if_key_bool_true(byte, 1, key);
             }
             {
-                // to Chinese
+                // Not used (Chinese answer)
             }
             bytes.push_back(byte);
         }
@@ -2093,17 +2082,11 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
             }
             bytes.push_back(byte);
         }
-        {
-            // FLAG 0x00B3
-            uint8_t byte = 0;
-            {
-                // to Chinese
-                // todo revise after new manual
-                // const std::string key = "dataCutCenterLen"s;
-                // set_byte_if_key_uint_byte(byte, key);
-            }
-            bytes.push_back(byte);
-        }
+        //---------------------FROM 0x00B0 to 0x00B2 -----------------//
+        set_of_bytes.insert({0x00B0, std::move(bytes)});
+        bytes.clear();
+        //---------------------FROM 0x00B0 to 0x00B2 -----------------//
+        // 0x00B3 is not set according to Chinese answer
         {
             // FLAG 0x00B4
             uint8_t byte = 0;
@@ -2141,10 +2124,10 @@ std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::s
             }
             bytes.push_back(byte);
         }
-        //---------------------FROM 0x00B0 to 0x00B4 -----------------//
+        //---------------------FROM 0x00B4 to 0x00B4 -----------------//
         set_of_bytes.insert({0x00B0, std::move(bytes)});
         bytes.clear();
-        //---------------------FROM 0x00B0 to 0x00B4 -----------------//
+        //---------------------FROM 0x00B4 to 0x00B4 -----------------//
         {
             // FLAG 0x00BB
             uint8_t byte = 0;
