@@ -43,6 +43,23 @@ void SEQ::save_to_internal_flash_command(uint8_t *c)
     c[11] = crc & 0x00ff;
 }
 
+void SEQ::save_as_custom_flash_command(uint8_t *c)
+{
+    c[0] = 0xfd;
+    c[1] = 0x09;
+    c[2] = 0xff;
+    c[3] = 0x7e;
+    c[4] = 0x00;
+    c[5] = 0x08;
+    c[6] = 0x01;
+    c[7] = 0x00;
+    c[8] = 0xD9;
+    c[9] = 0x56;
+    uint16_t crc = crc_16(&c[5], 5);
+    c[10] = crc >> 8;
+    c[11] = crc & 0x00ff;
+}
+
 void SEQ::restore_to_factory_settings_command(uint8_t *c)
 {
     c[0] = 0xfd;
@@ -55,6 +72,23 @@ void SEQ::restore_to_factory_settings_command(uint8_t *c)
     c[7] = 0x00;
     c[8] = 0x00;
     c[9] = 0xFF;
+    uint16_t crc = crc_16(&c[5], 5);
+    c[10] = crc >> 8;
+    c[11] = crc & 0x00ff;
+}
+
+void SEQ::restore_to_custom_settings(uint8_t *c)
+{
+    c[0] = 0xfd;
+    c[1] = 0x09;
+    c[2] = 0xff;
+    c[3] = 0x7e;
+    c[4] = 0x00;
+    c[5] = 0x08;
+    c[6] = 0x01;
+    c[7] = 0x00;
+    c[8] = 0xD9;
+    c[9] = 0x55;
     uint16_t crc = crc_16(&c[5], 5);
     c[10] = crc >> 8;
     c[11] = crc & 0x00ff;

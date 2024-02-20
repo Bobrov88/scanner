@@ -69,7 +69,7 @@ namespace UTIL
         }
     };
 
-    int HID_WRITE(handler &device, uint8_t *c);
+    int HID_WRITE(handler &device, uint8_t *c, int size);
     int HID_SAVE(hid_device *handle);
     int HID_RESTORE(hid_device *handle);
     std::vector<uint8_t> HID_READ(hid_device *handle);

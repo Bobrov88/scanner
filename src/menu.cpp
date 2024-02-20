@@ -35,6 +35,16 @@ std::string MENU::ChooseScannerToProceed() // take this function out of MENU nam
     return scanner_numbers;
 }
 
+int MENU::OfferToSaveAs()
+{
+    std::cout << "Примечания:   Произведённые изменения действительны при наличии питания сканера\n";
+    std::cout << "Note:         The changes made are valid when the scanner is powered up\n";
+    std::cout << "Сохранить во внутреннюю память?\n";
+    std::cout << "Save to internal flash?\n";
+    int save_as = 0;
+    return save_as;
+}
+
 void MENU::PrintAvailableDevices()
 {
     std::cout << "HID-devices\n";
@@ -137,8 +147,39 @@ void MENU::WriteFromJson()
     // todo choose scanners, temporarily we chose the single one
     // todo choose a file, temporarily we chose single one
     auto settings = UTIL::convert_json_to_bits("F23450001.json");
-    handler device {hid_open_path(hids[0].path_), hids[0].path_, CONVERT::str(hids[0].serial_number_)};
+    handler device{hid_open_path(hids[0].path_), hids[0].path_, CONVERT::str(hids[0].serial_number_)};
     int write_result = UTIL::write_settings_from_json(settings, device);
-    if (write_result == 0) std::cout<<"Success\n";
-    else std::cout<<"Failed\n";
+    if (write_result == 0)
+        std::cout << "Success\n";
+    else
+        std::cout << "Failed\n";
+    int save_as = OfferToSaveAs();
+    switch (save_as)
+    {
+    case 1:
+        HID::save_to_internal_flash(device);
+        break;
+    default:
+        break;
+    }
+}
+
+void MENU::RestoreFactorySettings()
+{
+    auto hids = UTIL::get_available_hid_devices();
+    handler device{hid_open_path(hids[0].path_), hids[0].path_, CONVERT::str(hids[0].serial_number_)};
+    if (-1 == HID::restore_to_factory_settings(device))
+        std::cout << "Success\n";
+    else
+        std::cout << "Failed\n";
+}
+
+void MENU::RestoreCustomSettings()
+{
+    auto hids = UTIL::get_available_hid_devices();
+    handler device{hid_open_path(hids[0].path_), hids[0].path_, CONVERT::str(hids[0].serial_number_)};
+    if (-1 == HID::restore_to_custom_settings(device))
+        std::cout << "Success\n";
+    else
+        std::cout << "Failed\n";
 }

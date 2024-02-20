@@ -1,6 +1,6 @@
 #include "reconnect.h"
 
-#define ATTEMPT 10
+#define ATTEMPT 10 // define as a system var
 
 hid_device *RECONNECT::hid_reconnect(const std::string &serial_number)
 {
@@ -23,7 +23,7 @@ std::string RECONNECT::com_reconnect(const std::string &serial)
     auto found_device = std::find_if(coms.begin(), coms.end(), [&serial](const auto &com)
                                    { return com.serial_number_ == serial; });
     if (found_device != coms.end()) {
-        return found_device->serial_number_;
+        return found_device->port_;
     }
     return "";
 }

@@ -9,11 +9,15 @@
 #include "utility.h"
 #include "print.h"
 
-namespace MENU {
+namespace MENU
+{
     void PrintStartMenu();
     void PrintAttentionComToHID();
-    std::string ChooseScannerToProceed();
     void PrintAvailableDevices();
+    std::string ChooseScannerToProceed();
     void SaveSettings();
     void WriteFromJson();
+    int OfferToSaveAs();
+    void RestoreFactorySettings();
+    void RestoreCustomSettings();
 }

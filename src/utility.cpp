@@ -162,19 +162,20 @@ void UTIL::remove_dublicates_of_hid_devices(std::vector<AVAILABLE_HID> &hids)
 {
     // todo maybe not connected with first try
     // I delete all being connected with failure
+    // todo define passing value type hid_device or handler
     std::vector<AVAILABLE_HID> unique_hids;
     unique_hids.reserve(hids.size());
     for (auto &hid : hids)
     {
-        hid_device *handle = hid_open_path(hid.path_);
-        if (handle)
+        handler device{hid_open_path(hids[0].path_), hids[0].path_, CONVERT::str(hids[0].serial_number_)};
+        if (device.ptr)
         {
-            if (HID::testing_connect_for_erasing_duplicates(handle))
+            if (HID::testing_connect_for_erasing_duplicates(device))
             {
                 unique_hids.emplace_back(std::move(hid));
             }
         }
-        hid_close(handle);
+        hid_close(device.ptr);
     }
     hids.clear();
     hids.assign(unique_hids.begin(), unique_hids.end());
@@ -256,11 +257,11 @@ std::string UTIL::read_json_settings(hid_device *handle)
     return CONVERT::convert_from_bytes_to_string(result);
 }
 
-int HID_WRITE(handler &device, uint8_t *c, int size)
+int UTIL::HID_WRITE(handler &device, uint8_t *c, int size)
 {
     while (true)
     {
-        int attempt = 10;
+        int attempt = 10; // define as a system var
         while (true)
         {
             if (attempt == 0)
