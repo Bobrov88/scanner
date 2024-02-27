@@ -2,7 +2,7 @@ FROM debian:stable-slim
 
 RUN apt-get update -y && \
     apt-get upgrade -y && \
-    apt-get install -y build-essential git cmake libhidapi-dev wget dpkg tar gzip vim
+    apt-get install -y build-essential git cmake libhidapi-dev libudev-dev libusb-1.0 wget dpkg tar gzip vim
 
 RUN cd /home && \
     mkdir conan-deb &&\
@@ -11,6 +11,7 @@ RUN cd /home && \
     dpkg -i conan-ubuntu-64.deb && \
     rm -r -f ../conan-deb
 
+RUN apt-get install pkg-config -y
 RUN apt-get clean -y
 
 # copy conan files
@@ -33,3 +34,7 @@ WORKDIR /home/project/scanner
 
 RUN cd /home/project/scanner && mkdir build_debian_x86_64 && \
     conan install -pr linux_x86_64_build -if build_debian_x86_64 /home/project/scanner/ --build=missing 
+
+#docker run --rm -it --volume=./:/home/project/scanner scanner_x64
+#cmake -Bbuild_debian_x86_64 . -DTARGET_SYSTEM=DEBIAN
+#cmake --build ./build_debian_x86_64

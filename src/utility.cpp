@@ -72,8 +72,8 @@ std::vector<UTIL::AVAILABLE_COM> UTIL::get_available_linux_com_ports()
             }
             std::sort(com_ports.begin(), com_ports.end(), [](const auto &first, const auto &second)
                       { return first.port_ < second.port_; });
-
-            remove_com_devices_if_not_scanner(com_ports);
+            std::cout << "Size of comports " << com_ports.size() << "\n";
+         //   remove_com_devices_if_not_scanner(com_ports);
         }
     }
     catch (const fs::filesystem_error &ex)
@@ -88,32 +88,126 @@ std::vector<UTIL::AVAILABLE_COM> UTIL::get_available_linux_com_ports()
 void UTIL::remove_com_devices_if_not_scanner(std::vector<AVAILABLE_COM> &coms)
 {
     std::vector<UTIL::AVAILABLE_COM> really_scanner;
-    for (auto &com : coms)
+    try
     {
-        boost::asio::io_service io;
-        boost::asio::serial_port s_port(io, com.port_);
-        uint8_t c[9] = {0};
-        SEQ::testing_com_connect_for_erasing_duplicates_command(c);
-        boost::asio::write(s_port, boost::asio::buffer(c, 9));
-
-        uint8_t r[7] = {0};
-        boost::asio::read(s_port, boost::asio::buffer(r, 7));
-
-        if (r[0] == 0x02 &&
-            r[1] == 0x00 &&
-            r[2] == 0x00 &&
-            r[3] == 0x01)
+        for (auto &com : coms)
         {
-            really_scanner.push_back(std::move(com));
-            auto &current_com = really_scanner.back();
-            std::string data = get_json_responce_for_com_detection(current_com.port_);
-            boost::json::value obj = boost::json::parse(data);
-            current_com.product_ = obj.at("FID").as_string().c_str();
-            current_com.model_ = obj.at("deviceName").as_string().c_str();
-            current_com.serial_number_ = obj.at("deviceID").as_string().c_str();
-            current_com.firmware_ = obj.at("FwVer").as_string().c_str();
+            std::cout << "Cycle coms \n";
+            boost::asio::io_service io;
+            boost::asio::serial_port s_port(io, com.port_);
+            s_port.set_option(boost::asio::serial_port_base::baud_rate(115200));
+            std::cout << "Openning port in cycle \n";
+            uint8_t c[9] = {0};
+            SEQ::testing_com_connect_for_erasing_duplicates_command(c);
+            std::cout << "Before write in cycle \n";
+            boost::asio::write(s_port, boost::asio::buffer(c, 9));
+
+            std::this_thread::sleep_for(100ms);
+            std::cout << "Before read in cycle \n";
+
+            uint8_t r[7] = {0};
+            boost::posix_time::time_duration m_timeout = boost::posix_time::seconds(5);
+            boost::asio::deadline_timer m_timer(io);
+            boost::system::error_code e;
+            int read_result;
+            // auto read_completed = [&read_result](const boost::system::error_code &error, const size_t transferred)
+            // {
+            //     if (error)
+            //     {
+            //         if (error != boost::asio::error::operation_aborted)
+            //             read_result = 2;
+            //     }
+            //     else
+            //     {
+            //         if (read_result != 0)
+            //             return;
+            //         read_result = 1;
+            //     }
+            // };
+            // auto timeout_expired = [&read_result](const boost::system::error_code &error)
+            // {
+            //     if (read_result != 0)
+            //         return;
+            //     if (error != boost::asio::error::operation_aborted)
+            //         read_result = 3;
+            // };
+
+            m_timer.expires_from_now(m_timeout);
+            m_timer.async_wait([&read_result](const boost::system::error_code &error)
+                               {
+                if (read_result != 0)
+                    return;
+                if (error != boost::asio::error::operation_aborted)
+                    read_result = 3; });
+            boost::asio::async_read(s_port, boost::asio::buffer(r, 7),
+                                    [&read_result](const boost::system::error_code &error, const size_t transferred)
+                                    {
+                                        if (error)
+                                        {
+                                            if (error != boost::asio::error::operation_aborted)
+                                                read_result = 2;
+                                        }
+                                        else
+                                        {
+                                            if (read_result != 0)
+                                                return;
+                                            read_result = 1;
+                                        }
+                                    });
+            read_result = 0;
+            while (true)
+            {
+                // boost::asio::read(s_port, boost::asio::buffer(r, 7), e);
+                io.run_one();
+                switch (read_result)
+                {
+                case 1:
+                    m_timer.cancel();
+                    return;
+                case 3:
+                    s_port.cancel();
+                    io.reset();
+                    continue;
+                case 2:
+                    m_timer.cancel();
+                    s_port.cancel();
+                    throw std::string{"Error in TimeutSerialBoost::read, read error"};
+                default: // if resultInProgress remain in the loop
+                    break;
+                }
+            }
+
+            std::cout << "After read in cycle \n";
+            if (r[0] == 0x02 &&
+                r[1] == 0x00 &&
+                r[2] == 0x00 &&
+                r[3] == 0x01)
+            {
+                really_scanner.push_back(std::move(com));
+                auto &current_com = really_scanner.back();
+                std::cout << "Before reading json in cycle \n";
+                std::string data = get_json_responce_for_com_detection(current_com.port_);
+                std::cout << "After reading json in cycle \n";
+                boost::json::value obj = boost::json::parse(data);
+                current_com.product_ = obj.at("FID").as_string().c_str();
+                current_com.model_ = obj.at("deviceName").as_string().c_str();
+                current_com.serial_number_ = obj.at("deviceID").as_string().c_str();
+                current_com.firmware_ = obj.at("FwVer").as_string().c_str();
+            }
+            s_port.close();
         }
-        s_port.close();
+    }
+    catch (boost::system::system_error &e)
+    {
+        boost::system::error_code ec = e.code();
+        std::cerr << ec.value() << '\n';
+        std::cerr << ec.category().name() << '\n';
+        std::cerr << ec.message() << '\n';
+    }
+    catch (std::string &err)
+    {
+        std::cout << err;
+        return;
     }
     if (!coms.empty())
     {
@@ -125,6 +219,7 @@ std::vector<UTIL::AVAILABLE_HID> UTIL::list_all_hid()
 {
     std::vector<UTIL::AVAILABLE_HID> device;
     struct hid_device_info *cur_dev;
+    int init = hid_init();
     cur_dev = hid_enumerate(0x0, 0x0);
     // todo in separate function
     while (cur_dev)
@@ -208,7 +303,7 @@ std::string UTIL::get_json_responce_for_com_detection(const std::string &com)
     boost::asio::io_service io;
     boost::asio::serial_port s_port(io, com);
     boost::asio::write(s_port, boost::asio::buffer(buf, sizeof(buf)));
-
+    std::this_thread::sleep_for(100ms);
     std::vector<uint8_t> v;
     uint8_t u;
     do
@@ -272,11 +367,13 @@ int UTIL::HID_WRITE(handler &device, uint8_t *c, int size)
             --attempt;
             if (write_result < size)
             {
-                device.ptr = RECONNECT::hid_reconnect(device.serial_number);
+                //    device.ptr = RECONNECT::hid_reconnect(device.serial_number);
                 continue;
             }
             else
+            {
                 break;
+            }
         }
         // write to log
         // bytes
@@ -299,7 +396,6 @@ int UTIL::HID_WRITE(handler &device, uint8_t *c, int size)
             }
         }
     }
-
     // write to log
     // bytes
     // result with error

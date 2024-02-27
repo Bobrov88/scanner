@@ -45,16 +45,10 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${modules}")
 file(COPY ${CMAKE_BINARY_DIR}/Findspdlog.cmake DESTINATION ${modules})
 file(COPY ${CMAKE_BINARY_DIR}/Findfmt.cmake DESTINATION ${modules})
 
-# file(COPY ${CMAKE_BINARY_DIR}/Findhidapi.cmake DESTINATION ${modules})
-# file(COPY ${CMAKE_BINARY_DIR}/Findlibusb.cmake DESTINATION ${modules})
-# file(COPY ${CMAKE_BINARY_DIR}/Findlibudev.cmake DESTINATION ${modules})
 include(FindPkgConfig)
 find_package(Threads REQUIRED)
 find_package(spdlog REQUIRED)
 
-# find_package(hidapi REQUIRED)
-# find_package(libusb REQUIRED)
-# find_package(libudev REQUIRED)
 list(APPEND CMAKE_FIND_ROOT_PATH ${CONAN_BOOST_ROOT})
 set(Boost_USE_STATIC_LIBS ON)
 add_compile_definitions(_WIN32_WINNT=0x0601)
@@ -63,7 +57,15 @@ find_package(Boost COMPONENTS json log system REQUIRED)
 set(BUILD_SHARED_LIBS FALSE)
 
 # -------- Firmware downloal library ---------- #
-find_library(FWLIB_TO_INCLUDE appdownload.a src/lib)
+if(${TARGET_SYSTEM} STREQUAL DEBIAN)
+    find_library(FWLIB_TO_INCLUDE appdownload.a src/lib_x64)
+    message ("------------Debian")
+elseif(${TARGET_SYSTEM} STREQUAL CENTOS)
+    find_library(FWLIB_TO_INCLUDE appdownload.a src/lib_x86)
+    message ("------------Centos")
+else()
+endif()
+
 find_path(FWLIB_INCLUDES fwdlinterface.h src/include)
 include_directories(${FWLIB_INCLUDES})
 

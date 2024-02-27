@@ -8,9 +8,15 @@
 #include "CppConsoleTable.hpp"
 #include "utility.h"
 #include "print.h"
+#include "serial.h"
 
+typedef int (*pSendData)(char *psendbuf, int sendlen);
+typedef int (*pReceiveData)(char *precbuf, int reclen);
+
+using namespace std::chrono_literals;
 namespace MENU
 {
+
     void PrintStartMenu();
     void PrintAttentionComToHID();
     void PrintAvailableDevices();
@@ -20,4 +26,5 @@ namespace MENU
     int OfferToSaveAs();
     void RestoreFactorySettings();
     void RestoreCustomSettings();
+    void DownloadFirmware();
 }

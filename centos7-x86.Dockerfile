@@ -102,5 +102,6 @@ RUN cd /home/project/scanner && mkdir build_centos_x86 && \
     conan install -pr linux_x86_build -if build_centos_x86 /home/project/scanner/ --build=missing 
 
 
-#cmake -Bbuild_centos_x86 .
+#docker run --rm -it --volume=./:/home/project/scanner scanner
+#cmake -Bbuild_centos_x86 . -DTARGET_SYSTEM=CENTOS
 #cmake --build ./build_centos_x86

@@ -2,7 +2,10 @@
 
 #include <vector>
 #include <boost/json.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/utility.hpp>
 #include <boost/system/error_code.hpp>
+#include <boost/bind/bind.hpp>
 #include <algorithm>
 #include <string>
 #include <filesystem>
@@ -22,12 +25,14 @@ namespace fs = std::filesystem;
 
 namespace UTIL
 {
+    using namespace std::chrono_literals;
+
     struct AVAILABLE_COM
     {
         std::string port_ = "";
         std::string product_ = "";
         std::string model_ = "";
-        std::string serial_number_="";
+        std::string serial_number_ = "";
         std::string firmware_ = "";
         // todo from JSON straight to here
         AVAILABLE_COM(std::string port) : port_(port) {}
@@ -80,7 +85,7 @@ namespace UTIL
     std::vector<UTIL::AVAILABLE_HID> list_all_hid();
     void remove_dublicates_of_hid_devices(std::vector<AVAILABLE_HID> &hids);
     void remove_com_devices_if_not_scanner(std::vector<AVAILABLE_COM> &coms);
-    int write_settings_from_json(const std::map<uint16_t, std::vector<uint8_t>>& settings, handler &device);
+    int write_settings_from_json(const std::map<uint16_t, std::vector<uint8_t>> &settings, handler &device);
 
     std::vector<uint8_t> read_json_piece(hid_device *handle);
     std::string read_json_settings(hid_device *handle);
@@ -99,5 +104,5 @@ namespace UTIL
     std::vector<std::pair<std::string, std::string>> get_json_file_list();
     std::string parse_json_file(const std::string &source);
     std::string read_device_info();
-    std::string get_string_from_source(std::ifstream& file);
+    std::string get_string_from_source(std::ifstream &file);
 };
