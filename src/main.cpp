@@ -1,9 +1,5 @@
-#include <iostream>
 #include "commands.h"
 #include "menu.h"
-#include "spdlog/spdlog.h"
-#include <thread>
-#include <chrono>
 
 int main(int argc, char *argv[])
 {

@@ -72,8 +72,7 @@ std::vector<UTIL::AVAILABLE_COM> UTIL::get_available_linux_com_ports()
             }
             std::sort(com_ports.begin(), com_ports.end(), [](const auto &first, const auto &second)
                       { return first.port_ < second.port_; });
-            std::cout << "Size of comports " << com_ports.size() << "\n";
-         //   remove_com_devices_if_not_scanner(com_ports);
+            remove_com_devices_if_not_scanner(com_ports);
         }
     }
     catch (const fs::filesystem_error &ex)
@@ -92,45 +91,20 @@ void UTIL::remove_com_devices_if_not_scanner(std::vector<AVAILABLE_COM> &coms)
     {
         for (auto &com : coms)
         {
-            std::cout << "Cycle coms \n";
             boost::asio::io_service io;
             boost::asio::serial_port s_port(io, com.port_);
             s_port.set_option(boost::asio::serial_port_base::baud_rate(115200));
-            std::cout << "Openning port in cycle \n";
             uint8_t c[9] = {0};
             SEQ::testing_com_connect_for_erasing_duplicates_command(c);
-            std::cout << "Before write in cycle \n";
             boost::asio::write(s_port, boost::asio::buffer(c, 9));
 
-            std::this_thread::sleep_for(100ms);
-            std::cout << "Before read in cycle \n";
+            std::this_thread::sleep_for(300ms);
 
             uint8_t r[7] = {0};
             boost::posix_time::time_duration m_timeout = boost::posix_time::seconds(5);
             boost::asio::deadline_timer m_timer(io);
             boost::system::error_code e;
             int read_result;
-            // auto read_completed = [&read_result](const boost::system::error_code &error, const size_t transferred)
-            // {
-            //     if (error)
-            //     {
-            //         if (error != boost::asio::error::operation_aborted)
-            //             read_result = 2;
-            //     }
-            //     else
-            //     {
-            //         if (read_result != 0)
-            //             return;
-            //         read_result = 1;
-            //     }
-            // };
-            // auto timeout_expired = [&read_result](const boost::system::error_code &error)
-            // {
-            //     if (read_result != 0)
-            //         return;
-            //     if (error != boost::asio::error::operation_aborted)
-            //         read_result = 3;
-            // };
 
             m_timer.expires_from_now(m_timeout);
             m_timer.async_wait([&read_result](const boost::system::error_code &error)
@@ -157,7 +131,6 @@ void UTIL::remove_com_devices_if_not_scanner(std::vector<AVAILABLE_COM> &coms)
             read_result = 0;
             while (true)
             {
-                // boost::asio::read(s_port, boost::asio::buffer(r, 7), e);
                 io.run_one();
                 switch (read_result)
                 {
@@ -171,13 +144,12 @@ void UTIL::remove_com_devices_if_not_scanner(std::vector<AVAILABLE_COM> &coms)
                 case 2:
                     m_timer.cancel();
                     s_port.cancel();
-                    throw std::string{"Error in TimeutSerialBoost::read, read error"};
+                    throw std::string{"Read error"};
                 default: // if resultInProgress remain in the loop
                     break;
                 }
             }
 
-            std::cout << "After read in cycle \n";
             if (r[0] == 0x02 &&
                 r[1] == 0x00 &&
                 r[2] == 0x00 &&
@@ -185,9 +157,7 @@ void UTIL::remove_com_devices_if_not_scanner(std::vector<AVAILABLE_COM> &coms)
             {
                 really_scanner.push_back(std::move(com));
                 auto &current_com = really_scanner.back();
-                std::cout << "Before reading json in cycle \n";
                 std::string data = get_json_responce_for_com_detection(current_com.port_);
-                std::cout << "After reading json in cycle \n";
                 boost::json::value obj = boost::json::parse(data);
                 current_com.product_ = obj.at("FID").as_string().c_str();
                 current_com.model_ = obj.at("deviceName").as_string().c_str();
@@ -2530,6 +2500,21 @@ std::vector<std::pair<std::string, std::string>> UTIL::get_json_file_list()
     return json_files;
 }
 
+std::vector<std::pair<std::string, int>> UTIL::get_firmware_list()
+{
+    std::vector<std::pair<std::string, int>> firmware_files;
+    for (const auto &entry : fs::directory_iterator(fs::current_path()))
+    {
+        if (entry.is_regular_file() && entry.path().extension() == ".sig")
+        {
+            std::string file = entry.path().filename().string();
+            int parse_result = firmware_parse_pro(file.data());
+            firmware_files.push_back({std::move(file), parse_result});
+        }
+    }
+    return firmware_files;
+}
+
 std::string UTIL::parse_json_file(const std::string &source)
 {
     boost::json::error_code ec;
@@ -2570,4 +2555,60 @@ std::string UTIL::get_string_from_source(std::ifstream &file)
     std::ostringstream oss;
     oss << file.rdbuf();
     return oss.str();
+}
+
+std::vector<UTIL::AVAILABLE_HID> UTIL::get_scanners_list_by_regex(std::vector<UTIL::AVAILABLE_HID> &hids, const std::string &scanner_numbers)
+{
+    std::vector<int> scanner_to_proceed;
+    std::vector<int> ints;
+    std::vector<std::string> vids;
+    const std::regex int_number{"[1-9]+"};
+    const std::regex vid_number{"[0x]{1}[A-Fa-f0-9]{4}"};
+    while (true)
+    {
+        //      UTIL::trim(scanner_numbers);
+        for (std::sregex_iterator rBegin{scanner_numbers.begin(), scanner_numbers.end(), int_number}, rEnd;
+             rBegin != rEnd;
+             ++rBegin)
+        {
+            if (rBegin->str() != "0")
+                ints.push_back(std::stoi(rBegin->str()) - 1);
+        }
+
+        for (std::sregex_iterator rBegin{scanner_numbers.begin(), scanner_numbers.end(), vid_number}, rEnd;
+             rBegin != rEnd;
+             ++rBegin)
+            vids.push_back(rBegin->str());
+        if (!vids.empty() ||
+            !ints.empty())
+            break;
+    }
+    scanner_to_proceed.assign(ints.begin(), ints.end());
+
+    for (const auto &vid : vids)
+    {
+        for (int i = 0; i < hids.size(); ++i)
+        {
+            if (CONVERT::hex_view(hids[i].vid_) == vid)
+            {
+                scanner_to_proceed.push_back(i);
+            }
+        }
+    }
+    std::sort(scanner_to_proceed.begin(), scanner_to_proceed.end());
+    std::unique(scanner_to_proceed.begin(), scanner_to_proceed.end());
+
+    std::vector<UTIL::AVAILABLE_HID> tmp;
+    for (const auto i : scanner_to_proceed)
+    {
+        tmp.push_back(std::move(hids[i]));
+    }
+
+    if (!tmp.empty())
+    {
+        hids.clear();
+        hids.assign(tmp.begin(), tmp.end());
+    }
+
+    return hids;
 }

@@ -3,8 +3,6 @@
 #include <algorithm>
 #include "utility.h"
 #include "converters.h"
-#include <thread>
-#include <chrono>
 
 namespace RECONNECT {
     using namespace std::chrono_literals;

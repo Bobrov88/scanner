@@ -6,26 +6,31 @@
 #include <boost/utility.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/bind/bind.hpp>
+#include <boost/asio.hpp>
 #include <algorithm>
 #include <string>
 #include <filesystem>
+#include <regex>
 #include <fstream>
 #include "hidapi.h"
 #include <iostream>
 #include <fstream>
-#include "commands.h"
-#include "commands_sequencies.h"
-#include "reconnect.h"
 #include <thread>
 #include <chrono>
-#include "handler.h"
 #include <map>
+#include "handler.h"
+#include "fwdlinterface.h"
+#include "converters.h"
+#include "reconnect.h"
+#include "commands_sequencies.h"
+#include "commands.h"
 
 namespace fs = std::filesystem;
 
 namespace UTIL
 {
     using namespace std::chrono_literals;
+    using namespace std::string_literals;
 
     struct AVAILABLE_COM
     {
@@ -75,34 +80,34 @@ namespace UTIL
     };
 
     int HID_WRITE(handler &device, uint8_t *c, int size);
-    int HID_SAVE(hid_device *handle);
-    int HID_RESTORE(hid_device *handle);
-    std::vector<uint8_t> HID_READ(hid_device *handle);
 
     std::vector<AVAILABLE_COM> get_available_windows_com_ports();
     std::vector<AVAILABLE_COM> get_available_linux_com_ports();
     std::vector<AVAILABLE_HID> get_available_hid_devices();
-    std::vector<UTIL::AVAILABLE_HID> list_all_hid();
-    void remove_dublicates_of_hid_devices(std::vector<AVAILABLE_HID> &hids);
-    void remove_com_devices_if_not_scanner(std::vector<AVAILABLE_COM> &coms);
-    int write_settings_from_json(const std::map<uint16_t, std::vector<uint8_t>> &settings, handler &device);
-
-    std::vector<uint8_t> read_json_piece(hid_device *handle);
-    std::string read_json_settings(hid_device *handle);
+    std::vector<AVAILABLE_HID> get_scanners_list_by_regex(std::vector<AVAILABLE_HID> &hids, const std::string &scanner_numbers);
+    std::string get_string_from_source(std::ifstream &file);
+    std::vector<std::pair<std::string, std::string>> get_json_file_list();
+    std::vector<std::pair<std::string, int>> get_firmware_list();
     std::string get_json_responce_for_com_detection(const std::string &com);
-
     std::string get_firmware_device_name_model(hid_device *handle);
     std::string get_full_json_response(hid_device *handle);
-
-    std::map<uint16_t, std::vector<uint8_t>> convert_json_to_bits(const std::string &json);
     std::string get_string_possible_data(const std::vector<std::string> &variants, const std::string &key);
     std::string get_bool_possible_data(const std::string &key);
     std::string get_uint8_t_possible_data(const std::string &key, const uint8_t from, const int to);
+    
+    void remove_com_devices_if_not_scanner(std::vector<AVAILABLE_COM> &coms);
+    void remove_dublicates_of_hid_devices(std::vector<AVAILABLE_HID> &hids);
+    
+    int write_settings_from_json(const std::map<uint16_t, std::vector<uint8_t>> &settings, handler &device);
+
+    std::vector<UTIL::AVAILABLE_HID> list_all_hid();
+    
+    std::vector<uint8_t> read_json_piece(hid_device *handle);
+    std::string read_json_settings(hid_device *handle);
+
+    std::map<uint16_t, std::vector<uint8_t>> convert_json_to_bits(const std::string &json);
     void merge_json(std::string &json);
     void trim(std::string &str);
-
-    std::vector<std::pair<std::string, std::string>> get_json_file_list();
     std::string parse_json_file(const std::string &source);
     std::string read_device_info();
-    std::string get_string_from_source(std::ifstream &file);
 };

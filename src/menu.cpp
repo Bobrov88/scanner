@@ -2,17 +2,21 @@
 
 boost::asio::io_service io;
 boost::asio::serial_port s_port(io);
+std::string com_port;
+std::string sN;
 
 int write(char *buf, int length)
 {
-    std::cout << "\nWrite = " << CONVERT::to_hex((uint8_t *)buf, length);
+    // std::cout << "\nWrite = " << CONVERT::to_hex((uint8_t *)buf, length);
     if (!s_port.is_open())
     {
-        std::cout << "Trying reconnect in write\n";
-        auto coms = UTIL::get_available_linux_com_ports();
-        std::cout << "coms[0].port_=" << coms[0].port_ << std::endl;
-        s_port.open(coms[0].port_);
-        std::this_thread::sleep_for(1000ms);
+        //    std::cout << "Trying reconnect in write\n";
+        // auto coms = UTIL::get_available_linux_com_ports();
+        //      std::cout << "coms[0].port_=" << coms[0].port_ << std::endl;
+
+        // todo shared_ptr
+        s_port.open(com_port);
+        std::this_thread::sleep_for(500ms);
     }
     return boost::asio::write(s_port, boost::asio::buffer(buf, length));
 }
@@ -21,15 +25,15 @@ int read(char *buf, int length)
 {
     if (!s_port.is_open())
     {
-        std::cout << "Trying reconnect in write\n";
-        auto coms = UTIL::get_available_linux_com_ports();
-        std::cout << "coms[0].port_=" << coms[0].port_ << std::endl;
-        s_port.open(coms[0].port_);
-        std::this_thread::sleep_for(1000ms);
+        // std::cout << "Trying reconnect in write\n";
+        //  auto coms = UTIL::get_available_linux_com_ports();
+        //  std::cout << "coms[0].port_=" << coms[0].port_ << std::endl;
+        s_port.open(com_port);
+        std::this_thread::sleep_for(500ms);
     }
-    auto size = boost::asio::read(s_port, boost::asio::buffer(buf, length));
-    std::cout << "\nRead = " << CONVERT::to_hex((uint8_t *)buf, length);
-    return size;
+    //   auto size = boost::asio::read(s_port, boost::asio::buffer(buf, length));
+    //  std::cout << "\nRead = " << CONVERT::to_hex((uint8_t *)buf, length);
+    return boost::asio::read(s_port, boost::asio::buffer(buf, length));
 }
 
 void MENU::PrintStartMenu()
@@ -53,18 +57,8 @@ void MENU::PrintStartMenu()
 
 void MENU::PrintAttentionComToHID()
 {
-    std::cout << "Note:         Scanners found as COM-devices (if exist) will automatically be put into to HID-devices\n";
+    std::cout << "Note:         Scanners found as COM-devices (if exist) will automatically be passed into HID-devices\n";
     std::cout << "Примечание:   Сканеры в режиме COM (если таковые имеются) будут автоматически переведены в режим HID\n";
-}
-
-std::string MENU::ChooseScannerToProceed() // take this function out of MENU namespace
-{
-    std::cout << "Enter scanner numbers with a space for selective saving settings.         E.g.: 1 4 5 \n";
-    std::cout << "or enter VIDs with a space to save settings from scanner with these VIDs. E.g.: 0x34eb 0x53da\n";
-    std::cout << "----------->: ";
-    std::string scanner_numbers;
-    std::getline(std::cin, scanner_numbers);
-    return scanner_numbers;
 }
 
 int MENU::OfferToSaveAs()
@@ -113,86 +107,46 @@ void MENU::PrintAvailableDevices()
 void MENU::SaveSettings()
 {
     MENU::PrintAttentionComToHID();
-
-    std::vector<UTIL::AVAILABLE_HID> hids = UTIL::get_available_hid_devices();
+    // todo pass to hid
+    auto hids = UTIL::get_available_hid_devices();
     PRINT::print_all_hid_linux_devices(hids);
-    std::string scanner_numbers = ChooseScannerToProceed();
-    const std::regex int_number{"[1-9]+"};
-    const std::regex vid_number{"[0x]{1}[A-Fa-f0-9]{4}"};
-    std::vector<int> ints;
-    std::vector<std::string> vids;
-    std::vector<int> scanner_to_proceed;
-    bool is_correct_cin = false;
-    while (!is_correct_cin)
-    {
-        UTIL::trim(scanner_numbers);
-        for (std::sregex_iterator rBegin{scanner_numbers.begin(), scanner_numbers.end(), int_number}, rEnd;
-             rBegin != rEnd;
-             ++rBegin)
-        {
-            if (rBegin->str() != "0")
-                ints.push_back(std::stoi(rBegin->str()) - 1);
-        }
-
-        for (std::sregex_iterator rBegin{scanner_numbers.begin(), scanner_numbers.end(), vid_number}, rEnd;
-             rBegin != rEnd;
-             ++rBegin)
-            vids.push_back(rBegin->str());
-        if (!vids.empty() ||
-            !ints.empty())
-            is_correct_cin = true;
-    }
-    scanner_to_proceed.assign(ints.begin(), ints.end());
-    for (const auto &vid : vids)
-    {
-        for (int i = 0; i < hids.size(); ++i)
-        {
-            if (CONVERT::hex_view(hids[i].vid_) == vid)
-            {
-                scanner_to_proceed.push_back(i);
-            }
-        }
-    }
-    std::sort(scanner_to_proceed.begin(), scanner_to_proceed.end());
-    std::unique(scanner_to_proceed.begin(), scanner_to_proceed.end());
-
-    std::cout << "\n\n";
-    std::for_each(scanner_to_proceed.begin(), scanner_to_proceed.end(), [&hids](const auto n)
-                  {
-                    hid_device *handle = hid_open_path(hids[n].path_);
-                    std::string json = UTIL::get_full_json_response(handle);
-                    std::string out_file_name = CONVERT::str(hids[n].serial_number_) + ".json"s;
-                    hid_close(handle);
-                    std::ofstream out;
-                    out.open(out_file_name);
-                    if (out)
-                    out << json;
-                    else std::cerr<<"Unable to create file: "<<out_file_name<<"\n";
-                    out.close(); });
+    std::string scanner_numbers = PRINT::ChooseScannerToProceed();
+    hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
+    if (HID::save_settings_to_files(hids))
+        std::cout << "\nAll scanners settings successfully saved into files";
+    else
+        std::cout << "\nNot all scanners settings saved!";
 }
 
 void MENU::WriteFromJson()
 {
     auto jsons = UTIL::get_json_file_list();
     PRINT::print_all_json_files(jsons);
+    int json_file = PRINT::ChooseToProceed(jsons.size());
+
     auto hids = UTIL::get_available_hid_devices();
-    // todo choose scanners, temporarily we chose the single one
-    // todo choose a file, temporarily we chose single one
-    auto settings = UTIL::convert_json_to_bits("F23450001.json");
-    handler device{hid_open_path(hids[0].path_), hids[0].path_, CONVERT::str(hids[0].serial_number_)};
-    int write_result = UTIL::write_settings_from_json(settings, device);
-    if (write_result == 0)
-        std::cout << "Success\n";
-    else
-        std::cout << "Failed\n";
-    int save_as = OfferToSaveAs();
-    switch (save_as)
+    PRINT::print_all_hid_linux_devices(hids);
+    std::string scanner_numbers = PRINT::ChooseScannerToProceed();
+    hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
+
+    auto settings = UTIL::convert_json_to_bits(jsons[json_file].first);
+
+    for (const auto &hid : hids)
     {
-    case 1:
-        HID::save_to_internal_flash(device);
-        break;
-    default:
-        break;
+        handler device{hid_open_path(hid.path_), hid.path_, CONVERT::str(hid.serial_number_)};
+        UTIL::write_settings_from_json(settings, device);
+        if (HID::save_to_internal_flash(device))
+            std::cout << "Success\n";
+        else
+            std::cout << "Failed\n";
+        // int save_as = OfferToSaveAs();
+        // switch (save_as)
+        // {
+        // case 1:
+        //     break;
+        // default:
+        //     break;
+        // }
     }
 }
 
@@ -229,11 +183,12 @@ void MENU::DownloadFirmware()
     std::cout << "COM-устройства\n";
     std::vector<UTIL::AVAILABLE_COM> coms = UTIL::get_available_linux_com_ports();
     //   PRINT::print_all_com_linux_devices(coms);
-    // Serial::serial comport;
     try
     {
         //  s_port.open(coms[0].port_);
-        s_port.open(coms[0].port_);
+        com_port = coms[0].port_;
+        sN = coms[0].serial_number_;
+        s_port.open(com_port);
         s_port.set_option(boost::asio::serial_port_base::baud_rate(115200));
         std::this_thread::sleep_for(3000ms);
     }
@@ -244,114 +199,115 @@ void MENU::DownloadFirmware()
         std::cerr << ec.category().name() << '\n';
         std::cerr << ec.message() << '\n';
     }
-    char firmware[64] = "QR_APP_003_BGA65_HModuleFC_QM3503_V1.2.1.sig";
-    int fw_parse_result = firmware_parse_pro(firmware);
-    if (fw_parse_result == 0)
-    {
-        std::cout << "\n"
-                  << "Parsing SUCCESS\n";
-        while (true)
-        {
-            std::cout << "\n"
-                      << "Before writing to the port: ";
-            int fw_download_start = firmware_download_start(write, read, false);
-            if (fw_download_start == 0)
-                std::cout << "\nfirmware Download SUCCESS\n";
-            else
-            {
-                std::cout << "\nfirmware Download FAILED\n";
-                return;
-            }
 
-            double persent;
-            DownloadState state;
-            std::this_thread::sleep_for(3000ms);
-            while (persent < 100)
+    auto firmware_files = UTIL::get_firmware_list();
+    PRINT::print_all_firmware_files(firmware_files);
+    int number = PRINT::ChooseToProceed(firmware_files.size());
+    firmware_parse_pro(firmware_files[number].first.data());
+
+    while (true)
+    {
+        // std::cout << "\n"
+        //           << "Before writing to the port: ";
+        int fw_download_start = firmware_download_start(write, read, false);
+        if (fw_download_start == 0)
+            std::cout << "\nFirmware downloading: ";
+        else
+        {
+            std::cout << "\nfirmware Download FAILED\n";
+            return;
+        }
+
+        double persent = 0;
+        DownloadState state;
+        std::this_thread::sleep_for(3000ms);
+
+        while (persent < 100)
+        {
+            std::cout << persent * 100 << "%\r";
+            get_download_state(&persent, &state);
+            // std::cout << "\n"
+            //           << persent << "% -- Status: " << state << std::endl;
+            // if (!s_port.is_open())
+            // {
+            //     std::cout << "Trying reconnect\n";
+            //     coms = UTIL::get_available_linux_com_ports();
+            //     std::cout << "coms[0].port_=" << coms[0].port_ << std::endl;
+            //     s_port.open(coms[0].port_);
+            // }
+            // else
+            // {
+            //     std::cout << "Port active\n";
+            // }
+
+            if (state == DownloadState::SUCCESS || state < DownloadState::SUCCESS)
             {
-                get_download_state(&persent, &state);
-                std::cout << "\n"
-                          << persent << "% -- Status: " << state << std::endl;
-                if (!s_port.is_open())
+                if (state == DownloadState::RECONNECTDEVICE)
                 {
-                    std::cout << "Trying reconnect\n";
-                    coms = UTIL::get_available_linux_com_ports();
-                    std::cout << "coms[0].port_=" << coms[0].port_ << std::endl;
-                    s_port.open(coms[0].port_);
-                    // fw_download_start = firmware_download_start(write, read, false);
-                    // if (fw_download_start == 0)
-                    //     std::cout << "\nfirmware Download SUCCESS\n";
-                    // else
-                    // {
-                    //     std::cout << "\nfirmware Download FAILED\n";
-                    // }
+                    if (s_port.is_open())
+                    {
+                        s_port.close();
+                    }
+                    std::cout << "Need reconnecting...";
+                    std::this_thread::sleep_for(3000ms);
+                    try
+                    {
+                        com_port = RECONNECT::com_reconnect(sN);
+                        s_port.open(com_port);
+                        s_port.set_option(boost::asio::serial_port_base::baud_rate(115200));
+                    }
+                    catch (boost::system::system_error &e)
+                    {
+                        boost::system::error_code ec = e.code();
+                        std::cerr << ec.value() << '\n';
+                        std::cerr << ec.category().name() << '\n';
+                        std::cerr << ec.message() << '\n';
+                    }
+                    std::this_thread::sleep_for(1000ms);
+                    fw_download_start = firmware_download_start(write, read, false);
+                    break;
                 }
                 else
                 {
-                    std::cout << "Port active\n";
-                }
-
-                if (state == DownloadState::SUCCESS || state < DownloadState::SUCCESS)
-                {
-                    if (state == DownloadState::RECONNECTDEVICE)
+                    if (s_port.is_open())
                     {
-                        std::cout << "\n"
-                                  << "Reconnecting\n";
-                        if (s_port.is_open())
-                        {
-                            std::cout << "Is open\n";
-                            s_port.close();
-                        }
-                        std::cout << "Close\n";
-                        std::this_thread::sleep_for(3000ms);
-                        //  com = RECONNECT::com_reconnect("F23450001"s);
-                        //  std::cout << "New port is: " << com << std::endl;
-                        //   std::vector<UTIL::AVAILABLE_COM> coms = UTIL::get_available_linux_com_ports();
-                        //      std::cout << "Coms size = " << coms.size() << "\n";
-                        //    PRINT::print_all_com_linux_devices(coms);
-                        std::cout << "Print\n";
-                        try
-                        {
-                            std::cout << "Openning\n";
-                            coms = UTIL::get_available_linux_com_ports();
-                            s_port.open(coms[0].port_);
-                            std::cout << "Opened\n";
-                            s_port.set_option(boost::asio::serial_port_base::baud_rate(115200));
-                            std::cout << "Set option\n";
-                        }
-                        catch (boost::system::system_error &e)
-                        {
-                            boost::system::error_code ec = e.code();
-                            std::cerr << ec.value() << '\n';
-                            std::cerr << ec.category().name() << '\n';
-                            std::cerr << ec.message() << '\n';
-                        }
-
-                        std::cout << "\nOpening\n";
-                        std::cout << "\nAfter writing to the port: ";
-                        fw_download_start = firmware_download_start(write, read, false);
-                        if (fw_download_start == 0)
-                            std::cout << "\nfirmware Download SUCCESS\n";
-                        else
-                        {
-                            std::cout << "\nfirmware Download FAILED\n";
-                        }
-                        break;
+                        std::cout << " OK\n";
+                        s_port.close();
                     }
-                    else
-                    {
-                        if (s_port.is_open())
-                        {
-                            std::cout << "Success\n";
-                            s_port.close();
-                        }
-                        return;
-                    }
+                    return;
                 }
-                std::this_thread::sleep_for(500ms);
             }
+            std::this_thread::sleep_for(500ms);
         }
     }
-    else
-        std::cout << "\nParsing FAILED\n";
     return;
 }
+
+// void MENU::ReadUsbIdentifiers(std::string dev_path){
+//     auto udev = udev_new();
+//     if (!udev) { return; }
+
+//     struct stat statbuf;
+//     if (stat(dev_path.c_str(), &statbuf) < 0) { return; }
+//     auto type =  S_ISBLK(statbuf.st_mode) ? 'b' : S_ISCHR(statbuf.st_mode) ? 'c' : 0;
+
+//     auto opened_dev = udev_device_new_from_devnum(udev, type, statbuf.st_rdev);
+//     auto dev = opened_dev;
+
+//     while (dev != nullptr)
+//     {
+//         auto serial = udev_device_get_sysattr_value(dev, "serial");
+//         if (nullptr == serial)
+//         {
+//             dev = udev_device_get_parent(dev);
+//         }
+//         else
+//         {
+//             std::cout << "VID: " <<  udev_device_get_sysattr_value(dev, "idVendor") << std::endl;
+//             std::cout << "PID: " <<  udev_device_get_sysattr_value(dev, "idProduct") << std::endl;
+//             std::cout << "Serial Number: " <<  serial << std::endl;
+//         }
+//     }
+//     if (opened_dev) { udev_device_unref(opened_dev); }
+//     udev_unref(udev);
+// }

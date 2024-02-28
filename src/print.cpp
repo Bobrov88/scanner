@@ -118,3 +118,64 @@ void PRINT::print_all_json_files(std::vector<std::pair<std::string, std::string>
 
     std::cout << table;
 }
+
+void PRINT::print_all_firmware_files(std::vector<std::pair<std::string, int>> &firmware_list)
+{
+    ConsoleTable table = getTableInitialSetup();
+
+    if (!firmware_list.empty())
+    {
+        table[0][0] = "#";
+        table[0][1] = "Firmware file name";
+        table[0][2] = "Status";
+
+        int row = 1;
+        for (const auto &[name, status] : firmware_list)
+        {
+            table[row][0] = row;
+            table[row][1] = name;
+            (status == 0) ? table[row][2] = "OK"s : table[row][2] = "ERROR: " + std::to_string(status);
+            ++row;
+        }
+    }
+    else
+    {
+        table[0][0] = "Firmware files not found";
+    }
+
+    std::cout << table;
+}
+
+std::string PRINT::ChooseScannerToProceed() // take this function out of MENU namespace
+{
+    std::cout << "Enter scanner numbers with a space for selective saving settings.         E.g.: 1 4 5 \n";
+    std::cout << "or enter VIDs with a space to save settings from scanner with these VIDs. E.g.: 0x34eb 0x53da\n";
+    std::cout << "----------->: ";
+    std::string scanner_numbers;
+    std::cin.clear();
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    getline(std::cin, scanner_numbers);
+    return scanner_numbers;
+}
+
+int PRINT::ChooseToProceed(size_t amount) // take this function out of MENU namespace
+{
+    int number;
+    while (true)
+    {
+        std::cout << "Enter number:  ";
+        if (std::cin >> number)
+        {
+            if (number > amount || number < 1)
+                continue;
+            else
+                break;
+        }
+        else
+        {
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        }
+    }
+    return number - 1;
+}
