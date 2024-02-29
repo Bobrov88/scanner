@@ -2545,6 +2545,29 @@ int UTIL::write_settings_from_json(const std::map<uint16_t, std::vector<uint8_t>
     return 0;
 }
 
+bool UTIL::save_settings_to_files(const std::vector<UTIL::AVAILABLE_HID> &hids)
+{
+    bool ret = true;
+    std::for_each(hids.begin(), hids.end(), [&ret](const auto& hid)
+                  {
+                    hid_device *handle = hid_open_path(hid.path_);
+                    std::string json = UTIL::get_full_json_response(handle);
+                    std::string out_file_name = CONVERT::str(hid.serial_number_) + ".json"s;
+                    hid_close(handle);
+                    std::ofstream out;
+                    out.open(out_file_name);
+                    if (out) {
+                    out << json;
+                    std::cout<<"File "<<out_file_name<<" created\n";
+                    }                    
+                    else {
+                        std::cerr<<"Unable to create file: "<<out_file_name<<"\n";
+                        ret = false;
+                    }
+                    out.close(); });
+    return ret;
+}
+
 std::string UTIL::read_device_info()
 {
     return ""s;

@@ -112,7 +112,7 @@ void MENU::SaveSettings()
     PRINT::print_all_hid_linux_devices(hids);
     std::string scanner_numbers = PRINT::ChooseScannerToProceed();
     hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
-    if (HID::save_settings_to_files(hids))
+    if (UTIL::save_settings_to_files(hids))
         std::cout << "\nAll scanners settings successfully saved into files";
     else
         std::cout << "\nNot all scanners settings saved!";

@@ -18,12 +18,12 @@
 #include <thread>
 #include <chrono>
 #include <map>
+#include "commands.h"
 #include "handler.h"
 #include "fwdlinterface.h"
 #include "converters.h"
 #include "reconnect.h"
 #include "commands_sequencies.h"
-#include "commands.h"
 
 namespace fs = std::filesystem;
 
@@ -99,6 +99,7 @@ namespace UTIL
     void remove_dublicates_of_hid_devices(std::vector<AVAILABLE_HID> &hids);
     
     int write_settings_from_json(const std::map<uint16_t, std::vector<uint8_t>> &settings, handler &device);
+    bool save_settings_to_files(const std::vector<UTIL::AVAILABLE_HID> &hids);
 
     std::vector<UTIL::AVAILABLE_HID> list_all_hid();
     

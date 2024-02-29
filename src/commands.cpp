@@ -112,26 +112,3 @@ bool HID::testing_to_pass_HID_from_COM(const std::string &com, size_t size)
 // todo take off condition
     return size < UTIL::get_available_linux_com_ports().size();
 }
-
-bool HID::save_settings_to_files(const std::vector<UTIL::AVAILABLE_HID> &hids)
-{
-    bool ret = true;
-    std::for_each(hids.begin(), hids.end(), [&ret](const auto& hid)
-                  {
-                    hid_device *handle = hid_open_path(hid.path_);
-                    std::string json = UTIL::get_full_json_response(handle);
-                    std::string out_file_name = CONVERT::str(hid.serial_number_) + ".json"s;
-                    hid_close(handle);
-                    std::ofstream out;
-                    out.open(out_file_name);
-                    if (out) {
-                    out << json;
-                    std::cout<<"File "<<out_file_name<<" created\n";
-                    }                    
-                    else {
-                        std::cerr<<"Unable to create file: "<<out_file_name<<"\n";
-                        ret = false;
-                    }
-                    out.close(); });
-    return ret;
-}
