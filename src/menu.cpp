@@ -38,6 +38,7 @@ int read(char *buf, int length)
 
 void MENU::PrintStartMenu()
 {
+    logger("PrintStartMenu");
     std::cout << "\nUsage\n";
     std::cout << "\t -h --help           \t\tget description of available functions\n";
     std::cout << "\t                     \t\tполучить описание доступных функций\n";
@@ -75,6 +76,7 @@ int MENU::OfferToSaveAs()
 
 void MENU::PrintAvailableDevices()
 {
+    logger("PrintAvailableDevices");
     std::cout << "HID-devices\n";
     std::cout << "HID-устройства\n";
     std::vector<UTIL::AVAILABLE_HID> hids = UTIL::get_available_hid_devices();

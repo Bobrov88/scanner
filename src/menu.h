@@ -12,6 +12,7 @@
 #include "print.h"
 #include "commands.h"
 #include "reconnect.h"
+#include "logger.h"
 
 typedef int (*pSendData)(char *psendbuf, int sendlen);
 typedef int (*pReceiveData)(char *precbuf, int reclen);

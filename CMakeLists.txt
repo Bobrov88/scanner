@@ -73,12 +73,8 @@ include_directories(${FWLIB_INCLUDES})
 
 # include_directories(${hidapi_INCLUDES})
 if(Boost_FOUND)
-    message("-- Boost found... Linking...")
     include_directories(${Boost_INCLUDE_DIRS})
-
-    # include_directories(${hidapi_INCLUDE_DIRS})
     add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
-
     target_link_libraries(${PROJECT_NAME} utf8cpp hidapi::hidapi spdlog::spdlog)
     target_link_libraries(${PROJECT_NAME} Boost::thread Boost::system Boost::json Boost::log)
     target_link_libraries(${PROJECT_NAME} ${FWLIB_TO_INCLUDE})

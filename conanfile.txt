@@ -10,3 +10,6 @@ boost:without_stacktrace=True
 cmake
 virtualenv
 cmake_find_package
+
+[layout]
+cmake_layout
