@@ -96,6 +96,7 @@ void UTIL::remove_com_devices_if_not_scanner(std::vector<AVAILABLE_COM> &coms)
             s_port.set_option(boost::asio::serial_port_base::baud_rate(115200));
             uint8_t c[9] = {0};
             SEQ::testing_com_connect_for_erasing_duplicates_command(c);
+            // todo test-and-erase redundant com definition
             boost::asio::write(s_port, boost::asio::buffer(c, 9));
 
             std::this_thread::sleep_for(300ms);
@@ -273,7 +274,7 @@ std::string UTIL::get_json_responce_for_com_detection(const std::string &com)
     boost::asio::io_service io;
     boost::asio::serial_port s_port(io, com);
     boost::asio::write(s_port, boost::asio::buffer(buf, sizeof(buf)));
-    std::this_thread::sleep_for(100ms);
+    std::this_thread::sleep_for(300ms);
     std::vector<uint8_t> v;
     uint8_t u;
     do
@@ -336,14 +337,9 @@ int UTIL::HID_WRITE(handler &device, uint8_t *c, int size)
             int write_result = hid_write(device.ptr, c, size);
             --attempt;
             if (write_result < size)
-            {
-                //    device.ptr = RECONNECT::hid_reconnect(device.serial_number);
                 continue;
-            }
             else
-            {
                 break;
-            }
         }
         // write to log
         // bytes
@@ -2548,7 +2544,7 @@ int UTIL::write_settings_from_json(const std::map<uint16_t, std::vector<uint8_t>
 bool UTIL::save_settings_to_files(const std::vector<UTIL::AVAILABLE_HID> &hids)
 {
     bool ret = true;
-    std::for_each(hids.begin(), hids.end(), [&ret](const auto& hid)
+    std::for_each(hids.begin(), hids.end(), [&ret](const auto &hid)
                   {
                     hid_device *handle = hid_open_path(hid.path_);
                     std::string json = UTIL::get_full_json_response(handle);

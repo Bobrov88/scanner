@@ -100,15 +100,13 @@ bool HID::testing_connect_for_erasing_duplicates(handler &device)
     return 0;
 }
 
-bool HID::testing_to_pass_HID_from_COM(const std::string &com, size_t size)
+void HID::testing_to_pass_HID_from_COM(const std::string &com)
 {
     uint8_t c[9] = {0};
     SEQ::test_com_devices_is_scanner_command(c);
-    std::cout << "\ncom=" << com;
     boost::asio::io_service io;
     boost::asio::serial_port s_port(io, com);
     s_port.set_option(boost::asio::serial_port::baud_rate(9600));
     boost::asio::write(s_port, boost::asio::buffer(c, 9));
-// todo take off condition
-    return size < UTIL::get_available_linux_com_ports().size();
+    // add error ec
 }

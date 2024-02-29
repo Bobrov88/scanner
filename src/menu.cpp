@@ -57,8 +57,10 @@ void MENU::PrintStartMenu()
 
 void MENU::PrintAttentionComToHID()
 {
-    std::cout << "Note:         Scanners found as COM-devices (if exist) will automatically be passed into HID-devices\n";
-    std::cout << "Примечание:   Сканеры в режиме COM (если таковые имеются) будут автоматически переведены в режим HID\n";
+    std::cout << "Note:         Scanners found as COM-devices (if exist) \n";
+    std::cout << "              will automatically be passed into HID-devices\n";
+    std::cout << "Примечание:   Сканеры в режиме COM (если таковые имеются)\n";
+    std::cout << "              будут автоматически переведены в режим HID\n";
 }
 
 int MENU::OfferToSaveAs()
@@ -107,9 +109,18 @@ void MENU::PrintAvailableDevices()
 void MENU::SaveSettings()
 {
     MENU::PrintAttentionComToHID();
-    // todo pass to hid
+    auto coms = UTIL::get_available_linux_com_ports();
+    PRINT::print_all_com_linux_devices(coms);
+
+    for (const auto &com : coms)
+    {
+        HID::testing_to_pass_HID_from_COM(com.port_);
+        std::this_thread::sleep_for(300ms);
+    }
+
     auto hids = UTIL::get_available_hid_devices();
     PRINT::print_all_hid_linux_devices(hids);
+
     std::string scanner_numbers = PRINT::ChooseScannerToProceed();
     hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
     if (UTIL::save_settings_to_files(hids))
@@ -120,6 +131,16 @@ void MENU::SaveSettings()
 
 void MENU::WriteFromJson()
 {
+    MENU::PrintAttentionComToHID();
+    auto coms = UTIL::get_available_linux_com_ports();
+    PRINT::print_all_com_linux_devices(coms);
+
+    for (const auto &com : coms)
+    {
+        HID::testing_to_pass_HID_from_COM(com.port_);
+        std::this_thread::sleep_for(300ms);
+    }
+
     auto jsons = UTIL::get_json_file_list();
     PRINT::print_all_json_files(jsons);
     int json_file = PRINT::ChooseToProceed(jsons.size());
