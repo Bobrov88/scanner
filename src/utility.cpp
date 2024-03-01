@@ -72,6 +72,7 @@ std::vector<UTIL::AVAILABLE_COM> UTIL::get_available_linux_com_ports()
             }
             std::sort(com_ports.begin(), com_ports.end(), [](const auto &first, const auto &second)
                       { return first.port_ < second.port_; });
+                      std::cout <<"\n com_port size="<<com_ports.size();
             remove_com_devices_if_not_scanner(com_ports);
         }
     }
@@ -91,6 +92,7 @@ void UTIL::remove_com_devices_if_not_scanner(std::vector<AVAILABLE_COM> &coms)
     {
         for (auto &com : coms)
         {
+            std::cout << "\n95 UTIL";
             boost::asio::io_service io;
             boost::asio::serial_port s_port(io, com.port_);
             s_port.set_option(boost::asio::serial_port_base::baud_rate(115200));
@@ -102,63 +104,68 @@ void UTIL::remove_com_devices_if_not_scanner(std::vector<AVAILABLE_COM> &coms)
             std::this_thread::sleep_for(300ms);
 
             uint8_t r[7] = {0};
-            boost::posix_time::time_duration m_timeout = boost::posix_time::seconds(5);
-            boost::asio::deadline_timer m_timer(io);
-            boost::system::error_code e;
-            int read_result;
+            boost::asio::read(s_port, boost::asio::buffer(r, 7));
+            // boost::posix_time::time_duration m_timeout = boost::posix_time::seconds(5);
+            // boost::asio::deadline_timer m_timer(io);
+            // boost::system::error_code e;
+            // int read_result;
 
-            m_timer.expires_from_now(m_timeout);
-            m_timer.async_wait([&read_result](const boost::system::error_code &error)
-                               {
-                if (read_result != 0)
-                    return;
-                if (error != boost::asio::error::operation_aborted)
-                    read_result = 3; });
-            boost::asio::async_read(s_port, boost::asio::buffer(r, 7),
-                                    [&read_result](const boost::system::error_code &error, const size_t transferred)
-                                    {
-                                        if (error)
-                                        {
-                                            if (error != boost::asio::error::operation_aborted)
-                                                read_result = 2;
-                                        }
-                                        else
-                                        {
-                                            if (read_result != 0)
-                                                return;
-                                            read_result = 1;
-                                        }
-                                    });
-            read_result = 0;
-            while (true)
-            {
-                io.run_one();
-                switch (read_result)
-                {
-                case 1:
-                    m_timer.cancel();
-                    return;
-                case 3:
-                    s_port.cancel();
-                    io.reset();
-                    continue;
-                case 2:
-                    m_timer.cancel();
-                    s_port.cancel();
-                    throw std::string{"Read error"};
-                default: // if resultInProgress remain in the loop
-                    break;
-                }
-            }
+            // m_timer.expires_from_now(m_timeout);
+            // m_timer.async_wait([&read_result](const boost::system::error_code &error)
+            //                    {
+            //     if (read_result != 0)
+            //         return;
+            //     if (error != boost::asio::error::operation_aborted)
+            //         read_result = 3; });
+            // boost::asio::async_read(s_port, boost::asio::buffer(r, 7),
+            //                         [&read_result](const boost::system::error_code &error, const size_t transferred)
+            //                         {
+            //                             if (error)
+            //                             {
+            //                                 if (error != boost::asio::error::operation_aborted)
+            //                                     read_result = 2;
+            //                             }
+            //                             else
+            //                             {
+            //                                 if (read_result != 0)
+            //                                     return;
+            //                                 read_result = 1;
+            //                             }
+            //                         });
+            // read_result = 0;
+            // while (true)
+            // {
+            //     io.run_one();
+            //     switch (read_result)
+            //     {
+            //     case 1:
+            //         m_timer.cancel();
+            //         return;
+            //     case 3:
+            //         s_port.cancel();
+            //         io.reset();
+            //         continue;
+            //     case 2:
+            //         m_timer.cancel();
+            //         s_port.cancel();
+            //         throw std::string{"Read error"};
+            //     default: // if resultInProgress remain in the loop
+            //         break;
+            //     }
+            // }
 
             if (r[0] == 0x02 &&
                 r[1] == 0x00 &&
                 r[2] == 0x00 &&
                 r[3] == 0x01)
             {
+                std::cout<<"\n 161 com";
                 really_scanner.push_back(std::move(com));
                 auto &current_com = really_scanner.back();
+                if (s_port.is_open())
+                s_port.close();
                 std::string data = get_json_responce_for_com_detection(current_com.port_);
+                std::cout<<"\nData ="<<data;
                 boost::json::value obj = boost::json::parse(data);
                 current_com.product_ = obj.at("FID").as_string().c_str();
                 current_com.model_ = obj.at("deviceName").as_string().c_str();
@@ -188,7 +195,7 @@ void UTIL::remove_com_devices_if_not_scanner(std::vector<AVAILABLE_COM> &coms)
 }
 std::vector<UTIL::AVAILABLE_HID> UTIL::list_all_hid()
 {
-    std::vector<UTIL::AVAILABLE_HID> device;
+    std::vector<UTIL::AVAILABLE_HID> devices;
     struct hid_device_info *cur_dev;
     int init = hid_init();
     cur_dev = hid_enumerate(0x0, 0x0);
@@ -197,7 +204,7 @@ std::vector<UTIL::AVAILABLE_HID> UTIL::list_all_hid()
     {
         if (cur_dev->vendor_id != 0 && cur_dev->product_id != 0)
         {
-            device.push_back({cur_dev->path,
+            devices.push_back({cur_dev->path,
                               cur_dev->vendor_id,
                               cur_dev->product_id,
                               cur_dev->serial_number,
@@ -211,14 +218,17 @@ std::vector<UTIL::AVAILABLE_HID> UTIL::list_all_hid()
         cur_dev = cur_dev->next;
     }
     hid_free_enumeration(cur_dev);
-    return device;
+    std::cout<<"\nDevices="<<devices.size();
+    return devices;
 }
 
 std::vector<UTIL::AVAILABLE_HID> UTIL::get_available_hid_devices()
 {
     std::vector<UTIL::AVAILABLE_HID> device = UTIL::list_all_hid();
+std::cout<<"\nDevice size="<<device.size();
     if (!device.empty())
     {
+        std::cout << "\n222 util";
         remove_dublicates_of_hid_devices(device);
     }
     return device;
@@ -233,17 +243,20 @@ void UTIL::remove_dublicates_of_hid_devices(std::vector<AVAILABLE_HID> &hids)
     unique_hids.reserve(hids.size());
     for (auto &hid : hids)
     {
-        handler device{hid_open_path(hids[0].path_), hids[0].path_, CONVERT::str(hids[0].serial_number_)};
+        handler device{hid_open_path(hid.path_), hid.path_, CONVERT::str(hid.serial_number_)};
         if (device.ptr)
         {
+            std::cout << "\n240 util";
             if (HID::testing_connect_for_erasing_duplicates(device))
             {
+                std::cout << "\n243 util";
                 unique_hids.emplace_back(std::move(hid));
             }
         }
         hid_close(device.ptr);
     }
     hids.clear();
+    std::cout << "\n250 util";
     hids.assign(unique_hids.begin(), unique_hids.end());
 }
 
@@ -270,7 +283,7 @@ std::string UTIL::get_json_responce_for_com_detection(const std::string &com)
 {
     uint8_t buf[12] = {0};
     SEQ::get_config02_command(buf); // GetConfig02.
-
+    std::cout<<"\n 281 com";
     boost::asio::io_service io;
     boost::asio::serial_port s_port(io, com);
     boost::asio::write(s_port, boost::asio::buffer(buf, sizeof(buf)));
@@ -307,7 +320,10 @@ std::string UTIL::get_firmware_device_name_model(hid_device *handle)
     uint8_t ch[64] = {0};
     SEQ::get_config_command(ch, 2);
     hid_write(handle, ch, 64);
-    return read_json_settings(handle);
+    std::this_thread::sleep_for(100ms);
+    std::string j = read_json_settings(handle);
+    std::cout<<"\n---j--"<<j;
+    return j;
 }
 
 std::string UTIL::read_json_settings(hid_device *handle)
@@ -325,42 +341,30 @@ std::string UTIL::read_json_settings(hid_device *handle)
 
 int UTIL::HID_WRITE(handler &device, uint8_t *c, int size)
 {
-    while (true)
-    {
-        int attempt = 10; // define as a system var
-        while (true)
-        {
-            if (attempt == 0)
-            {
-                return -1;
-            }
-            int write_result = hid_write(device.ptr, c, size);
-            --attempt;
-            if (write_result < size)
-                continue;
-            else
-                break;
-        }
+    int attempt = 10; // define as a system var
+    while (attempt)
+    {   std::cout<<"\nattempt = "<<attempt;
+        int write_result = hid_write(device.ptr, c, size);
+        --attempt;
+        std::cout<<"\nWrite = "<<write_result;
+        if (write_result < size)
+            continue;
         // write to log
         // bytes
         // result with error
         uint8_t r[64] = {0};
-        while (true)
-        {
-            int a = hid_read_timeout(device.ptr, r, 64, 100);
-            if (a == -1 || r[0] == 0)
-            {
-                device.ptr = RECONNECT::hid_reconnect(device.serial_number);
-                break;
-            }
-            else if (r[5] == 0x02 &&
-                     r[6] == 0x00 &&
-                     r[7] == 0x00 &&
-                     r[8] == 0x01)
-            {
-                return 0;
-            }
+        int a = hid_read_timeout(device.ptr, r, 64, 100);
+        if (a == -1 || r[0] == 0) {
+            //      device.ptr = RECONNECT::hid_reconnect(device.serial_number);
+            std::cout<<"\n a="<<a<<" "<<"r[0]="<<r[0];
+            continue;
+
         }
+        else if (r[5] == 0x02 &&
+                 r[6] == 0x00 &&
+                 r[7] == 0x00 &&
+                 r[8] == 0x01)
+            return 0;
     }
     // write to log
     // bytes

@@ -95,9 +95,9 @@ bool HID::testing_connect_for_erasing_duplicates(handler &device)
     SEQ::testing_connect_for_erasing_duplicates_command(c);
     if (-1 == UTIL::HID_WRITE(device, c, 64))
     {
-        return -1;
+        return false;
     };
-    return 0;
+    return true;
 }
 
 void HID::testing_to_pass_HID_from_COM(const std::string &com)

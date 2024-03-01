@@ -2,7 +2,9 @@ FROM debian:stable-slim
 
 RUN apt-get update -y && \
     apt-get upgrade -y && \
-    apt-get install -y build-essential git cmake libhidapi-dev libudev-dev libusb-1.0 wget dpkg tar gzip vim
+    apt-get install -y build-essential git cmake libhidapi-dev libudev-dev libusb-1.0 wget dpkg tar gzip vim pkg-config
+
+RUN apt-get clean -y
 
 RUN cd /home && \
     mkdir conan-deb &&\
@@ -11,8 +13,6 @@ RUN cd /home && \
     dpkg -i conan-ubuntu-64.deb && \
     rm -r -f ../conan-deb
 
-RUN apt-get install pkg-config -y
-RUN apt-get clean -y
 
 # copy conan files
 COPY conan/ /root/.conan/

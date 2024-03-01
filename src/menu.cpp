@@ -18,6 +18,7 @@ int write(char *buf, int length)
         s_port.open(com_port);
         std::this_thread::sleep_for(500ms);
     }
+    std::cout<<"\n"<<CONVERT::to_hex((uint8_t*)buf, (size_t)length);
     return boost::asio::write(s_port, boost::asio::buffer(buf, length));
 }
 
@@ -33,7 +34,9 @@ int read(char *buf, int length)
     }
     //   auto size = boost::asio::read(s_port, boost::asio::buffer(buf, length));
     //  std::cout << "\nRead = " << CONVERT::to_hex((uint8_t *)buf, length);
-    return boost::asio::read(s_port, boost::asio::buffer(buf, length));
+    int a = boost::asio::read(s_port, boost::asio::buffer(buf, length));
+    std::cout<<"\n"<<CONVERT::to_hex((uint8_t*)buf, (size_t)length);
+    return a;
 }
 
 void MENU::PrintStartMenu()
@@ -84,6 +87,7 @@ void MENU::PrintAvailableDevices()
     // pass to HID
     // revise if error
     // saving with printing lists
+     std::cout << "\n87 menu";
     std::cout << "COM-devices\n";
     std::cout << "COM-устройства\n";
     std::vector<UTIL::AVAILABLE_COM> coms = UTIL::get_available_linux_com_ports();
@@ -204,16 +208,19 @@ void MENU::DownloadFirmware()
     // saving with printing lists
     std::cout << "COM-devices\n";
     std::cout << "COM-устройства\n";
-    std::vector<UTIL::AVAILABLE_COM> coms = UTIL::get_available_linux_com_ports();
+  //  std::vector<UTIL::AVAILABLE_COM> coms = UTIL::get_available_linux_com_ports();
+  std::vector<UTIL::AVAILABLE_COM> coms;
     //   PRINT::print_all_com_linux_devices(coms);
     try
     {
         //  s_port.open(coms[0].port_);
-        com_port = coms[0].port_;
-        sN = coms[0].serial_number_;
+        //com_port = coms[0].port_;
+        com_port = "/dev/ttyACM1"s;
+        // sN = coms[0].serial_number_;
+        sN = "F23450001"s;
         s_port.open(com_port);
         s_port.set_option(boost::asio::serial_port_base::baud_rate(115200));
-        std::this_thread::sleep_for(3000ms);
+        std::this_thread::sleep_for(500ms);
     }
     catch (boost::system::system_error &e)
     {
@@ -227,7 +234,7 @@ void MENU::DownloadFirmware()
     PRINT::print_all_firmware_files(firmware_files);
     int number = PRINT::ChooseToProceed(firmware_files.size());
     firmware_parse_pro(firmware_files[number].first.data());
-
+    std::cout<<"234 after choose\n";
     while (true)
     {
         // std::cout << "\n"
@@ -275,7 +282,7 @@ void MENU::DownloadFirmware()
                     std::this_thread::sleep_for(3000ms);
                     try
                     {
-                        com_port = RECONNECT::com_reconnect(sN);
+                  //      com_port = RECONNECT::com_reconnect(sN);
                         s_port.open(com_port);
                         s_port.set_option(boost::asio::serial_port_base::baud_rate(115200));
                     }
