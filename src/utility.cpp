@@ -98,6 +98,8 @@ void UTIL::remove_com_devices_if_not_scanner(std::vector<AVAILABLE_COM> &coms)
             s_port.set_option(boost::asio::serial_port_base::baud_rate(115200));
             uint8_t c[9] = {0};
             SEQ::testing_com_connect_for_erasing_duplicates_command(c);
+            int attempt = 10;
+           // while (attempt != 0)
             // todo test-and-erase redundant com definition
             boost::asio::write(s_port, boost::asio::buffer(c, 9));
 
@@ -281,13 +283,15 @@ std::vector<uint8_t> UTIL::read_json_piece(hid_device *handle)
 
 std::string UTIL::get_json_responce_for_com_detection(const std::string &com)
 {
-    uint8_t buf[12] = {0};
-    SEQ::get_config02_command(buf); // GetConfig02.
+  //  uint8_t buf[12] = {0};
+ //   SEQ::get_config02_command(buf); // GetConfig02.
+  uint8_t buf[15] = {0};
+   SEQ::read_device_info_command_by_com(buf);
     std::cout<<"\n 281 com";
     boost::asio::io_service io;
     boost::asio::serial_port s_port(io, com);
     boost::asio::write(s_port, boost::asio::buffer(buf, sizeof(buf)));
-    std::this_thread::sleep_for(300ms);
+    std::this_thread::sleep_for(100ms);
     std::vector<uint8_t> v;
     uint8_t u;
     do
@@ -372,6 +376,42 @@ int UTIL::HID_WRITE(handler &device, uint8_t *c, int size)
     // TODO
     return -1; // todo error
 }
+
+// int UTIL::COM_WRITE(const std::string &s_port, uint8_t *c, int size)
+// {
+//     int attempt = 10; // define as a system var
+//     while (attempt)
+//     {   
+//         std::cout<<"\nattempt = "<<attempt;
+//         int write_result = boost::asio::write(s_port, boost::asio::buffer(c, 9));
+//         --attempt;
+//         std::cout<<"\nWrite = "<<write_result;
+//         if (write_result < size)
+//             continue;
+//         // write to log
+//         // bytes
+//         // result with error
+//         std::this_thread::sleep_for(100ms);
+//         uint8_t r[64] = {0};
+//         int a = boost::asio::read(s_port, boost::asio::buffer(r, 7));
+//         if (a == 0 || r[0] == 0) {
+//             //      device.ptr = RECONNECT::hid_reconnect(device.serial_number);
+//             std::cout<<"\n a="<<a<<" "<<"r[0]="<<r[0];
+//             continue;
+
+//         }
+//         else if (r[0] == 0x02 &&
+//                  r[1] == 0x00 &&
+//                  r[2] == 0x00 &&
+//                  r[3] == 0x01)
+//             return 0;
+//     }
+//     // write to log
+//     // bytes
+//     // result with error
+//     // TODO
+//     return -1; // todo error
+// }
 
 std::map<uint16_t, std::vector<uint8_t>> UTIL::convert_json_to_bits(const std::string &json)
 {
@@ -2568,10 +2608,26 @@ bool UTIL::save_settings_to_files(const std::vector<UTIL::AVAILABLE_HID> &hids)
     return ret;
 }
 
-std::string UTIL::read_device_info()
-{
-    return ""s;
-}
+// std::string UTIL::read_com_device_info()
+// {
+//     // uint8_t buf[15] = {0};
+//     // SEQ::read_device_info_command_by_com(buf);
+//     // boost::asio::io_service io;
+//     // boost::asio::serial_port s_port(io, com);
+//     // boost::asio::write(s_port, boost::asio::buffer(buf, sizeof(buf)));
+//     // std::this_thread::sleep_for(100ms);
+//     // std::vector<uint8_t> v;
+//     // uint8_t u;
+//     // do
+//     // {
+//     //     boost::asio::read(s_port, boost::asio::buffer(&u, 1));
+//     //     v.push_back(u);
+//     // } while (static_cast<char>(u) != '}');
+
+//     // s_port.close();
+//     // std::string str = CONVERT::convert_from_bytes_to_string(v);
+//     // return str;
+// }
 
 std::string UTIL::get_string_from_source(std::ifstream &file)
 {

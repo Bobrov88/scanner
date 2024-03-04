@@ -80,6 +80,7 @@ namespace UTIL
     };
 
     int HID_WRITE(handler &device, uint8_t *c, int size);
+    //int COM_WRITE(const std::string &s_port, uint8_t *c, int size);
 
     std::vector<AVAILABLE_COM> get_available_windows_com_ports();
     std::vector<AVAILABLE_COM> get_available_linux_com_ports();
@@ -110,5 +111,5 @@ namespace UTIL
     void merge_json(std::string &json);
     void trim(std::string &str);
     std::string parse_json_file(const std::string &source);
-    std::string read_device_info();
+    //std::string read_device_info();
 };

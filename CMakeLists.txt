@@ -30,6 +30,7 @@ set(HEADERS
 )
 
 add_subdirectory(src/utfcpp)
+set(BUILD_SHARED_LIBS OFF)
 add_subdirectory(src/hidapi)
 
 if(EXISTS ${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)

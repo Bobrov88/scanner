@@ -208,16 +208,16 @@ void MENU::DownloadFirmware()
     // saving with printing lists
     std::cout << "COM-devices\n";
     std::cout << "COM-устройства\n";
-  //  std::vector<UTIL::AVAILABLE_COM> coms = UTIL::get_available_linux_com_ports();
-  std::vector<UTIL::AVAILABLE_COM> coms;
-    //   PRINT::print_all_com_linux_devices(coms);
+    std::vector<UTIL::AVAILABLE_COM> coms = UTIL::get_available_linux_com_ports();
+  //std::vector<UTIL::AVAILABLE_COM> coms;
+     PRINT::print_all_com_linux_devices(coms);
     try
     {
-        //  s_port.open(coms[0].port_);
+        s_port.open(coms[0].port_);
         //com_port = coms[0].port_;
-        com_port = "/dev/ttyACM1"s;
+        //com_port = "/dev/ttyACM1"s;
         // sN = coms[0].serial_number_;
-        sN = "F23450001"s;
+        //sN = "F23450001"s;
         s_port.open(com_port);
         s_port.set_option(boost::asio::serial_port_base::baud_rate(115200));
         std::this_thread::sleep_for(500ms);
@@ -282,6 +282,7 @@ void MENU::DownloadFirmware()
                     std::this_thread::sleep_for(3000ms);
                     try
                     {
+                        coms = UTIL::get_available_linux_com_ports();
                   //      com_port = RECONNECT::com_reconnect(sN);
                         s_port.open(com_port);
                         s_port.set_option(boost::asio::serial_port_base::baud_rate(115200));
@@ -295,7 +296,6 @@ void MENU::DownloadFirmware()
                     }
                     std::this_thread::sleep_for(1000ms);
                     fw_download_start = firmware_download_start(write, read, false);
-                    break;
                 }
                 else
                 {

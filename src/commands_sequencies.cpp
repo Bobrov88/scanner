@@ -174,7 +174,7 @@ void SEQ::get_config02_command(uint8_t *c)
     c[11] = 0x2E;
 }
 
-void SEQ::read_device_info_command(uint8_t *c)
+void SEQ::read_device_info_command_by_hid(uint8_t *c)
 {
     c[0] = 0xfd;
     c[1] = 0x0f;
@@ -194,6 +194,25 @@ void SEQ::read_device_info_command(uint8_t *c)
     c[15] = 0x66;
     c[16] = 0x6F;
     c[17] = 0x2E;
+}
+
+void SEQ::read_device_info_command_by_com(uint8_t *c)
+{
+    c[0] = 0x52;
+    c[1] = 0x65;
+    c[2] = 0x61;
+    c[3] = 0x64;
+    c[4] = 0x44;
+    c[5] = 0x65;
+    c[6] = 0x76;
+    c[7] = 0x69;
+    c[8] = 0x63;
+    c[9] = 0x65;
+    c[10] = 0x49;
+    c[11] = 0x6E;
+    c[12] = 0x66;
+    c[13] = 0x6F;
+    c[14] = 0x2E;
 }
 
 void SEQ::create_subcommand(const uint16_t flag, const std::vector<uint8_t> &bits, uint8_t *c)
