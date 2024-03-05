@@ -1,0 +1,14 @@
+[settings]
+os=Linux
+os.distro=Debian12
+os_build=Linux
+arch=x86_64
+arch_build=x86_64
+compiler=gcc
+compiler.version=12
+compiler.libcxx=libstdc++11
+build_type=Release
+[options]
+caf:shared=False
+[build_requires]
+[env]
