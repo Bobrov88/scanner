@@ -57,7 +57,7 @@ list(APPEND CMAKE_FIND_ROOT_PATH ${CONAN_BOOST_ROOT})
 set(Boost_USE_STATIC_LIBS ON)
 add_compile_definitions(_WIN32_WINNT=0x0601)
 
-find_package(Boost COMPONENTS json log system REQUIRED)
+find_package(Boost COMPONENTS json system REQUIRED)
 set(BUILD_SHARED_LIBS FALSE)
 
 # -------- Firmware downloal library ---------- #
@@ -68,16 +68,21 @@ elseif(${TARGET_SYSTEM} STREQUAL CENTOS)
 else()
 endif()
 
+# -------- Firmware downloal library ---------- #
 find_path(FWLIB_INCLUDES fwdlinterface.h src/include)
 include_directories(${FWLIB_INCLUDES})
 
-# -------- Firmware downloal library ---------- #
+include_directories(${Boost_INCLUDE_DIRS})
+add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+target_link_libraries(${PROJECT_NAME} utf8cpp hidapi::hidapi spdlog::spdlog)
+target_link_libraries(${PROJECT_NAME} Boost::thread Boost::system Boost::json)
+target_link_libraries(${PROJECT_NAME} ${FWLIB_TO_INCLUDE})
 
-# include_directories(${hidapi_INCLUDES})
-if(Boost_FOUND)
-    include_directories(${Boost_INCLUDE_DIRS})
-    add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
-    target_link_libraries(${PROJECT_NAME} utf8cpp hidapi::hidapi spdlog::spdlog)
-    target_link_libraries(${PROJECT_NAME} Boost::thread Boost::system Boost::json Boost::log)
-    target_link_libraries(${PROJECT_NAME} ${FWLIB_TO_INCLUDE})
+if(${_DEBUG})
+    message("-----Debug build-----")
+    target_compile_definitions(${PROJECT_NAME} PUBLIC DEBUG_COMMENT=TRUE)
+    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -g)
+    else()
+    message("-----Release build-----")
+    target_compile_definitions(${PROJECT_NAME} PUBLIC DEBUG_COMMENT=FALSE)
 endif()

@@ -17,7 +17,7 @@ RUN cd /home && \
 # copy conan files
 COPY conan/ /root/.conan/
 # copy conan profiles
-COPY conan_profiles/linux/centos7/ /root/.conan/profiles
+COPY conan_profiles/linux/debian12/ /root/.conan/profiles
 # private.pem
 COPY private.pem /opt
 
@@ -36,5 +36,5 @@ RUN cd /home/project/scanner && mkdir build_debian_x86_64 && \
     conan install -pr linux_x86_64_build -if build_debian_x86_64 /home/project/scanner/ --build=missing 
 
 #docker run --rm -it --volume=./:/home/project/scanner scanner_x64
-#cmake -Bbuild_debian_x86_64 . -DTARGET_SYSTEM=DEBIAN
+#cmake -Bbuild_debian_x86_64 . -DTARGET_SYSTEM=DEBIAN -D_DEBUG=TRUE
 #cmake --build ./build_debian_x86_64

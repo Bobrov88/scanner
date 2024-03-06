@@ -7,7 +7,9 @@ std::string sN;
 
 int write(char *buf, int length)
 {
-    // std::cout << "\nWrite = " << CONVERT::to_hex((uint8_t *)buf, length);
+#if DEBUG_COMMENT == TRUE
+    //   std::cout << "\nWrite = " << CONVERT::to_hex((uint8_t *)buf, length);
+#endif
     if (!s_port.is_open())
     {
         //    std::cout << "Trying reconnect in write\n";
@@ -18,7 +20,10 @@ int write(char *buf, int length)
         s_port.open(com_port);
         std::this_thread::sleep_for(500ms);
     }
-    std::cout<<"\n"<<CONVERT::to_hex((uint8_t*)buf, (size_t)length);
+#if DEBUG_COMMENT == TRUE
+    std::cout << "\n"
+              << CONVERT::to_hex((uint8_t *)buf, (size_t)length);
+#endif
     return boost::asio::write(s_port, boost::asio::buffer(buf, length));
 }
 
@@ -35,7 +40,10 @@ int read(char *buf, int length)
     //   auto size = boost::asio::read(s_port, boost::asio::buffer(buf, length));
     //  std::cout << "\nRead = " << CONVERT::to_hex((uint8_t *)buf, length);
     int a = boost::asio::read(s_port, boost::asio::buffer(buf, length));
-    std::cout<<"\n"<<CONVERT::to_hex((uint8_t*)buf, (size_t)length);
+#if DEBUG_COMMENT == TRUE
+    std::cout << "\n"
+              << CONVERT::to_hex((uint8_t *)buf, (size_t)length);
+#endif
     return a;
 }
 
@@ -87,7 +95,6 @@ void MENU::PrintAvailableDevices()
     // pass to HID
     // revise if error
     // saving with printing lists
-     std::cout << "\n87 menu";
     std::cout << "COM-devices\n";
     std::cout << "COM-устройства\n";
     std::vector<UTIL::AVAILABLE_COM> coms = UTIL::get_available_linux_com_ports();
@@ -116,56 +123,76 @@ void MENU::SaveSettings()
 {
     MENU::PrintAttentionComToHID();
     auto coms = UTIL::get_available_linux_com_ports();
-    PRINT::print_all_com_linux_devices(coms);
+    // PRINT::print_all_com_linux_devices(coms);
 
     for (const auto &com : coms)
     {
         HID::testing_to_pass_HID_from_COM(com.port_);
         std::this_thread::sleep_for(300ms);
     }
-
+    std::this_thread::sleep_for(3000ms); // delay for reconnecting
     auto hids = UTIL::get_available_hid_devices();
     PRINT::print_all_hid_linux_devices(hids);
 
-    std::string scanner_numbers = PRINT::ChooseScannerToProceed();
-    hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
+    // std::string scanner_numbers = PRINT::ChooseScannerToProceed();
+    // hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
+    // std::cout << "\n138 menu";
     if (UTIL::save_settings_to_files(hids))
-        std::cout << "\nAll scanners settings successfully saved into files";
+        std::cout << "All scanners settings successfully saved into files\n";
     else
-        std::cout << "\nNot all scanners settings saved!";
+        std::cout << "\nNot all scanners settings saved!\n";
 }
 
 void MENU::WriteFromJson()
 {
-    MENU::PrintAttentionComToHID();
+    std::cout << "Logger created\n";
+    //  MENU::PrintAttentionComToHID();
     auto coms = UTIL::get_available_linux_com_ports();
     PRINT::print_all_com_linux_devices(coms);
 
-    for (const auto &com : coms)
-    {
-        HID::testing_to_pass_HID_from_COM(com.port_);
-        std::this_thread::sleep_for(300ms);
-    }
+    // for (const auto &com : coms)
+    // {
+    //     HID::testing_to_pass_HID_from_COM(com.port_);
+    //     logger("Passing to HID-POS", com.port_);
+    //     std::this_thread::sleep_for(300ms);
+    // }
+    // std::this_thread::sleep_for(500ms); // delay for reconnecting
 
     auto jsons = UTIL::get_json_file_list();
     PRINT::print_all_json_files(jsons);
     int json_file = PRINT::ChooseToProceed(jsons.size());
 
-    auto hids = UTIL::get_available_hid_devices();
-    PRINT::print_all_hid_linux_devices(hids);
-    std::string scanner_numbers = PRINT::ChooseScannerToProceed();
-    hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
+    // auto hids = UTIL::get_available_hid_devices();
+    // PRINT::print_all_hid_linux_devices(hids);
+    // std::string scanner_numbers = PRINT::ChooseScannerToProceed();
+    // hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
 
     auto settings = UTIL::convert_json_to_bits(jsons[json_file].first);
-
-    for (const auto &hid : hids)
+    std::cout << "\nCONVERTED OK";
+    // for (const auto &hid : hids)
+    for (const auto &com : coms)
     {
-        handler device{hid_open_path(hid.path_), hid.path_, CONVERT::str(hid.serial_number_)};
-        UTIL::write_settings_from_json(settings, device);
-        if (HID::save_to_internal_flash(device))
-            std::cout << "Success\n";
+        boost::asio::io_service io;
+        boost::asio::serial_port s_port(io);
+        s_port.open(com.port_);
+        if (0 == UTIL::write_settings_from_json(settings, s_port))
+        {
+            std::cout << "Success";
+        }
         else
-            std::cout << "Failed\n";
+        {
+            std::cout << "Failed!";
+        }
+        if (s_port.is_open())
+            s_port.close();
+        // handler device{hid_open_path(hid.path_), hid.path_, CONVERT::str(hid.serial_number_)};
+        // std::cout << "\nPATH=" << std::string(hid.path_);
+        // UTIL::write_settings_from_json(settings, device);
+        // std::cout<<"\nWRITE OK";
+        // if (HID::save_to_internal_flash(device))
+        // std::cout << "Success\n";
+        // else
+        //     std::cout << "Failed\n";
         // int save_as = OfferToSaveAs();
         // switch (save_as)
         // {
@@ -174,27 +201,49 @@ void MENU::WriteFromJson()
         // default:
         //     break;
         // }
+        // hid_close(device.ptr);
     }
 }
 
 void MENU::RestoreFactorySettings()
 {
+    logger("Restoring factory settings");
     auto hids = UTIL::get_available_hid_devices();
-    handler device{hid_open_path(hids[0].path_), hids[0].path_, CONVERT::str(hids[0].serial_number_)};
-    if (-1 == HID::restore_to_factory_settings(device))
-        std::cout << "Success\n";
-    else
-        std::cout << "Failed\n";
+    PRINT::print_all_hid_linux_devices(hids);
+    for (const auto &hid : hids)
+    {
+        handler device{hid_open_path(hid.path_), hid.path_, CONVERT::str(hid.serial_number_)};
+        if (0 == HID::restore_to_factory_settings(device))
+        {
+            std::cout << device.serial_number << " successfully restored to factory settings\n";
+            logger("Restoring to factory - Success", device.serial_number);
+        }
+        else
+        {
+            std::cout << device.serial_number << " failed to restored to factory settings\n";
+        }
+        hid_close(device.ptr);
+    }
 }
 
 void MENU::RestoreCustomSettings()
 {
+    logger("Restoring custom settings");
     auto hids = UTIL::get_available_hid_devices();
-    handler device{hid_open_path(hids[0].path_), hids[0].path_, CONVERT::str(hids[0].serial_number_)};
-    if (-1 == HID::restore_to_custom_settings(device))
-        std::cout << "Success\n";
-    else
-        std::cout << "Failed\n";
+    for (const auto &hid : hids)
+    {
+        handler device{hid_open_path(hid.path_), hid.path_, CONVERT::str(hid.serial_number_)};
+        if (0 == HID::restore_to_custom_settings(device))
+        {
+            std::cout << device.serial_number << " successfully restored to custom settings\n";
+            logger("Restoring to custom - Success", device.serial_number);
+        }
+        else
+        {
+            std::cout << device.serial_number << " failed to restored to custom settings\n";
+        }
+        hid_close(device.ptr);
+    }
 }
 
 void MENU::DownloadFirmware()
@@ -209,15 +258,15 @@ void MENU::DownloadFirmware()
     std::cout << "COM-devices\n";
     std::cout << "COM-устройства\n";
     std::vector<UTIL::AVAILABLE_COM> coms = UTIL::get_available_linux_com_ports();
-  //std::vector<UTIL::AVAILABLE_COM> coms;
-     PRINT::print_all_com_linux_devices(coms);
+    // std::vector<UTIL::AVAILABLE_COM> coms;
+    PRINT::print_all_com_linux_devices(coms);
     try
     {
         s_port.open(coms[0].port_);
-        //com_port = coms[0].port_;
-        //com_port = "/dev/ttyACM1"s;
-        // sN = coms[0].serial_number_;
-        //sN = "F23450001"s;
+        // com_port = coms[0].port_;
+        // com_port = "/dev/ttyACM1"s;
+        //  sN = coms[0].serial_number_;
+        // sN = "F23450001"s;
         s_port.open(com_port);
         s_port.set_option(boost::asio::serial_port_base::baud_rate(115200));
         std::this_thread::sleep_for(500ms);
@@ -234,7 +283,7 @@ void MENU::DownloadFirmware()
     PRINT::print_all_firmware_files(firmware_files);
     int number = PRINT::ChooseToProceed(firmware_files.size());
     firmware_parse_pro(firmware_files[number].first.data());
-    std::cout<<"234 after choose\n";
+    std::cout << "234 after choose\n";
     while (true)
     {
         // std::cout << "\n"
@@ -283,7 +332,7 @@ void MENU::DownloadFirmware()
                     try
                     {
                         coms = UTIL::get_available_linux_com_ports();
-                  //      com_port = RECONNECT::com_reconnect(sN);
+                        //      com_port = RECONNECT::com_reconnect(sN);
                         s_port.open(com_port);
                         s_port.set_option(boost::asio::serial_port_base::baud_rate(115200));
                     }

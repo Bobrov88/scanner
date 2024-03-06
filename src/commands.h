@@ -4,6 +4,7 @@
 #include "hidapi.h"
 #include "handler.h"
 #include "utility.h"
+#include "logger.h"
 
 namespace HID
 {

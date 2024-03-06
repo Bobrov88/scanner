@@ -227,7 +227,7 @@ void SEQ::create_subcommand(const uint16_t flag, const std::vector<uint8_t> &bit
     c[7] = flag >> 8;
     c[8] = flag & 0x00ff;
     
-    int i = 0;
+    size_t i = 0;
     for (; i < bits.size(); ++i)
     {
         c[i + 9] = bits[i];
@@ -236,4 +236,24 @@ void SEQ::create_subcommand(const uint16_t flag, const std::vector<uint8_t> &bit
 
     c[9+i++] = crc >> 8;
     c[9+i] = crc & 0x00ff;
+}
+
+void SEQ::create_subcommand_for_com(const uint16_t flag, const std::vector<uint8_t> &bits, uint8_t *c)
+{
+    c[0] = 0x7e;
+    c[1] = 0x00;
+    c[2] = 0x08;
+    c[3] = (uint8_t)bits.size();
+    c[4] = flag >> 8;
+    c[5] = flag & 0x00ff;
+    
+    size_t i = 0;
+    for (; i < bits.size(); ++i)
+    {
+        c[i + 6] = bits[i];
+    }
+    uint16_t crc = crc_16(&c[2], bits.size() + 4);
+
+    c[6+i++] = crc >> 8;
+    c[6+i] = crc & 0x00ff;
 }

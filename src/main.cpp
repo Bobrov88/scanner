@@ -3,8 +3,6 @@
 
 int main(int argc, char *argv[])
 {
-    setlocale(LC_ALL, "ru_RU.UTF-8");
-
     if (argc == 1 || (argc == 2 && (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0)))
     {
         MENU::PrintStartMenu();

@@ -80,7 +80,7 @@ namespace UTIL
     };
 
     int HID_WRITE(handler &device, uint8_t *c, int size);
-    //int COM_WRITE(const std::string &s_port, uint8_t *c, int size);
+    int COM_WRITE(boost::asio::serial_port &s_port, uint8_t *c, int size);
 
     std::vector<AVAILABLE_COM> get_available_windows_com_ports();
     std::vector<AVAILABLE_COM> get_available_linux_com_ports();
@@ -89,7 +89,7 @@ namespace UTIL
     std::string get_string_from_source(std::ifstream &file);
     std::vector<std::pair<std::string, std::string>> get_json_file_list();
     std::vector<std::pair<std::string, int>> get_firmware_list();
-    std::string get_json_responce_for_com_detection(const std::string &com);
+    std::string get_json_responce_for_com_detection(boost::asio::serial_port& s_port);
     std::string get_firmware_device_name_model(hid_device *handle);
     std::string get_full_json_response(hid_device *handle);
     std::string get_string_possible_data(const std::vector<std::string> &variants, const std::string &key);
@@ -99,7 +99,8 @@ namespace UTIL
     void remove_com_devices_if_not_scanner(std::vector<AVAILABLE_COM> &coms);
     void remove_dublicates_of_hid_devices(std::vector<AVAILABLE_HID> &hids);
     
-    int write_settings_from_json(const std::map<uint16_t, std::vector<uint8_t>> &settings, handler &device);
+    //int write_settings_from_json(const std::vector<std::pair<uint16_t, std::vector<uint8_t>>> &settings, handler &device);
+    int write_settings_from_json(const std::vector<std::pair<uint16_t, std::vector<uint8_t>>> &settings, boost::asio::serial_port& s_port);
     bool save_settings_to_files(const std::vector<UTIL::AVAILABLE_HID> &hids);
 
     std::vector<UTIL::AVAILABLE_HID> list_all_hid();
@@ -107,7 +108,7 @@ namespace UTIL
     std::vector<uint8_t> read_json_piece(hid_device *handle);
     std::string read_json_settings(hid_device *handle);
 
-    std::map<uint16_t, std::vector<uint8_t>> convert_json_to_bits(const std::string &json);
+    std::vector<std::pair<uint16_t, std::vector<uint8_t>>> convert_json_to_bits(const std::string &json);
     void merge_json(std::string &json);
     void trim(std::string &str);
     std::string parse_json_file(const std::string &source);
