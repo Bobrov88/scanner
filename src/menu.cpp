@@ -332,7 +332,7 @@ void MENU::DownloadFirmware()
                     try
                     {
                         coms = UTIL::get_available_linux_com_ports();
-                        //      com_port = RECONNECT::com_reconnect(sN);
+                        com_port = RECONNECT::com_reconnect(sN);
                         s_port.open(com_port);
                         s_port.set_option(boost::asio::serial_port_base::baud_rate(115200));
                     }

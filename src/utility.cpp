@@ -335,6 +335,7 @@ std::string UTIL::read_json_settings(hid_device *handle)
 
 int UTIL::HID_WRITE(handler &device, uint8_t *c, int size)
 {
+    try {
     int attempt = 10; // define as a system var
     while (attempt)
     {
@@ -370,6 +371,9 @@ int UTIL::HID_WRITE(handler &device, uint8_t *c, int size)
         //     std::cout << "\nRead good!";
         //     return 0;
         // }
+    }
+    } catch (std::exception& ex) {
+        std::cout<<ex.what();
     }
     // write to log
     // bytes
