@@ -2733,7 +2733,8 @@ std::vector<UTIL::AVAILABLE_HID> UTIL::get_scanners_list_by_regex(std::vector<UT
     }
     std::cout << "\n2751";
     std::sort(scanner_to_proceed.begin(), scanner_to_proceed.end());
-    std::unique(scanner_to_proceed.begin(), scanner_to_proceed.end());
+    auto u = std::unique(scanner_to_proceed.begin(), scanner_to_proceed.end());
+    scanner_to_proceed.erase(u, scanner_to_proceed.end());
 
     std::vector<UTIL::AVAILABLE_HID> tmp;
     for (const auto i : scanner_to_proceed)

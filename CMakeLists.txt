@@ -65,6 +65,8 @@ if(${TARGET_SYSTEM} STREQUAL DEBIAN)
     find_library(FWLIB_TO_INCLUDE appdownload.a src/lib_x64)
 elseif(${TARGET_SYSTEM} STREQUAL CENTOS)
     find_library(FWLIB_TO_INCLUDE appdownload.a src/lib_x86)
+elseif(${TARGET_SYSTEM} STREQUAL WINDOWS)
+    find_library(FWLIB_TO_INCLUDE libfwdownload.lib src/win10)
 else()
 endif()
 
@@ -79,10 +81,23 @@ target_link_libraries(${PROJECT_NAME} Boost::thread Boost::system Boost::json)
 target_link_libraries(${PROJECT_NAME} ${FWLIB_TO_INCLUDE})
 
 if(${_DEBUG})
-    message("-----Debug build-----")
+    message("-- Debug build --")
     target_compile_definitions(${PROJECT_NAME} PUBLIC DEBUG_COMMENT=TRUE)
     target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -g)
-    else()
-    message("-----Release build-----")
+else()
+    message("-- Release build --")
     target_compile_definitions(${PROJECT_NAME} PUBLIC DEBUG_COMMENT=FALSE)
 endif()
+
+if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+    if (STATIC_CRT)
+        string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+        string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+    endif ()
+    target_compile_definitions(${PROJECT_NAME} PRIVATE _WINDOWS_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
+    target_compile_options(${PROJECT_NAME} PRIVATE /utf-8)
+endif ()
+
+#conan install -pr .\conan_profiles\win10\win10_build -if build_win_x86_64 . --build=missing 
+#cmake -Bbuild_win_x86_64 . -DTARGET_SYSTEM=WINDOWS -D_DEBUG=TRUE
+#cmake --build ./build_win_x86_64

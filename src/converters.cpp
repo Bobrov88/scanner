@@ -64,7 +64,7 @@ std::string CONVERT::convert_from_bytes_to_string(const std::vector<uint8_t> &fr
 
 std::string CONVERT::hex_view(const unsigned short number)
 {
-    std::stringstream str_hex;
+    std::ostringstream str_hex;
     str_hex << "0x" << std::setfill('0') << std::setw(4) << std::hex << number;
     return str_hex.str();
 }
