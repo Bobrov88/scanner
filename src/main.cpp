@@ -1,5 +1,6 @@
 #include "menu.h"
 #include "locale.h"
+#include "commands_sequencies.h"
 
 int main(int argc, char *argv[])
 {

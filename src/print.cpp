@@ -46,9 +46,9 @@ void PRINT::print_all_hid_linux_devices(const std::vector<UTIL::AVAILABLE_HID> &
             table[row][3] = CONVERT::str(hid.product_);
             table[row][4] = CONVERT::str(hid.serial_number_);
             hid_device* ptr = hid_open_path(hid.path_);
-            std::cout<<"\n 49";
+      //      std::cout<<"\n 49";
             boost::json::value obj = boost::json::parse(UTIL::get_firmware_device_name_model(ptr));
-            std::cout<<"\n 51";
+     //       std::cout<<"\n 51";
             table[row][5] = obj.at("deviceName").as_string().c_str();
             table[row][6] = obj.at("FwVer").as_string().c_str();
             ++row;
@@ -59,7 +59,9 @@ void PRINT::print_all_hid_linux_devices(const std::vector<UTIL::AVAILABLE_HID> &
     {
         table[0][0] = "Scanners not found";
     }
-
+    std::ostringstream oss;
+    oss << table;
+    logger(oss.str());
     std::cout << table;
 }
 
@@ -92,7 +94,9 @@ void PRINT::print_all_com_linux_devices(const std::vector<UTIL::AVAILABLE_COM> &
     {
         table[0][0] = "Scanners not found";
     }
-
+    std::ostringstream oss;
+    oss << table;
+    logger(oss.str());
     std::cout << table;
 }
 
@@ -169,7 +173,7 @@ int PRINT::ChooseToProceed(size_t amount) // take this function out of MENU name
     size_t number;
     while (true)
     {
-        std::cout << "Enter number:  ";
+        std::cout << "Choose file by its number:  ";
         if (std::cin >> number)
         {
             if (number > amount || number < 1)

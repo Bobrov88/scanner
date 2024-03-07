@@ -245,7 +245,7 @@ std::vector<uint8_t> UTIL::read_json_piece(hid_device *handle)
 {
     uint8_t response[64] = {0};
     int size_of_read_bytes = hid_read_timeout(handle, response, 64, 100);
-    std::cout<<"Read size = "<<size_of_read_bytes;
+    std::cout << "Read size = " << size_of_read_bytes;
     if (size_of_read_bytes <= 0)
     {
         // TODO if result is negative
@@ -324,7 +324,7 @@ std::string UTIL::get_firmware_device_name_model(hid_device *handle)
         if (64 != a)
         {
             std::cout << "\n a=" << a;
-        continue;
+            continue;
         }
         else
         {
@@ -340,10 +340,10 @@ std::string UTIL::read_json_settings(hid_device *handle)
     std::vector<uint8_t> result;
     while (true)
     {
-        std::cout<<"\n 342";
+        std::cout << "\n 342";
         std::vector<uint8_t> tmp = read_json_piece(handle);
-        std::cout<<"\n 344 size temp="<<tmp.size();
-        
+        std::cout << "\n 344 size temp=" << tmp.size();
+
         if (tmp.empty())
             break;
         result.insert(result.end(), tmp.begin(), tmp.end());
@@ -360,7 +360,7 @@ int UTIL::HID_WRITE(handler &device, uint8_t *c, int size)
         {
             if (device.ptr == NULL)
             {
-                std::cout << "Device reconnect\n";
+                //       std::cout << "Device reconnect\n";
                 hid_close(device.ptr);
                 device.ptr = hid_open_path(device.path.data());
             }
@@ -368,17 +368,17 @@ int UTIL::HID_WRITE(handler &device, uint8_t *c, int size)
             --attempt;
             if (write_result < size)
             {
-                std::cout << "\nW < S";
+                //        std::cout << "\nW < S";
                 continue;
             }
 
             uint8_t r[64] = {0};
-            int a = hid_read_timeout(device.ptr, r, 64, 100);
-            std::cout << "\n438 " << device.serial_number;
+            int a = hid_read_timeout(device.ptr, r, 64, 300);
+            //       std::cout << "\n438 " << device.serial_number;
             if (a == -1 || r[0] == 0)
             {
-                std::cout << "\n a=" << a << " "
-                          << "r[0]=" << r[0];
+                //        std::cout << "\n a=" << a << " "
+                //                  << "r[0]=" << r[0];
                 continue;
             }
             else if (r[5] == 0x02 &&
@@ -386,7 +386,8 @@ int UTIL::HID_WRITE(handler &device, uint8_t *c, int size)
                      r[7] == 0x00 &&
                      r[8] == 0x01)
             {
-                std::cout << "\nRead good!";
+                //      std::cout<<"\nResult="<<r[0];
+                //      std::cout << "\nRead good!";
                 return 0;
             }
         }
@@ -2625,6 +2626,7 @@ std::string UTIL::parse_json_file(const std::string &source)
 
 int UTIL::write_settings_from_json(const std::vector<std::pair<uint16_t, std::vector<uint8_t>>> &settings, handler &device)
 {
+    logger("Write settings from json", device.path);
     for (const auto &[flag, bits] : settings)
     {
         uint8_t c[64] = {0};
@@ -2664,10 +2666,9 @@ bool UTIL::save_settings_to_files(const std::vector<UTIL::AVAILABLE_HID> &hids)
     bool ret = true;
     std::for_each(hids.begin(), hids.end(), [&ret](const auto &hid)
                   {
-                 //   std::cout<<"\n2662";
+                    logger("Saving settings to files", std::string(hid.path_));
                     hid_device *handle = hid_open_path(hid.path_);
                     std::string json = UTIL::get_full_json_response(handle);
-                //    std::cout<<"\n2665";
                     std::string out_file_name = CONVERT::str(hid.serial_number_) + ".json"s;
                     hid_close(handle);
                     std::ofstream out;
@@ -2675,8 +2676,10 @@ bool UTIL::save_settings_to_files(const std::vector<UTIL::AVAILABLE_HID> &hids)
                     if (out) {
                     out << json;
                     std::cout<<"File "<<out_file_name<<" created\n";
+                    logger(out_file_name + " file created");
                     }                    
                     else {
+                        logger(out_file_name + " file not created");
                         std::cerr<<"Unable to create file: "<<out_file_name<<"\n";
                         ret = false;
                     }

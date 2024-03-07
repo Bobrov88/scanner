@@ -113,6 +113,7 @@ bool HID::testing_connect_for_erasing_duplicates(handler &device)
 
 void HID::testing_to_pass_HID_from_COM(const std::string &com)
 {
+    logger("testing_to_pass_HID_from_COM", com);
     uint8_t c[9] = {0};
     SEQ::test_com_devices_is_scanner_command(c);
     boost::asio::io_service io;
