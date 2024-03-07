@@ -147,8 +147,8 @@ void MENU::WriteFromJson()
 {
     std::cout << "Logger created\n";
     //  MENU::PrintAttentionComToHID();
-    auto coms = UTIL::get_available_linux_com_ports();
-    PRINT::print_all_com_linux_devices(coms);
+    // auto coms = UTIL::get_available_linux_com_ports();
+    // PRINT::print_all_com_linux_devices(coms);
 
     // for (const auto &com : coms)
     // {
@@ -162,37 +162,38 @@ void MENU::WriteFromJson()
     PRINT::print_all_json_files(jsons);
     int json_file = PRINT::ChooseToProceed(jsons.size());
 
-    // auto hids = UTIL::get_available_hid_devices();
-    // PRINT::print_all_hid_linux_devices(hids);
+    auto hids = UTIL::get_available_hid_devices();
+    std::cout<<"\nGood 166";
+    PRINT::print_all_hid_linux_devices(hids);
     // std::string scanner_numbers = PRINT::ChooseScannerToProceed();
     // hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
 
     auto settings = UTIL::convert_json_to_bits(jsons[json_file].first);
     std::cout << "\nCONVERTED OK";
-    // for (const auto &hid : hids)
-    for (const auto &com : coms)
+     for (const auto &hid : hids)
+   // for (const auto &com : coms)
     {
-        boost::asio::io_service io;
-        boost::asio::serial_port s_port(io);
-        s_port.open(com.port_);
-        if (0 == UTIL::write_settings_from_json(settings, s_port))
-        {
-            std::cout << "Success";
-        }
-        else
-        {
-            std::cout << "Failed!";
-        }
-        if (s_port.is_open())
-            s_port.close();
-        // handler device{hid_open_path(hid.path_), hid.path_, CONVERT::str(hid.serial_number_)};
-        // std::cout << "\nPATH=" << std::string(hid.path_);
-        // UTIL::write_settings_from_json(settings, device);
-        // std::cout<<"\nWRITE OK";
-        // if (HID::save_to_internal_flash(device))
-        // std::cout << "Success\n";
+        // boost::asio::io_service io;
+        // boost::asio::serial_port s_port(io);
+        // s_port.open(com.port_);
+        // if (0 == UTIL::write_settings_from_json(settings, s_port))
+        // {
+        //     std::cout << "Success";
+        // }
         // else
-        //     std::cout << "Failed\n";
+        // {
+        //     std::cout << "Failed!";
+        // }
+        // if (s_port.is_open())
+        //     s_port.close();
+        handler device{hid_open_path(hid.path_), hid.path_, CONVERT::str(hid.serial_number_)};
+        std::cout << "\nPATH=" << std::string(hid.path_);
+        UTIL::write_settings_from_json(settings, device);
+        std::cout << "\nWRITE OK";
+        if (0 == HID::save_to_internal_flash(device))
+            std::cout << "Success\n";
+        else
+            std::cout << "Failed\n";
         // int save_as = OfferToSaveAs();
         // switch (save_as)
         // {
@@ -201,8 +202,9 @@ void MENU::WriteFromJson()
         // default:
         //     break;
         // }
-        // hid_close(device.ptr);
+        hid_close(device.ptr);
     }
+    hid_exit();
 }
 
 void MENU::RestoreFactorySettings()

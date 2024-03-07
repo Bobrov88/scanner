@@ -99,7 +99,7 @@ namespace UTIL
     void remove_com_devices_if_not_scanner(std::vector<AVAILABLE_COM> &coms);
     void remove_dublicates_of_hid_devices(std::vector<AVAILABLE_HID> &hids);
     
-    //int write_settings_from_json(const std::vector<std::pair<uint16_t, std::vector<uint8_t>>> &settings, handler &device);
+    int write_settings_from_json(const std::vector<std::pair<uint16_t, std::vector<uint8_t>>> &settings, handler &device);
     int write_settings_from_json(const std::vector<std::pair<uint16_t, std::vector<uint8_t>>> &settings, boost::asio::serial_port& s_port);
     bool save_settings_to_files(const std::vector<UTIL::AVAILABLE_HID> &hids);
 

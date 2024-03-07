@@ -185,7 +185,6 @@ std::vector<UTIL::AVAILABLE_HID> UTIL::list_all_hid()
 {
     std::vector<UTIL::AVAILABLE_HID> devices;
     struct hid_device_info *cur_dev;
-    int init = hid_init();
     cur_dev = hid_enumerate(0x0, 0x0);
     // todo in separate function
     while (cur_dev)
@@ -206,7 +205,6 @@ std::vector<UTIL::AVAILABLE_HID> UTIL::list_all_hid()
         cur_dev = cur_dev->next;
     }
     hid_free_enumeration(cur_dev);
-    //  std::cout << "\nDevices=" << devices.size();
     return devices;
 }
 
@@ -247,6 +245,7 @@ std::vector<uint8_t> UTIL::read_json_piece(hid_device *handle)
 {
     uint8_t response[64] = {0};
     int size_of_read_bytes = hid_read_timeout(handle, response, 64, 100);
+    std::cout<<"Read size = "<<size_of_read_bytes;
     if (size_of_read_bytes <= 0)
     {
         // TODO if result is negative
@@ -316,7 +315,23 @@ std::string UTIL::get_firmware_device_name_model(hid_device *handle)
 {
     uint8_t ch[64] = {0};
     SEQ::get_config_command(ch, 2);
-    hid_write(handle, ch, 64);
+    int attempt = 10;
+    int a = 0;
+    while (attempt != 0)
+    {
+        --attempt;
+        a = hid_write(handle, ch, 64);
+        if (64 != a)
+        {
+            std::cout << "\n a=" << a;
+        continue;
+        }
+        else
+        {
+            std::cout << "\n a=" << a;
+            break;
+        }
+    }
     return read_json_settings(handle);
 }
 
@@ -325,7 +340,10 @@ std::string UTIL::read_json_settings(hid_device *handle)
     std::vector<uint8_t> result;
     while (true)
     {
+        std::cout<<"\n 342";
         std::vector<uint8_t> tmp = read_json_piece(handle);
+        std::cout<<"\n 344 size temp="<<tmp.size();
+        
         if (tmp.empty())
             break;
         result.insert(result.end(), tmp.begin(), tmp.end());
@@ -335,45 +353,47 @@ std::string UTIL::read_json_settings(hid_device *handle)
 
 int UTIL::HID_WRITE(handler &device, uint8_t *c, int size)
 {
-    try {
-    int attempt = 10; // define as a system var
-    while (attempt)
+    try
     {
-        if (device.ptr == NULL)
+        int attempt = 10; // define as a system var
+        while (attempt != 0)
         {
-            std::cout << "Device reconnect\n";
-            hid_close(device.ptr);
-            device.ptr = hid_open_path(device.path.data());
-        }
-        std::this_thread::sleep_for(100ms);
-        int write_result = hid_write(device.ptr, c, size);
-        --attempt;
-        if (write_result < size)
-        {
-            continue;
-            std::cout << "\nW < S";
-        }
+            if (device.ptr == NULL)
+            {
+                std::cout << "Device reconnect\n";
+                hid_close(device.ptr);
+                device.ptr = hid_open_path(device.path.data());
+            }
+            int write_result = hid_write(device.ptr, c, size);
+            --attempt;
+            if (write_result < size)
+            {
+                std::cout << "\nW < S";
+                continue;
+            }
 
-        uint8_t r[64] = {0};
-        int a = hid_read_timeout(device.ptr, r, 64, 300);
-        std::cout << "\n438 " << device.serial_number;
-        // if (a == -1 || r[0] == 0)
-        // {
-        //     std::cout << "\n a=" << a << " "
-        //               << "r[0]=" << r[0];
-        //     continue;
-        // }
-        // else if (r[5] == 0x02 &&
-        //          r[6] == 0x00 &&
-        //          r[7] == 0x00 &&
-        //          r[8] == 0x01)
-        // {
-        //     std::cout << "\nRead good!";
-        //     return 0;
-        // }
+            uint8_t r[64] = {0};
+            int a = hid_read_timeout(device.ptr, r, 64, 100);
+            std::cout << "\n438 " << device.serial_number;
+            if (a == -1 || r[0] == 0)
+            {
+                std::cout << "\n a=" << a << " "
+                          << "r[0]=" << r[0];
+                continue;
+            }
+            else if (r[5] == 0x02 &&
+                     r[6] == 0x00 &&
+                     r[7] == 0x00 &&
+                     r[8] == 0x01)
+            {
+                std::cout << "\nRead good!";
+                return 0;
+            }
+        }
     }
-    } catch (std::exception& ex) {
-        std::cout<<ex.what();
+    catch (std::exception &ex)
+    {
+        std::cout << ex.what();
     }
     // write to log
     // bytes
@@ -2603,23 +2623,23 @@ std::string UTIL::parse_json_file(const std::string &source)
     }
 }
 
-// int UTIL::write_settings_from_json(const std::vector<std::pair<uint16_t, std::vector<uint8_t>>> &settings, handler &device)
-// {
-//     for (const auto &[flag, bits] : settings)
-//     {
-//         uint8_t c[64] = {0};
-//         SEQ::create_subcommand(flag, bits, c);
+int UTIL::write_settings_from_json(const std::vector<std::pair<uint16_t, std::vector<uint8_t>>> &settings, handler &device)
+{
+    for (const auto &[flag, bits] : settings)
+    {
+        uint8_t c[64] = {0};
+        SEQ::create_subcommand(flag, bits, c);
 
-//         //   std::cout << "Bits: " << CONVERT::to_hex(c, bits.size() + 11);
-//         if (-1 == HID_WRITE(device, c, 64))
-//         {
-//             logger(CONVERT::str(hid_error(device.ptr)), device.serial_number);
-//             return -1;
-//         }
-//         logger("Success", device.serial_number);
-//     }
-//     return 0;
-// }
+        //   std::cout << "Bits: " << CONVERT::to_hex(c, bits.size() + 11);
+        if (-1 == HID_WRITE(device, c, 64))
+        {
+            logger(CONVERT::str(hid_error(device.ptr)), device.serial_number);
+            return -1;
+        }
+        logger("Success", device.serial_number);
+    }
+    return 0;
+}
 
 int UTIL::write_settings_from_json(const std::vector<std::pair<uint16_t, std::vector<uint8_t>>> &settings, boost::asio::serial_port &s_port)
 {

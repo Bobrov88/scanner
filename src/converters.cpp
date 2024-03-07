@@ -52,7 +52,6 @@ std::wstring CONVERT::wstr(const std::string &src)
 std::string CONVERT::convert_from_bytes_to_string(const std::vector<uint8_t> &from)
 {
     std::string str;
-   // std::cout<<"\n55";
     size_t size = from.size();
     str.reserve(size);
     for (size_t i = 0; i < size; ++i)
