@@ -133,7 +133,6 @@ void UTIL::remove_com_devices_if_not_scanner(std::vector<AVAILABLE_COM> &coms)
                 {
                 case 1:
                     for (int i = 0; i < 92; ++i)
-                        std::cout << resp[i];
                     m_timer.cancel();
                     break;
                 case 3:
@@ -171,7 +170,6 @@ void UTIL::remove_com_devices_if_not_scanner(std::vector<AVAILABLE_COM> &coms)
     }
     catch (std::string &err)
     {
-        std::cout << "Error at 230 = " << err;
         return;
     }
     if (!coms.empty())
@@ -245,7 +243,6 @@ std::vector<uint8_t> UTIL::read_json_piece(hid_device *handle)
 {
     uint8_t response[64] = {0};
     int size_of_read_bytes = hid_read_timeout(handle, response, 64, 100);
-    std::cout << "Read size = " << size_of_read_bytes;
     if (size_of_read_bytes <= 0)
     {
         // TODO if result is negative
@@ -268,7 +265,6 @@ std::string UTIL::get_json_responce_for_com_detection(boost::asio::serial_port &
 //  uint8_t buf[15] = {0};
 //   SEQ::read_device_info_command_by_com(buf);
 #if DEBUG_COMMENT == TRUE
-    std::cout << "\n 281 com";
 #endif
     // boost::asio::io_service io;
     // boost::asio::serial_port s_port(io, com);
@@ -323,12 +319,12 @@ std::string UTIL::get_firmware_device_name_model(hid_device *handle)
         a = hid_write(handle, ch, 64);
         if (64 != a)
         {
-            std::cout << "\n a=" << a;
+      //      std::cout << "\n a=" << a;
             continue;
         }
         else
         {
-            std::cout << "\n a=" << a;
+ //           std::cout << "\n a=" << a;
             break;
         }
     }
@@ -340,9 +336,9 @@ std::string UTIL::read_json_settings(hid_device *handle)
     std::vector<uint8_t> result;
     while (true)
     {
-        std::cout << "\n 342";
+      //  std::cout << "\n 342";
         std::vector<uint8_t> tmp = read_json_piece(handle);
-        std::cout << "\n 344 size temp=" << tmp.size();
+     //   std::cout << "\n 344 size temp=" << tmp.size();
 
         if (tmp.empty())
             break;
@@ -386,7 +382,7 @@ int UTIL::HID_WRITE(handler &device, uint8_t *c, int size)
                      r[7] == 0x00 &&
                      r[8] == 0x01)
             {
-                //      std::cout<<"\nResult="<<r[0];
+                 //     std::cout<<"\nResult="<<r[0];
                 //      std::cout << "\nRead good!";
                 return 0;
             }
@@ -400,7 +396,7 @@ int UTIL::HID_WRITE(handler &device, uint8_t *c, int size)
     // bytes
     // result with error
     // TODO
-    return 0; // todo error
+    return -1; // todo error
 }
 
 int UTIL::COM_WRITE(boost::asio::serial_port &s_port, uint8_t *c, int size)
@@ -408,10 +404,8 @@ int UTIL::COM_WRITE(boost::asio::serial_port &s_port, uint8_t *c, int size)
     int attempt = 10; // define as a system var
     while (attempt)
     {
-        std::cout << "\nattempt = " << attempt;
         int write_result = boost::asio::write(s_port, boost::asio::buffer(c, size));
         --attempt;
-        std::cout << "\nWrite = " << write_result;
         if (write_result < size)
             continue;
         // write to log
@@ -423,8 +417,8 @@ int UTIL::COM_WRITE(boost::asio::serial_port &s_port, uint8_t *c, int size)
         if (a == 0 || r[0] == 0)
         {
             //      device.ptr = RECONNECT::hid_reconnect(device.serial_number);
-            std::cout << "\n a=" << a << " "
-                      << "r[0]=" << r[0];
+   //         std::cout << "\n a=" << a << " "
+     //                 << "r[0]=" << r[0];
             continue;
         }
         else if (r[0] == 0x02 &&
@@ -2626,7 +2620,7 @@ std::string UTIL::parse_json_file(const std::string &source)
 
 int UTIL::write_settings_from_json(const std::vector<std::pair<uint16_t, std::vector<uint8_t>>> &settings, handler &device)
 {
-    logger("Write settings from json", device.path);
+    //logger("Write settings from json", device.path);
     for (const auto &[flag, bits] : settings)
     {
         uint8_t c[64] = {0};
@@ -2635,10 +2629,10 @@ int UTIL::write_settings_from_json(const std::vector<std::pair<uint16_t, std::ve
         //   std::cout << "Bits: " << CONVERT::to_hex(c, bits.size() + 11);
         if (-1 == HID_WRITE(device, c, 64))
         {
-            logger(CONVERT::str(hid_error(device.ptr)), device.serial_number);
+            //logger(CONVERT::str(hid_error(device.ptr)), device.serial_number);
             return -1;
         }
-        logger("Success", device.serial_number);
+        //logger("Success", device.serial_number);
     }
     return 0;
 }
@@ -2653,10 +2647,10 @@ int UTIL::write_settings_from_json(const std::vector<std::pair<uint16_t, std::ve
         //   std::cout << "Bits: " << CONVERT::to_hex(c, bits.size() + 11);
         if (-1 == COM_WRITE(s_port, c, bits.size() + 8))
         {
-            // logger(CONVERT::str(hid_error(device.ptr)), device.serial_number);
+            // //logger(CONVERT::str(hid_error(device.ptr)), device.serial_number);
             return -1;
         }
-        logger("Success");
+        //logger("Success");
     }
     return 0;
 }
@@ -2666,7 +2660,7 @@ bool UTIL::save_settings_to_files(const std::vector<UTIL::AVAILABLE_HID> &hids)
     bool ret = true;
     std::for_each(hids.begin(), hids.end(), [&ret](const auto &hid)
                   {
-                    logger("Saving settings to files", std::string(hid.path_));
+                    //logger("Saving settings to files", std::string(hid.path_));
                     hid_device *handle = hid_open_path(hid.path_);
                     std::string json = UTIL::get_full_json_response(handle);
                     std::string out_file_name = CONVERT::str(hid.serial_number_) + ".json"s;
@@ -2676,10 +2670,10 @@ bool UTIL::save_settings_to_files(const std::vector<UTIL::AVAILABLE_HID> &hids)
                     if (out) {
                     out << json;
                     std::cout<<"File "<<out_file_name<<" created\n";
-                    logger(out_file_name + " file created");
+                    //logger(out_file_name + " file created");
                     }                    
                     else {
-                        logger(out_file_name + " file not created");
+                        //logger(out_file_name + " file not created");
                         std::cerr<<"Unable to create file: "<<out_file_name<<"\n";
                         ret = false;
                     }
@@ -2729,7 +2723,6 @@ std::vector<UTIL::AVAILABLE_HID> UTIL::get_scanners_list_by_regex(std::vector<UT
              rBegin != rEnd;
              ++rBegin)
         {
-            std::cout << "\n2726";
             if (rBegin->str() != "0")
                 ints.push_back(std::stoi(rBegin->str()) - 1);
         }
@@ -2743,7 +2736,6 @@ std::vector<UTIL::AVAILABLE_HID> UTIL::get_scanners_list_by_regex(std::vector<UT
             break;
     }
     scanner_to_proceed.assign(ints.begin(), ints.end());
-    std::cout << "\n2740";
     for (const auto &vid : vids)
     {
         for (int i = 0; i < hids.size(); ++i)
@@ -2754,7 +2746,6 @@ std::vector<UTIL::AVAILABLE_HID> UTIL::get_scanners_list_by_regex(std::vector<UT
             }
         }
     }
-    std::cout << "\n2751";
     std::sort(scanner_to_proceed.begin(), scanner_to_proceed.end());
     auto u = std::unique(scanner_to_proceed.begin(), scanner_to_proceed.end());
     scanner_to_proceed.erase(u, scanner_to_proceed.end());
@@ -2770,6 +2761,5 @@ std::vector<UTIL::AVAILABLE_HID> UTIL::get_scanners_list_by_regex(std::vector<UT
         hids.clear();
         hids.assign(tmp.begin(), tmp.end());
     }
-    std::cout << "\n2766";
     return hids;
 }

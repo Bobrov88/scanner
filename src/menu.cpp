@@ -49,7 +49,7 @@ int read(char *buf, int length)
 
 void MENU::PrintStartMenu()
 {
-    logger("PrintStartMenu");
+    //logger("PrintStartMenu");
     std::cout << "\nUsage\n";
     std::cout << "\t -h --help           \t\tget description of available functions\n";
     // std::cout << "\t                     \t\tполучить описание доступных функций\n";
@@ -69,7 +69,7 @@ void MENU::PrintStartMenu()
 
 void MENU::PrintAttentionComToHID()
 {
-    logger("PrintAttentionComToHID");
+    //logger("PrintAttentionComToHID");
     std::cout << "Note:         Scanners found as COM-devices (if exist) \n";
     std::cout << "              will automatically be passed into HID-devices\n";
     //  std::cout << "Примечание:   Сканеры в режиме COM (если таковые имеются)\n";
@@ -88,7 +88,7 @@ int MENU::OfferToSaveAs()
 
 void MENU::PrintAvailableDevices()
 {
-    logger("PrintAvailableDevices");
+    //logger("PrintAvailableDevices");
     std::cout << "HID-devices\n";
     // std::cout << "HID-устройства\n";
     std::vector<UTIL::AVAILABLE_HID> hids = UTIL::get_available_hid_devices();
@@ -147,7 +147,7 @@ void MENU::SaveSettings()
 
 void MENU::WriteFromJson()
 {
-    logger("Write from json");
+    //logger("Write from json");
     MENU::PrintAttentionComToHID();
     auto coms = UTIL::get_available_linux_com_ports();
     PRINT::print_all_com_linux_devices(coms);
@@ -210,7 +210,7 @@ void MENU::WriteFromJson()
 
 void MENU::RestoreFactorySettings()
 {
-    logger("Restoring factory settings");
+    //logger("Restoring factory settings");
     auto hids = UTIL::get_available_hid_devices();
     PRINT::print_all_hid_linux_devices(hids);
     for (const auto &hid : hids)
@@ -219,7 +219,7 @@ void MENU::RestoreFactorySettings()
         if (0 == HID::restore_to_factory_settings(device))
         {
             std::cout << device.serial_number << " successfully restored to factory settings\n";
-            logger("Restoring to factory - Success", device.serial_number);
+            //logger("Restoring to factory - Success", device.serial_number);
         }
         else
         {
@@ -231,7 +231,7 @@ void MENU::RestoreFactorySettings()
 
 void MENU::RestoreCustomSettings()
 {
-    logger("Restoring custom settings");
+    //logger("Restoring custom settings");
     auto hids = UTIL::get_available_hid_devices();
     for (const auto &hid : hids)
     {
@@ -239,7 +239,7 @@ void MENU::RestoreCustomSettings()
         if (0 == HID::restore_to_custom_settings(device))
         {
             std::cout << device.serial_number << " successfully restored to custom settings\n";
-            logger("Restoring to custom - Success", device.serial_number);
+            //logger("Restoring to custom - Success", device.serial_number);
         }
         else
         {
@@ -251,7 +251,7 @@ void MENU::RestoreCustomSettings()
 
 void MENU::DownloadFirmware()
 {
-    logger("Download firmware");
+    //logger("Download firmware");
     // std::cout << "HID-devices\n";
     // std::cout << "HID-устройства\n";
     // std::vector<UTIL::AVAILABLE_HID> hids = UTIL::get_available_hid_devices();
@@ -266,7 +266,7 @@ void MENU::DownloadFirmware()
     PRINT::print_all_com_linux_devices(coms);
     try
     {
-        logger("Port open", coms[0].port_);
+        //logger("Port open", coms[0].port_);
         s_port.open(coms[0].port_);
         // com_port = coms[0].port_;
         // com_port = "/dev/ttyACM1"s;
@@ -330,7 +330,7 @@ void MENU::DownloadFirmware()
                 {
                     if (s_port.is_open())
                     {
-                        logger("Closing...", coms[0].port_);
+                        //logger("Closing...", coms[0].port_);
                         s_port.close();
                     }
                     std::cout << "  Need reconnecting...  ";
@@ -340,7 +340,7 @@ void MENU::DownloadFirmware()
                         coms = UTIL::get_available_linux_com_ports();
                         // com_port = RECONNECT::com_reconnect(sN);
                         s_port.open(coms[0].port_);
-                        logger("Opening...", coms[0].port_);
+                        //logger("Opening...", coms[0].port_);
                         s_port.set_option(boost::asio::serial_port_base::baud_rate(115200));
                     }
                     catch (boost::system::system_error &e)
@@ -359,7 +359,7 @@ void MENU::DownloadFirmware()
                     {
                         std::cout << " OK\n";
                         s_port.close();
-                        logger("Firmware successfully downloaded", coms[0].port_);
+                        //logger("Firmware successfully downloaded", coms[0].port_);
                     }
                     return;
                 }

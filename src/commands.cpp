@@ -4,23 +4,23 @@ int HID::save_to_internal_flash(handler &device)
 {
     uint8_t c1[64] = {0};
     SEQ::save_to_internal_flash_command(c1);
-    logger("Saving to internal flash", device.serial_number);
+    //logger("Saving to internal flash", device.serial_number);
     if (-1 == UTIL::HID_WRITE(device, c1, 64))
     {
-        logger(CONVERT::str(hid_error(device.ptr)), device.serial_number);
+        //logger(CONVERT::str(hid_error(device.ptr)), device.serial_number);
         return -1;
     };
-    logger("Success");
+    //logger("Success");
 
     uint8_t c2[64] = {0};
     SEQ::save_as_custom_flash_command(c2);
-    logger("Saving as custom settings", device.serial_number);
+    //logger("Saving as custom settings", device.serial_number);
     if (-1 == UTIL::HID_WRITE(device, c2, 64))
     {
-        logger(CONVERT::str(hid_error(device.ptr)), device.serial_number);
+        //logger(CONVERT::str(hid_error(device.ptr)), device.serial_number);
         return -1;
     }
-    logger("Success");
+    //logger("Success");
     return 0;
 }
 
@@ -42,7 +42,7 @@ int HID::restore_to_factory_settings(handler &device)
 
     if (-1 == UTIL::HID_WRITE(device, c, 64))
     {
-        logger(CONVERT::str(hid_error(device.ptr)), device.serial_number);
+        //logger(CONVERT::str(hid_error(device.ptr)), device.serial_number);
         return -1;
     };
     return 0;
@@ -104,6 +104,7 @@ bool HID::testing_connect_for_erasing_duplicates(handler &device)
 {
     uint8_t c[64] = {0};
     SEQ::testing_connect_for_erasing_duplicates_command(c);
+    //SEQ::read_device_info_command_by_hid(c);
     if (-1 == UTIL::HID_WRITE(device, c, 64))
     {
         return false;
@@ -113,7 +114,7 @@ bool HID::testing_connect_for_erasing_duplicates(handler &device)
 
 void HID::testing_to_pass_HID_from_COM(const std::string &com)
 {
-    logger("testing_to_pass_HID_from_COM", com);
+    //logger("testing_to_pass_HID_from_COM", com);
     uint8_t c[9] = {0};
     SEQ::test_com_devices_is_scanner_command(c);
     boost::asio::io_service io;

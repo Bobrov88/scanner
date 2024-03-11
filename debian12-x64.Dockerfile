@@ -2,7 +2,30 @@ FROM debian:stable-slim
 
 RUN apt-get update -y && \
     apt-get upgrade -y && \
-    apt-get install -y build-essential git cmake libhidapi-dev libudev-dev libusb-1.0 wget dpkg tar gzip vim pkg-config
+    apt-get install -y \
+    build-essential \
+    git \
+    cmake \
+    libhidapi-dev \
+    libudev-dev \
+    libusb-1.0 \
+    wget \
+    dpkg \
+    tar \
+    gzip \
+    vim \
+    pkg-config \
+    wget \
+    libreadline-dev \
+    libncursesw5-dev \
+    libssl-dev \
+    libsqlite3-dev \
+    tk-dev \
+    libgdbm-dev \
+    libc6-dev \
+    libbz2-dev \
+    libffi-dev \
+    zlib1g-dev
 
 RUN apt-get clean -y
 
@@ -12,6 +35,12 @@ RUN cd /home && \
     wget https://github.com/conan-io/conan/releases/download/1.61.0/conan-ubuntu-64.deb && \
     dpkg -i conan-ubuntu-64.deb && \
     rm -r -f ../conan-deb
+
+RUN wget -c https://www.python.org/ftp/python/3.12.0/Python-3.12.0.tar.xz && \
+    tar -Jxvf Python-3.12.0.tar.xz && \
+    cd Python-3.12.0 && \
+    ./configure --enable-optimizations --prefix=/usr/local --enable-shared LDFLAGS="-Wl,-rpath /usr/local/lib" && \
+    make -j4 && make altinstall
 
 
 # copy conan files

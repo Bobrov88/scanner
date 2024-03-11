@@ -27,6 +27,12 @@ void PRINT::print_all_hid_linux_devices(const std::vector<UTIL::AVAILABLE_HID> &
 {
     ConsoleTable table = getTableInitialSetup();
 
+// for (const auto &hid : hids)
+//         {
+// std::cout<<"\n"<< CONVERT::hex_view(hid.vid_)<<" "<<CONVERT::hex_view(hid.pid_)<<" "<<CONVERT::str(hid.product_)<<" "<<CONVERT::str(hid.serial_number_);
+//         }
+
+
     if (!hids.empty())
     {
         table[0][0] = "#";
@@ -61,7 +67,7 @@ void PRINT::print_all_hid_linux_devices(const std::vector<UTIL::AVAILABLE_HID> &
     }
     std::ostringstream oss;
     oss << table;
-    logger(oss.str());
+    //logger(oss.str());
     std::cout << table;
 }
 
@@ -96,7 +102,7 @@ void PRINT::print_all_com_linux_devices(const std::vector<UTIL::AVAILABLE_COM> &
     }
     std::ostringstream oss;
     oss << table;
-    logger(oss.str());
+    //logger(oss.str());
     std::cout << table;
 }
 

@@ -1,9 +1,47 @@
 #include "menu.h"
 #include "locale.h"
 #include "commands_sequencies.h"
+#include <ncurses.h>
 
 int main(int argc, char *argv[])
 {
+    // initscr(); // Инициализация ncurses
+    // cbreak();  // Включение режима "cbreak", чтобы клавиши были доступны немедленно
+    // noecho();  // Отключение отображения вводимых символов
+
+    // int choice;
+    // bool running = true;
+
+    // while (running)
+    // {
+    //     clear();
+    //     printw("1. Option 1\n");
+    //     printw("2. Option 2\n");
+    //     printw("3. Exit\n");
+
+    //     refresh();
+
+    //     choice = getch(); // Получение ввода пользователя
+
+    //     switch (choice)
+    //     {
+    //     case '1':
+    //         // Действия для опции 1
+    //         break;
+    //     case '2':
+    //         // Действия для опции 2
+    //         break;
+    //     case '3':
+    //         running = false;
+    //         break;
+    //     default:
+    //         printw("Invalid choice. Press any key to continue.\n");
+    //         getch();
+    //         break;
+    //     }
+    // }
+
+    // endwin(); // Завершение работы с ncurses
     if (argc == 1 || (argc == 2 && (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0)))
     {
         MENU::PrintStartMenu();
