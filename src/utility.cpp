@@ -356,7 +356,6 @@ int UTIL::HID_WRITE(handler &device, uint8_t *c, int size)
         {
             if (device.ptr == NULL)
             {
-                //       std::cout << "Device reconnect\n";
                 hid_close(device.ptr);
                 device.ptr = hid_open_path(device.path.data());
             }
@@ -364,17 +363,16 @@ int UTIL::HID_WRITE(handler &device, uint8_t *c, int size)
             --attempt;
             if (write_result < size)
             {
-                //        std::cout << "\nW < S";
                 continue;
             }
 
             uint8_t r[64] = {0};
-            int a = hid_read_timeout(device.ptr, r, 64, 300);
-            //       std::cout << "\n438 " << device.serial_number;
+            int a = hid_read_timeout(device.ptr, r, 64, 100);
+            std::cout<<"\n Bits: "<<CONVERT::to_hex(r,a);
             if (a == -1 || r[0] == 0)
             {
-                //        std::cout << "\n a=" << a << " "
-                //                  << "r[0]=" << r[0];
+                        std::cout << "\n a=" << a << " "
+                                  << "r[0]=" << r[0];
                 continue;
             }
             else if (r[5] == 0x02 &&
@@ -383,7 +381,7 @@ int UTIL::HID_WRITE(handler &device, uint8_t *c, int size)
                      r[8] == 0x01)
             {
                  //     std::cout<<"\nResult="<<r[0];
-                //      std::cout << "\nRead good!";
+                      std::cout << "\tRead good!";
                 return 0;
             }
         }
@@ -472,10 +470,9 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
 
         auto set_byte_if_key_uint_byte = [&str](uint8_t &byte, const std::string &key)
         {
-            boost::json::error_code ec;
             try
             {
-                auto value = str.at(key).to_number<int>(ec);
+                auto value = str.at(key).to_number<int>();
                 if (value < 0 || value > 255)
                 {
                     throw std::string{key + " incorrect value, must be between 0 and 255"};
@@ -665,7 +662,7 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
             uint8_t byte = 0;
             {
                 const std::string key = "readInterval"s;
-                const uint8_t tmp = static_cast<uint8_t>(str.at(key).as_int64() / 100);
+                const uint8_t tmp = static_cast<uint8_t>(str.at(key).to_number<int>() / 100);
                 if (tmp < 0 || tmp > 255)
                 {
                     incorrect_data += get_uint8_t_possible_data(key, 0, 25500);
@@ -682,7 +679,7 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
             uint8_t byte = 0;
             {
                 const std::string key = "longestReadTime"s;
-                const uint8_t tmp = static_cast<uint8_t>(str.at(key).as_int64() / 100);
+                const uint8_t tmp = static_cast<uint8_t>(str.at(key).to_number<int>() / 100);
                 if (tmp < 0 || tmp > 255)
                 {
                     incorrect_data += get_uint8_t_possible_data(key, 0, 25500);
@@ -703,7 +700,7 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
             uint8_t byte = 0;
             {
                 const std::string key = "keyboardKeyDelay"s;
-                const uint8_t tmp = static_cast<uint8_t>(str.at(key).as_int64());
+                const uint8_t tmp = static_cast<uint8_t>(str.at(key).to_number<int>());
                 if (tmp < 0 || tmp > 63)
                 {
                     incorrect_data += get_uint8_t_possible_data(key, 0, 63);
@@ -763,7 +760,7 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
             uint8_t byte = 0;
             {
                 const std::string key = "buzzerOnTime"s;
-                const uint8_t tmp = static_cast<uint8_t>(str.at(key).as_int64());
+                const uint8_t tmp = static_cast<uint8_t>(str.at(key).to_number<int>());
                 if (tmp < 0 || tmp > 255)
                 {
                     incorrect_data += get_uint8_t_possible_data(key, 0, 255);
@@ -882,7 +879,7 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
             uint8_t byte = 0;
             {
                 const std::string key = "sensitivity1"s;
-                const uint8_t tmp = static_cast<uint8_t>(str.at(key).as_int64());
+                const uint8_t tmp = static_cast<uint8_t>(str.at(key).to_number<int>());
                 if (tmp < 0 || tmp > 255)
                 {
                     incorrect_data += get_uint8_t_possible_data(key, 0, 255);
@@ -899,7 +896,7 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
             uint8_t byte = 0;
             {
                 const std::string key = "sensitivity2"s;
-                const uint8_t tmp = static_cast<uint8_t>(str.at(key).as_int64());
+                const uint8_t tmp = static_cast<uint8_t>(str.at(key).to_number<int>());
                 if (tmp < 0 || tmp > 255)
                 {
                     incorrect_data += get_uint8_t_possible_data(key, 0, 255);
@@ -924,7 +921,7 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
             }
             {
                 const std::string key = "sameReadDelay"s;
-                const uint8_t tmp = static_cast<uint8_t>(str.at(key).as_int64() / 100);
+                const uint8_t tmp = static_cast<uint8_t>(str.at(key).to_number<int>() / 100);
                 if (tmp < 0 || tmp > 127)
                 {
                     incorrect_data += get_uint8_t_possible_data(key, 0, 12700);
@@ -941,7 +938,7 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
             uint8_t byte = 0;
             {
                 const std::string key = "inductionReadDelay"s;
-                const uint8_t tmp = static_cast<uint8_t>(str.at(key).as_int64() / 100);
+                const uint8_t tmp = static_cast<uint8_t>(str.at(key).to_number<int>() / 100);
                 if (tmp < 0 || tmp > 255)
                 {
                     incorrect_data += get_uint8_t_possible_data(key, 0, 25500);
@@ -1044,7 +1041,7 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
             bytes.push_back(byte);
         }
         // --------from 0x0013 to 0x0018--------------------- //
-        set_of_bytes.push_back({0x0013, std::move(bytes)});
+      set_of_bytes.push_back({0x0013, std::move(bytes)});
         bytes.clear();
         // --------from 0x0013 to 0x0018--------------------- //
         {
@@ -1082,7 +1079,7 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
                 }
                 {
                     const std::string key = "ledOnTime"s;
-                    const uint8_t tmp = static_cast<uint8_t>(str.at(key).as_int64() / 100);
+                    const uint8_t tmp = static_cast<uint8_t>(str.at(key).to_number<int>() / 100);
                     if (tmp < 0 || tmp > 255)
                     {
                         incorrect_data += get_uint8_t_possible_data(key, 0, 1270);
@@ -1144,7 +1141,7 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
                                                      "230400"s,
                                                      "460800"s,
                                                      "921600"s};
-                const uint16_t tmp = static_cast<uint16_t>(str.at(key).as_int64());
+                const uint16_t tmp = static_cast<uint16_t>(str.at(key).to_number<int>());
                 if (tmp == std::stoi(variants[0]))
                     byte = 0x7102;
                 else if (tmp == std::stoi(variants[1]))
@@ -2625,8 +2622,7 @@ int UTIL::write_settings_from_json(const std::vector<std::pair<uint16_t, std::ve
     {
         uint8_t c[64] = {0};
         SEQ::create_subcommand(flag, bits, c);
-
-        //   std::cout << "Bits: " << CONVERT::to_hex(c, bits.size() + 11);
+        std::cout << "\nBits: " << CONVERT::to_hex(c, bits.size() + 11);
         if (-1 == HID_WRITE(device, c, 64))
         {
             //logger(CONVERT::str(hid_error(device.ptr)), device.serial_number);

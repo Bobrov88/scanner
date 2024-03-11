@@ -61,7 +61,7 @@ void MENU::PrintStartMenu()
     // std::cout << "\t                     \t\tзаписать настройки в сканер из json\n";
     std::cout << "\t -f --restore-factory\t\trestore scanner to factory default\n";
     // std::cout << "\t                     \t\tвосстановить заводские настройки сканера\n";
-    std::cout << "\t -u --restore-custom \t\trestore scanner to user default\n";
+    std::cout << "\t -c --restore-custom \t\trestore scanner to user default\n";
     // std::cout << "\t                     \t\tвосстановить пользовательские настройки сканера\n";
     std::cout << "\t -d --download       \t\tupdate scanner firmware\n";
     // std::cout << "\t                     \t\tобновить прошивку сканера\n";
@@ -189,12 +189,15 @@ void MENU::WriteFromJson()
         //     s_port.close();
         handler device{hid_open_path(hid.path_), hid.path_, CONVERT::str(hid.serial_number_)};
         //    std::cout << "\nPATH=" << std::string(hid.path_);
-        UTIL::write_settings_from_json(settings, device);
+        if (-1 == UTIL::write_settings_from_json(settings, device)) {
+            std::cout<<"\n Settings write fail";
+            return;
+        }
         //      std::cout << "\nWRITE OK";
         if (0 == HID::save_to_internal_flash(device))
             std::cout << "Success\n";
         else
-            std::cout << "Failed\n";
+            std::cout << "Saving Failed\n";
         // int save_as = OfferToSaveAs();
         // switch (save_as)
         // {

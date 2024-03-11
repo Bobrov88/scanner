@@ -11,6 +11,7 @@ int HID::save_to_internal_flash(handler &device)
         return -1;
     };
     //logger("Success");
+    std::cout<<"\n 14";
 
     uint8_t c2[64] = {0};
     SEQ::save_as_custom_flash_command(c2);
@@ -20,6 +21,7 @@ int HID::save_to_internal_flash(handler &device)
         //logger(CONVERT::str(hid_error(device.ptr)), device.serial_number);
         return -1;
     }
+    std::cout<<"\n 24";
     //logger("Success");
     return 0;
 }
