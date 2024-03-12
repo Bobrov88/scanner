@@ -25,7 +25,6 @@ namespace MENU
     void PrintAvailableDevices();
     void SaveSettings();
     void WriteFromJson();
-    int OfferToSaveAs();
     void RestoreFactorySettings();
     void RestoreCustomSettings();
     void DownloadFirmware();

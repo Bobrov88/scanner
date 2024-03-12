@@ -76,16 +76,6 @@ void MENU::PrintAttentionComToHID()
     // std::cout << "              будут автоматически переведены в режим HID\n";
 }
 
-int MENU::OfferToSaveAs()
-{
-    // std::cout << "Примечания:   Произведённые изменения действительны при наличии питания сканера\n";
-    // std::cout << "Note:         The changes made are valid when the scanner is powered up\n";
-    //  std::cout << "Сохранить во внутреннюю память?\n";
-    std::cout << "Save to internal flash?\n";
-    int save_as = 0;
-    return save_as;
-}
-
 void MENU::PrintAvailableDevices()
 {
     //logger("PrintAvailableDevices");
@@ -188,24 +178,14 @@ void MENU::WriteFromJson()
         // if (s_port.is_open())
         //     s_port.close();
         handler device{hid_open_path(hid.path_), hid.path_, CONVERT::str(hid.serial_number_)};
-        //    std::cout << "\nPATH=" << std::string(hid.path_);
         if (-1 == UTIL::write_settings_from_json(settings, device)) {
             std::cout<<"\n Settings write fail";
             return;
         }
-        //      std::cout << "\nWRITE OK";
         if (0 == HID::save_to_internal_flash(device))
             std::cout << "Success\n";
         else
             std::cout << "Saving Failed\n";
-        // int save_as = OfferToSaveAs();
-        // switch (save_as)
-        // {
-        // case 1:
-        //     break;
-        // default:
-        //     break;
-        // }
         hid_close(device.ptr);
     }
     hid_exit();

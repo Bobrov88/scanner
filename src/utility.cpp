@@ -354,9 +354,8 @@ int UTIL::HID_WRITE(handler &device, uint8_t *c, int size)
         int attempt = 10; // define as a system var
         while (attempt != 0)
         {
-            if (device.ptr == NULL)
+            if (!device.ptr)
             {
-                hid_close(device.ptr);
                 device.ptr = hid_open_path(device.path.data());
             }
             int write_result = hid_write(device.ptr, c, size);
@@ -368,11 +367,8 @@ int UTIL::HID_WRITE(handler &device, uint8_t *c, int size)
 
             uint8_t r[64] = {0};
             int a = hid_read_timeout(device.ptr, r, 64, 100);
-            std::cout<<"\n Bits: "<<CONVERT::to_hex(r,a);
             if (a == -1 || r[0] == 0)
             {
-                        std::cout << "\n a=" << a << " "
-                                  << "r[0]=" << r[0];
                 continue;
             }
             else if (r[5] == 0x02 &&
@@ -380,8 +376,6 @@ int UTIL::HID_WRITE(handler &device, uint8_t *c, int size)
                      r[7] == 0x00 &&
                      r[8] == 0x01)
             {
-                 //     std::cout<<"\nResult="<<r[0];
-                      std::cout << "\tRead good!";
                 return 0;
             }
         }
@@ -753,7 +747,7 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
                 const std::string key2 = "keyboardLead"s;
                 set_bit_if_key_bool_true(byte, 0, key2);
             }
-            bytes.push_back(byte);
+                        bytes.push_back(byte);
         }
         {
             // FLAG 0x000B
@@ -804,45 +798,49 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
                 else
                     incorrect_data += get_string_possible_data(variants, key);
             }
-            bytes.push_back(byte);
+                        bytes.push_back(byte);
         }
-        {
-            // FLAG 0x000D
-            uint8_t byte = 0;
-            {
+        /*{
+            FLAG 0x000D
+           uint8_t byte = 0;
+           {
                 const std::string key = "invoiceModeEnable"s;
                 set_bit_if_key_bool_true(byte, 7, key);
-            }
+           }
             {
                 const std::string key = "virtualKeyboard"s;
                 set_bit_if_key_bool_true(byte, 6, key);
-            }
-            {
-                // Reserved 5
-            }
-            {
-                const std::string key = "codeTypeAutoCheckUtf8"s;
-                set_bit_if_key_bool_true(byte, 4, key);
-            }
-            {
+           }
+           {
+                Reserved 5
+           }
+           {
+               const std::string key = "codeTypeAutoCheckUtf8"s;
+               set_bit_if_key_bool_true(byte, 4, key);
+           }
+           {
                 std::vector<std::string> variants = {"UART-TTL"s, "keyboard"s, "virtualCom"s, "pos"s, "composite"s};
                 const std::string key = "outMode"s;
                 std::string tmp = str.at(key).as_string().c_str();
-                if (CONVERT::low(tmp) == CONVERT::low(variants[0]))
-                    byte |= 0b00000000;
-                else if (CONVERT::low(tmp) == CONVERT::low(variants[1]))
-                    byte |= 0b00000001;
-                else if (CONVERT::low(tmp) == CONVERT::low(variants[2]))
-                    byte |= 0b00000011;
-                else if (CONVERT::low(tmp) == CONVERT::low(variants[3]))
-                    byte |= 0b00000100;
-                else if (CONVERT::low(tmp) == CONVERT::low(variants[4]))
-                    byte |= 0b00000101;
-                else
-                    incorrect_data += get_string_possible_data(variants, key);
-            }
-            bytes.push_back(byte);
-        }
+                 if (CONVERT::low(tmp) == CONVERT::low(variants[0]))
+                     byte |= 0b00000000;
+                 else if (CONVERT::low(tmp) == CONVERT::low(variants[1]))
+                     byte |= 0b00000001;
+                 else if (CONVERT::low(tmp) == CONVERT::low(variants[2]))
+                     byte |= 0b00000011;
+                 else if (CONVERT::low(tmp) == CONVERT::low(variants[3]))
+                     byte |= 0b00000100;
+                 else if (CONVERT::low(tmp) == CONVERT::low(variants[4]))
+                     byte |= 0b00000101;
+                 else
+                     incorrect_data += get_string_possible_data(variants, key);
+           }
+                       bytes.push_back(byte);
+        }*/ // Writing this set of flags makes fail
+        // --------from 0x0009 to 0x000D--------------------- //
+       set_of_bytes.push_back({0x0009, std::move(bytes)});
+       bytes.clear();
+        // --------from 0x0009 to 0x000D--------------------- //
         {
             // FLAG 0x000E
             uint8_t byte = 0;
@@ -872,7 +870,7 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
             {
                 // Not supported
             }
-            bytes.push_back(byte);
+                        bytes.push_back(byte);
         }
         {
             // FLAG 0x000F
@@ -889,7 +887,7 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
                     byte |= tmp;
                 }
             }
-            bytes.push_back(byte);
+                        bytes.push_back(byte);
         }
         {
             // FLAG 0x0010
@@ -906,12 +904,12 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
                     byte |= tmp;
                 }
             }
-            bytes.push_back(byte);
+                        bytes.push_back(byte);
         }
-        // --------from 0x0009 to 0x0010--------------------- //
-        set_of_bytes.push_back({0x0009, std::move(bytes)});
-        bytes.clear();
-        // --------from 0x0009 to 0x0010--------------------- //
+        // --------from 0x000E to 0x0010--------------------- //
+       set_of_bytes.push_back({0x000E, std::move(bytes)});
+       bytes.clear();
+        // --------from 0x000E to 0x0010--------------------- //
         {
             // FLAG 0x0013
             uint8_t byte = 0;
@@ -957,8 +955,8 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
                 // Reserved 7-4
             }
             {
-                const std::string key = "motorEnable"s;
-                set_bit_if_key_bool_true(byte, 3, key);
+            //    const std::string key = "motorEnable"s;
+            //    set_bit_if_key_bool_true(byte, 3, key);
             }
             {
                 std::vector<std::string> variants = {"Bracket"s, "Handheld"s};
@@ -1041,7 +1039,7 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
             bytes.push_back(byte);
         }
         // --------from 0x0013 to 0x0018--------------------- //
-      set_of_bytes.push_back({0x0013, std::move(bytes)});
+        set_of_bytes.push_back({0x0013, std::move(bytes)});
         bytes.clear();
         // --------from 0x0013 to 0x0018--------------------- //
         {
@@ -2292,7 +2290,7 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
             bytes.push_back(byte);
         }
         //---------------------FROM 0x00B4 to 0x00B4 -----------------//
-        set_of_bytes.push_back({0x00B0, std::move(bytes)});
+        set_of_bytes.push_back({0x00B4, std::move(bytes)});
         bytes.clear();
         //---------------------FROM 0x00B4 to 0x00B4 -----------------//
         {
@@ -2622,12 +2620,12 @@ int UTIL::write_settings_from_json(const std::vector<std::pair<uint16_t, std::ve
     {
         uint8_t c[64] = {0};
         SEQ::create_subcommand(flag, bits, c);
-        std::cout << "\nBits: " << CONVERT::to_hex(c, bits.size() + 11);
-        if (-1 == HID_WRITE(device, c, 64))
+        if (-1 == HID_WRITE(device, c, bits.size() + 11))
         {
             //logger(CONVERT::str(hid_error(device.ptr)), device.serial_number);
             return -1;
         }
+        //HID::save_to_internal_flash(device);
         //logger("Success", device.serial_number);
     }
     return 0;
