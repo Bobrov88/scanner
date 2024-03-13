@@ -52,6 +52,7 @@ file(COPY ${CMAKE_BINARY_DIR}/FindZLIB.cmake DESTINATION ${modules})
 include(FindPkgConfig)
 find_package(Threads REQUIRED)
 find_package(spdlog REQUIRED)
+find_package(Curses REQUIRED)
 
 list(APPEND CMAKE_FIND_ROOT_PATH ${CONAN_BOOST_ROOT})
 set(Boost_USE_STATIC_LIBS ON)

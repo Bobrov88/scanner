@@ -14,5 +14,6 @@ namespace HID
     int restore_to_factory_settings(handler &device);
     int restore_to_custom_settings(handler &device);
     bool testing_connect_for_erasing_duplicates(handler &device);
-    void testing_to_pass_HID_from_COM(const std::string &com);
+    bool testing_to_pass_HID_from_COM(const std::string &com);
+    bool testing_to_pass_COM_from_HID(hid_device* handle);
 }

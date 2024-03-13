@@ -18,15 +18,16 @@ hid_device *RECONNECT::hid_reconnect(const std::string &serial_number)
     return handle;
 }
 
-std::string RECONNECT::com_reconnect(const std::string &serial)
-{
-    auto coms = UTIL::get_available_linux_com_ports();
-    auto found_device = std::find_if(coms.begin(), coms.end(), [&serial](const auto &com)
-                                     { return strcmp(com.serial_number_.data(), serial.data()) == 0; });
-    if (found_device != coms.end())
-    {
-     //   std::cout << "\n Found new port: " << found_device->port_;
-        return found_device->port_;
-    }
-    return "";
-}
+// std::string RECONNECT::com_reconnect(const std::string &serial)
+// {
+//     auto coms = UTIL::get_available_linux_com_ports();
+//     auto found_device = std::find_if(coms.begin(), coms.end(), [&serial](const auto &com)
+//                                      { return strcmp(com.serial_number_.data(), serial.data()) == 0; });
+//     if (found_device != coms.end())
+//     {
+//         std::cout << "\n Found new port: " << found_device->port_;
+//         return found_device->port_;
+//     }
+//     std::cout<<"\n 31";
+//     return "";
+// }

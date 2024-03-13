@@ -9,7 +9,7 @@ using namespace std::chrono_literals;
 
 static std::shared_ptr<spdlog::logger> _logger;
 
-static void logger(const std::string &message, const std::string &scanner = "")
+static void logger(const std::string &message, const std::string &scanner = "-")
 {
     // todo make it like class
     auto check_logger = spdlog::get("scan_log");
@@ -23,8 +23,7 @@ static void logger(const std::string &message, const std::string &scanner = "")
         std::string filename = home + "/"s + std::string{getenv("USER")} + "_log"s;
         auto max_size = 1048576 * 2;
         auto max_files = 1;
-        _logger = spdlog::rotating_logger_st((scanner == "") ? "-" : scanner, filename, max_size,
-                                             max_files);
+        _logger = spdlog::rotating_logger_st(scanner, filename, max_size, max_files);
         _logger->set_level(spdlog::level::debug);
         _logger->flush_on(spdlog::level::debug);
         spdlog::flush_every(1s);

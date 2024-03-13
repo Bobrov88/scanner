@@ -40,8 +40,9 @@ int main(int argc, char *argv[])
     //         break;
     //     }
     // }
-
-    // endwin(); // Завершение работы с ncurses
+   // setlocale(LC_ALL, "rus");
+  //  setlocale(LC_CTYPE, "rus");
+  //  endwin(); // Завершение работы с ncurses
     if (argc == 1 || (argc == 2 && (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0)))
     {
         MENU::PrintStartMenu();

@@ -13,7 +13,8 @@ namespace SEQ
     void testing_connect_for_erasing_duplicates_command(uint8_t *c);
     void testing_com_connect_for_erasing_duplicates_command(uint8_t *c);
     void get_config_command(uint8_t *c, const uint8_t suffix);
-    void test_com_devices_is_scanner_command(uint8_t *c);
+    void testing_to_pass_HID_from_COM_command(uint8_t *c);
+    void testing_to_pass_COM_from_HID_command(uint8_t *c);
     void get_config02_command(uint8_t *c);
     void create_subcommand(const uint16_t flag, const std::vector<uint8_t> &bits, uint8_t *c);
     void create_subcommand_for_com(const uint16_t flag, const std::vector<uint8_t> &bits, uint8_t *c);

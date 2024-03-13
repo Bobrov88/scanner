@@ -3,27 +3,14 @@
 boost::asio::io_service io;
 boost::asio::serial_port s_port(io);
 std::string com_port;
-std::string sN;
 
 int write(char *buf, int length)
 {
-#if DEBUG_COMMENT == TRUE
-    //   std::cout << "\nWrite = " << CONVERT::to_hex((uint8_t *)buf, length);
-#endif
     if (!s_port.is_open())
     {
-        //    std::cout << "Trying reconnect in write\n";
-        // auto coms = UTIL::get_available_linux_com_ports();
-        //      std::cout << "coms[0].port_=" << coms[0].port_ << std::endl;
-
-        // todo shared_ptr
         s_port.open(com_port);
         std::this_thread::sleep_for(500ms);
     }
-#if DEBUG_COMMENT == TRUE
-    std::cout << "\n"
-              << CONVERT::to_hex((uint8_t *)buf, (size_t)length);
-#endif
     return boost::asio::write(s_port, boost::asio::buffer(buf, length));
 }
 
@@ -31,25 +18,15 @@ int read(char *buf, int length)
 {
     if (!s_port.is_open())
     {
-        // std::cout << "Trying reconnect in write\n";
-        //  auto coms = UTIL::get_available_linux_com_ports();
-        //  std::cout << "coms[0].port_=" << coms[0].port_ << std::endl;
         s_port.open(com_port);
         std::this_thread::sleep_for(500ms);
     }
-    //   auto size = boost::asio::read(s_port, boost::asio::buffer(buf, length));
-    //  std::cout << "\nRead = " << CONVERT::to_hex((uint8_t *)buf, length);
-    int a = boost::asio::read(s_port, boost::asio::buffer(buf, length));
-#if DEBUG_COMMENT == TRUE
-    std::cout << "\n"
-              << CONVERT::to_hex((uint8_t *)buf, (size_t)length);
-#endif
-    return a;
+    return boost::asio::read(s_port, boost::asio::buffer(buf, length));
 }
 
 void MENU::PrintStartMenu()
 {
-    //logger("PrintStartMenu");
+    //  logger("PrintStartMenu");
     std::cout << "\nUsage\n";
     std::cout << "\t -h --help           \t\tget description of available functions\n";
     // std::cout << "\t                     \t\tполучить описание доступных функций\n";
@@ -69,45 +46,58 @@ void MENU::PrintStartMenu()
 
 void MENU::PrintAttentionComToHID()
 {
-    //logger("PrintAttentionComToHID");
+    // logger("PrintAttentionComToHID");
     std::cout << "Note:         Scanners found as COM-devices (if exist) \n";
-    std::cout << "              will automatically be passed into HID-devices\n";
+    std::cout << "              will automatically be passed into HID-devices";
     //  std::cout << "Примечание:   Сканеры в режиме COM (если таковые имеются)\n";
     // std::cout << "              будут автоматически переведены в режим HID\n";
 }
 
 void MENU::PrintAvailableDevices()
 {
-    //logger("PrintAvailableDevices");
-    std::cout << "HID-devices\n";
-    // std::cout << "HID-устройства\n";
+    //  logger("PrintAvailableDevices");
+    MENU::PrintAttentionComToHID();
+    std::cout << "\nWaiting for available scanners\n";
+
+    //  auto task = [&]()
+    // {
+    std::vector<UTIL::AVAILABLE_COM> coms = UTIL::get_available_linux_com_ports();
+    for (const auto &com : coms)
+    {
+        std::cout << "\n 67";
+        if (!HID::testing_to_pass_HID_from_COM(com.port_))
+        {
+            std::cout << "\n"
+                      << com.port_ << " passing failed";
+        }
+        std::cout << "\n 69";
+    }
+    std::cout << "\n 71";
+    std::this_thread::sleep_for(1000ms);
+    std::cout << "\n 73";
     std::vector<UTIL::AVAILABLE_HID> hids = UTIL::get_available_hid_devices();
     PRINT::print_all_hid_linux_devices(hids);
-    // pass to HID
-    // revise if error
-    // saving with printing lists
-    std::cout << "COM-devices\n";
-    //  std::cout << "COM-устройства\n";
-    std::vector<UTIL::AVAILABLE_COM> coms = UTIL::get_available_linux_com_ports();
-    PRINT::print_all_com_linux_devices(coms);
-    // uint8_t c[9] = {0};
-    // SEQ::test_com_devices_is_scanner_command(c);
-    //  std::string message_com_to_hid;
+    // };
 
-    // for (const auto &com : COMS)
+    // auto task_future = std::async(task);
+    // std::future_status status;
+
+    // while (status != std::future_status::ready)
     // {
-    //     if (HID::testing_to_pass_HID_from_COM(com.port_, COMS.size()))
+    //     switch (status = task_future.wait_for(10s); status)
     //     {
-    //         message_com_to_hid += "\n";
-    //         message_com_to_hid += com.port_;
-    //         message_com_to_hid += ": switched to HID";
+    //     case std::future_status::timeout:
+    //         std::cerr << "\nTimeout\n";
+    //         break;
+    //     default:
+    //         break;
     //     }
     // }
-
-    // if (!message_com_to_hid.empty())
-    // {
-    //     std::cout << message_com_to_hid;
-    // }
+    // std::cout << "\r";
+    // std::flush(std::cout);
+    // task_future.get();
+    // // revise if error
+    // saving with printing lists
 }
 
 void MENU::SaveSettings()
@@ -118,7 +108,11 @@ void MENU::SaveSettings()
 
     for (const auto &com : coms)
     {
-        HID::testing_to_pass_HID_from_COM(com.port_);
+        if (!HID::testing_to_pass_HID_from_COM(com.port_))
+        {
+            std::cout << "\n"
+                      << com.port_ << " passing failed";
+        }
         std::this_thread::sleep_for(300ms);
     }
     std::this_thread::sleep_for(3000ms); // delay for reconnecting
@@ -137,14 +131,18 @@ void MENU::SaveSettings()
 
 void MENU::WriteFromJson()
 {
-    //logger("Write from json");
+    // logger("Write from json");
     MENU::PrintAttentionComToHID();
     auto coms = UTIL::get_available_linux_com_ports();
     PRINT::print_all_com_linux_devices(coms);
 
     for (const auto &com : coms)
     {
-        HID::testing_to_pass_HID_from_COM(com.port_);
+        if (!HID::testing_to_pass_HID_from_COM(com.port_))
+        {
+            std::cout << "\n"
+                      << com.port_ << " passing failed";
+        }
         std::this_thread::sleep_for(300ms);
     }
     std::this_thread::sleep_for(3000ms); // delay for reconnecting
@@ -178,8 +176,9 @@ void MENU::WriteFromJson()
         // if (s_port.is_open())
         //     s_port.close();
         handler device{hid_open_path(hid.path_), hid.path_, CONVERT::str(hid.serial_number_)};
-        if (-1 == UTIL::write_settings_from_json(settings, device)) {
-            std::cout<<"\n Settings write fail";
+        if (-1 == UTIL::write_settings_from_json(settings, device))
+        {
+            std::cout << "\n Settings write fail";
             return;
         }
         if (0 == HID::save_to_internal_flash(device))
@@ -193,7 +192,7 @@ void MENU::WriteFromJson()
 
 void MENU::RestoreFactorySettings()
 {
-    //logger("Restoring factory settings");
+    // logger("Restoring factory settings");
     auto hids = UTIL::get_available_hid_devices();
     PRINT::print_all_hid_linux_devices(hids);
     for (const auto &hid : hids)
@@ -202,7 +201,7 @@ void MENU::RestoreFactorySettings()
         if (0 == HID::restore_to_factory_settings(device))
         {
             std::cout << device.serial_number << " successfully restored to factory settings\n";
-            //logger("Restoring to factory - Success", device.serial_number);
+            // logger("Restoring to factory - Success", device.serial_number);
         }
         else
         {
@@ -214,7 +213,7 @@ void MENU::RestoreFactorySettings()
 
 void MENU::RestoreCustomSettings()
 {
-    //logger("Restoring custom settings");
+    // logger("Restoring custom settings");
     auto hids = UTIL::get_available_hid_devices();
     for (const auto &hid : hids)
     {
@@ -222,7 +221,7 @@ void MENU::RestoreCustomSettings()
         if (0 == HID::restore_to_custom_settings(device))
         {
             std::cout << device.serial_number << " successfully restored to custom settings\n";
-            //logger("Restoring to custom - Success", device.serial_number);
+            // logger("Restoring to custom - Success", device.serial_number);
         }
         else
         {
@@ -234,120 +233,128 @@ void MENU::RestoreCustomSettings()
 
 void MENU::DownloadFirmware()
 {
-    //logger("Download firmware");
-    // std::cout << "HID-devices\n";
-    // std::cout << "HID-устройства\n";
-    // std::vector<UTIL::AVAILABLE_HID> hids = UTIL::get_available_hid_devices();
-    // PRINT::print_all_hid_linux_devices(hids);
-    // pass to HID
-    // revise if error
-    // saving with printing lists
-    std::cout << "COM-devices\n";
-    // std::cout << "COM-устройства\n";
+    // logger("Download firmware");
     std::vector<UTIL::AVAILABLE_COM> coms = UTIL::get_available_linux_com_ports();
-    // std::vector<UTIL::AVAILABLE_COM> coms;
-    PRINT::print_all_com_linux_devices(coms);
-    try
+    for (const auto &com : coms)
     {
-        //logger("Port open", coms[0].port_);
-        s_port.open(coms[0].port_);
-        // com_port = coms[0].port_;
-        // com_port = "/dev/ttyACM1"s;
-        //  sN = coms[0].serial_number_;
-        // sN = "F23450001"s;
-        s_port.open(com_port);
-        s_port.set_option(boost::asio::serial_port_base::baud_rate(115200));
-        std::this_thread::sleep_for(500ms);
+        if (!HID::testing_to_pass_HID_from_COM(com.port_))
+        {
+            std::cout << "\n"
+                      << com.port_ << " passing failed";
+        }
+        std::this_thread::sleep_for(1s);
     }
-    catch (boost::system::system_error &e)
-    {
-        boost::system::error_code ec = e.code();
-        std::cerr << ec.value() << '\n';
-        std::cerr << ec.category().name() << '\n';
-        std::cerr << ec.message() << '\n';
-    }
+
+    std::vector<UTIL::AVAILABLE_HID> hids = UTIL::get_available_hid_devices();
+    PRINT::print_all_hid_linux_devices(hids);
+
+    std::cout << std::endl;
 
     auto firmware_files = UTIL::get_firmware_list();
     PRINT::print_all_firmware_files(firmware_files);
     int number = PRINT::ChooseToProceed(firmware_files.size());
-    firmware_parse_pro(firmware_files[number].first.data());
-    //  std::cout << "234 after choose\n";
-    while (true)
+    if (firmware_files[number].second != 0)
     {
-        // std::cout << "\n"
-        //           << "Before writing to the port: ";
-        int fw_download_start = firmware_download_start(write, read, false);
-        if (fw_download_start == 0)
-            std::cout << "\nFirmware downloading: ";
-        else
-        {
-            std::cout << "\nfirmware Download FAILED\n";
-            return;
-        }
+        std::cout << "\n Firmware file corrupted. Downloading canceled!";
+        return;
+    }
+    auto firmware = firmware_files[number].first.data();
 
-        double persent = 0;
-        DownloadState state;
+    for (auto &hid : hids)
+    {
+        handler device{hid_open_path(hid.path_), hid.path_, CONVERT::str(hid.serial_number_)};
+        if (!HID::testing_to_pass_COM_from_HID(device.ptr))
+        {
+            std::cout << "\n"
+                      << hid.serial_number_ << " passing to COM failed!";
+        }
+        if (device.ptr)
+            hid_close(device.ptr);
         std::this_thread::sleep_for(3000ms);
 
-        while (persent < 100)
+        try
         {
-            std::cout << persent * 100 << "%\r";
-            get_download_state(&persent, &state);
-            // std::cout << "\n"
-            //           << persent << "% -- Status: " << state << std::endl;
-            // if (!s_port.is_open())
-            // {
-            //     std::cout << "Trying reconnect\n";
-            //     coms = UTIL::get_available_linux_com_ports();
-            //     std::cout << "coms[0].port_=" << coms[0].port_ << std::endl;
-            //     s_port.open(coms[0].port_);
-            // }
-            // else
-            // {
-            //     std::cout << "Port active\n";
-            // }
+            coms = UTIL::get_available_linux_com_ports();
+            s_port.open(coms[0].port_);
+            s_port.set_option(boost::asio::serial_port_base::baud_rate(115200));
 
-            if (state == DownloadState::SUCCESS || state < DownloadState::SUCCESS)
+            firmware_parse_pro(firmware);
+
+            while (true)
             {
-                if (state == DownloadState::RECONNECTDEVICE)
-                {
-                    if (s_port.is_open())
-                    {
-                        //logger("Closing...", coms[0].port_);
-                        s_port.close();
-                    }
-                    std::cout << "  Need reconnecting...  ";
-                    std::this_thread::sleep_for(3000ms);
-                    try
-                    {
-                        coms = UTIL::get_available_linux_com_ports();
-                        // com_port = RECONNECT::com_reconnect(sN);
-                        s_port.open(coms[0].port_);
-                        //logger("Opening...", coms[0].port_);
-                        s_port.set_option(boost::asio::serial_port_base::baud_rate(115200));
-                    }
-                    catch (boost::system::system_error &e)
-                    {
-                        boost::system::error_code ec = e.code();
-                        std::cerr << ec.value() << '\n';
-                        std::cerr << ec.category().name() << '\n';
-                        std::cerr << ec.message() << '\n';
-                    }
-                    std::this_thread::sleep_for(1000ms);
-                    fw_download_start = firmware_download_start(write, read, false);
-                }
+                int fw_download_start = firmware_download_start(write, read, false);
+                std::cout << "Firmware downloading ";
+                if (fw_download_start == 0)
+                    std::cout << "...\n";
                 else
                 {
-                    if (s_port.is_open())
-                    {
-                        std::cout << " OK\n";
-                        s_port.close();
-                        //logger("Firmware successfully downloaded", coms[0].port_);
-                    }
+                    std::cout << " FAILED\n";
                     return;
                 }
+
+                double persent = 0;
+                DownloadState state;
+                std::this_thread::sleep_for(500ms);
+
+                do
+                {
+                    std::cout << "\r";
+                    get_download_state(&persent, &state);
+                    std::cout << persent * 100 << "%";
+
+                    if (!s_port.is_open())
+                    {
+                        coms = UTIL::get_available_linux_com_ports();
+                        s_port.open(coms[0].port_);
+                    }
+
+                    if (state == DownloadState::SUCCESS || state < DownloadState::SUCCESS)
+                    {
+                        if (state == DownloadState::RECONNECTDEVICE)
+                        {
+                            if (s_port.is_open())
+                            {
+                                s_port.close();
+                            }
+
+                            std::this_thread::sleep_for(3000ms);
+                            coms = UTIL::get_available_linux_com_ports();
+                            s_port.open(coms[0].port_);
+                            s_port.set_option(boost::asio::serial_port_base::baud_rate(115200));
+                            std::this_thread::sleep_for(1000ms);
+                            fw_download_start = firmware_download_start(write, read, false);
+                        }
+                        else if (state == DownloadState::FAIL_NONEEDUPDATE)
+                        {
+                            if (s_port.is_open())
+                            {
+                                std::cout << "\n"
+                                          << device.serial_number << ": already has current firmware\n";
+                                s_port.close();
+                            }
+                            return;
+                        }
+                        else
+                        {
+                            if (s_port.is_open())
+                            {
+                                std::cout << "\n"
+                                          << device.serial_number << ": download SUCCESS\n";
+                                s_port.close();
+                            }
+                            return;
+                        }
+                    }
+                    std::this_thread::sleep_for(500ms);
+                } while (persent < 100);
             }
-            std::this_thread::sleep_for(500ms);
+        }
+        catch (boost::system::system_error &e)
+        {
+            boost::system::error_code ec = e.code();
+            std::cerr << ec.value() << '\n';
+            std::cerr << ec.category().name() << '\n';
+            std::cerr << ec.message() << '\n';
         }
     }
     return;

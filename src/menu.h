@@ -5,6 +5,7 @@
 #include <boost/asio.hpp>
 #include <regex>
 #include <hidapi.h>
+#include <future>
 #include "CppConsoleTable.hpp"
 #include "fwdlinterface.h"
 #include <thread>
