@@ -258,10 +258,11 @@ void MENU::DownloadFirmware()
         std::cout << "\n Firmware file corrupted. Downloading canceled!";
         return;
     }
-    auto firmware = firmware_files[number].first.data();
 
     for (auto &hid : hids)
     {
+        auto firmware = firmware_files[number].first.data();
+        
         handler device{hid_open_path(hid.path_), hid.path_, CONVERT::str(hid.serial_number_)};
         if (!HID::testing_to_pass_COM_from_HID(device.ptr))
         {
@@ -274,77 +275,89 @@ void MENU::DownloadFirmware()
         try
         {
             coms = UTIL::get_available_linux_com_ports();
+            if (coms.empty())
+            {
+                std::cout << device.serial_number << ": connection aborted\n";
+                continue;
+            }
             s_port.open(coms[0].port_);
             s_port.set_option(boost::asio::serial_port_base::baud_rate(115200));
             firmware_parse_pro(firmware);
 
-      //      while (true)
-    //        {
-                int fw_download_start = firmware_download_start(write, read, false);
-                std::cout << "Firmware downloading ";
-                if (fw_download_start == 0)
-                    std::cout << "...\n";
-                else
+            int fw_download_start = firmware_download_start(write, read, false);
+            std::cout << device.serial_number << ": firmware downloading ";
+            if (fw_download_start == 0)
+                std::cout << "...\n";
+            else
+            {
+                std::cout << " FAILED\n";
+                return;
+            }
+
+            double persent = 0;
+            DownloadState state;
+            std::this_thread::sleep_for(500ms);
+            int out_percent = 0;
+            do
+            {
+                get_download_state(&persent, &state);
+                if (out_percent != (int)(persent * 100) / 10 * 10)
                 {
-                    std::cout << " FAILED\n";
-                    return;
+                    out_percent = (int)(persent * 100) / 10 * 10;
+                    std::cout << out_percent << "%  ";
+                    std::flush(std::cout);
                 }
 
-                double persent = 0;
-                DownloadState state;
-                std::this_thread::sleep_for(500ms);
-
-                do
+                if (!s_port.is_open())
                 {
-                    get_download_state(&persent, &state);
-                    std::cout << (int)(persent * 100)/10*10 << "%  ";
-                    std::flush(std::cout);
-
-                    if (!s_port.is_open())
+                    coms = UTIL::get_available_linux_com_ports();
+                    if (coms.empty())
                     {
+                        std::cout << "\n"
+                                  << device.serial_number << ": connection aborted\n";
+                        break;
+                    }
+                    s_port.open(coms[0].port_);
+                }
+
+                if (state == DownloadState::SUCCESS || state < DownloadState::SUCCESS)
+                {
+                    if (state == DownloadState::RECONNECTDEVICE)
+                    {
+                        if (s_port.is_open())
+                        {
+                            s_port.close();
+                        }
+                        std::this_thread::sleep_for(3000ms);
                         coms = UTIL::get_available_linux_com_ports();
+                        if (coms.empty())
+                        {
+                            std::cout << "\n"
+                                      << device.serial_number << ": connection aborted\n";
+                            break;
+                        }
                         s_port.open(coms[0].port_);
+                        s_port.set_option(boost::asio::serial_port_base::baud_rate(115200));
+                        std::this_thread::sleep_for(1000ms);
+                        fw_download_start = firmware_download_start(write, read, false);
                     }
-
-                    if (state == DownloadState::SUCCESS || state < DownloadState::SUCCESS)
+                    else
                     {
-                        if (state == DownloadState::RECONNECTDEVICE)
+                        if (s_port.is_open())
                         {
-                            if (s_port.is_open())
-                            {
-                                s_port.close();
-                            }
-                            std::this_thread::sleep_for(3000ms);
-                            coms = UTIL::get_available_linux_com_ports();
-                            s_port.open(coms[0].port_);
-                            s_port.set_option(boost::asio::serial_port_base::baud_rate(115200));
-                            std::this_thread::sleep_for(1000ms);
-                            fw_download_start = firmware_download_start(write, read, false);
+                            std::cout << "\n"
+                                      << device.serial_number;
+                            if (state == DownloadState::FAIL_NONEEDUPDATE)
+                                std::cout << ": already has current firmware\n";
+                            else
+                                std::cout << ": download SUCCESS\n";
+                            s_port.close();
                         }
-                        else if (state == DownloadState::FAIL_NONEEDUPDATE)
-                        {
-                            if (s_port.is_open())
-                            {
-                                std::cout << "\n"
-                                          << device.serial_number << ": already has current firmware\n";
-                                s_port.close();
-                            }
-                            break;
-                        }
-                        else
-                        {
-                            if (s_port.is_open())
-                            {
-                                std::cout << "\n"
-                                          << device.serial_number << ": download SUCCESS\n";
-                                s_port.close();
-                            }
-                            break;
-                        }
+                        break;
                     }
-                    std::this_thread::sleep_for(500ms);
-                } while (persent < 100);
-         //   }
+                }
+                std::this_thread::sleep_for(500ms);
+            } while (persent < 100);
         }
         catch (boost::system::system_error &e)
         {

@@ -66,7 +66,8 @@ std::vector<UTIL::AVAILABLE_COM> UTIL::get_available_linux_com_ports()
                 if (is_symlink(dir.symlink_status()))
                 {
                     auto str = dir.path().generic_string();
-                    if (str.find("NEO_FOX_SD") != std::string::npos)
+                    if (str.find("NEO_FOX_SD") != std::string::npos ||
+                        str.find("_040801") != std::string::npos)
                     {
                         fs::path symlink_points_at = read_symlink(dir);
                         fs::path canonical_path = fs::canonical(p / symlink_points_at);
@@ -76,7 +77,7 @@ std::vector<UTIL::AVAILABLE_COM> UTIL::get_available_linux_com_ports()
             }
             std::sort(com_ports.begin(), com_ports.end(), [](const auto &first, const auto &second)
                       { return first.port_ < second.port_; });
-       //     remove_com_devices_if_not_scanner(com_ports);
+            //     remove_com_devices_if_not_scanner(com_ports);
         }
     }
     catch (const fs::filesystem_error &ex)
