@@ -141,16 +141,19 @@ void SEQ::testing_to_pass_HID_from_COM_command(uint8_t *c)
 
 void SEQ::testing_to_pass_COM_from_HID_command(uint8_t *c)
 {
-    c[0] = 0x7e;
-    c[1] = 0x00;
-    c[2] = 0x08;
-    c[3] = 0x01;
+    c[0] = 0xfd;
+    c[1] = 0x09;
+    c[2] = 0xff;
+    c[3] = 0x7e;
     c[4] = 0x00;
-    c[5] = 0x0D;
-    c[6] = 0x83;
-    uint16_t crc = crc_16(&c[2], 5);
-    c[7] = crc >> 8;
-    c[8] = crc & 0x00ff;
+    c[5] = 0x08;
+    c[6] = 0x01;
+    c[7] = 0x00;
+    c[8] = 0x0D;
+    c[9] = 0x83;
+    uint16_t crc = crc_16(&c[5], 5);
+    c[10] = crc >> 8;
+    c[11] = crc & 0x00ff;
 }
 
 void SEQ::get_config_command(uint8_t *c, const uint8_t suffix)

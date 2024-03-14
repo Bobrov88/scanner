@@ -84,7 +84,6 @@ std::vector<UTIL::AVAILABLE_COM> UTIL::get_available_linux_com_ports()
         std::cout << ex.what() << '\n';
         throw ex;
     }
-
     return com_ports;
 }
 

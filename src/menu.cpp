@@ -271,17 +271,15 @@ void MENU::DownloadFirmware()
         if (device.ptr)
             hid_close(device.ptr);
         std::this_thread::sleep_for(3000ms);
-
         try
         {
             coms = UTIL::get_available_linux_com_ports();
             s_port.open(coms[0].port_);
             s_port.set_option(boost::asio::serial_port_base::baud_rate(115200));
-
             firmware_parse_pro(firmware);
 
-            while (true)
-            {
+      //      while (true)
+    //        {
                 int fw_download_start = firmware_download_start(write, read, false);
                 std::cout << "Firmware downloading ";
                 if (fw_download_start == 0)
@@ -298,9 +296,9 @@ void MENU::DownloadFirmware()
 
                 do
                 {
-                    std::cout << "\r";
                     get_download_state(&persent, &state);
-                    std::cout << persent * 100 << "%";
+                    std::cout << (int)(persent * 100)/10*10 << "%  ";
+                    std::flush(std::cout);
 
                     if (!s_port.is_open())
                     {
@@ -316,7 +314,6 @@ void MENU::DownloadFirmware()
                             {
                                 s_port.close();
                             }
-
                             std::this_thread::sleep_for(3000ms);
                             coms = UTIL::get_available_linux_com_ports();
                             s_port.open(coms[0].port_);
@@ -332,7 +329,7 @@ void MENU::DownloadFirmware()
                                           << device.serial_number << ": already has current firmware\n";
                                 s_port.close();
                             }
-                            return;
+                            break;
                         }
                         else
                         {
@@ -342,12 +339,12 @@ void MENU::DownloadFirmware()
                                           << device.serial_number << ": download SUCCESS\n";
                                 s_port.close();
                             }
-                            return;
+                            break;
                         }
                     }
                     std::this_thread::sleep_for(500ms);
                 } while (persent < 100);
-            }
+         //   }
         }
         catch (boost::system::system_error &e)
         {
