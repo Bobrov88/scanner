@@ -2715,6 +2715,10 @@ std::string UTIL::get_string_from_source(std::ifstream &file)
 
 std::vector<UTIL::AVAILABLE_HID> UTIL::get_scanners_list_by_regex(std::vector<UTIL::AVAILABLE_HID> &hids, const std::string &scanner_numbers)
 {
+    if (!scanner_numbers.empty())
+        if (scanner_numbers[0] == '0')
+            return hids;
+
     std::vector<int> scanner_to_proceed;
     std::vector<int> ints;
     std::vector<std::string> vids;
@@ -2722,19 +2726,18 @@ std::vector<UTIL::AVAILABLE_HID> UTIL::get_scanners_list_by_regex(std::vector<UT
     const std::regex vid_number{"[0x]{1}[A-Fa-f0-9]{4}"};
     while (true)
     {
-        //      UTIL::trim(scanner_numbers);
         for (std::sregex_iterator rBegin{scanner_numbers.begin(), scanner_numbers.end(), int_number}, rEnd;
              rBegin != rEnd;
              ++rBegin)
         {
-            if (rBegin->str() != "0")
-                ints.push_back(std::stoi(rBegin->str()) - 1);
+            ints.push_back(std::stoi(rBegin->str()) - 1);
         }
 
         for (std::sregex_iterator rBegin{scanner_numbers.begin(), scanner_numbers.end(), vid_number}, rEnd;
              rBegin != rEnd;
              ++rBegin)
             vids.push_back(rBegin->str());
+
         if (!vids.empty() ||
             !ints.empty())
             break;
@@ -2742,7 +2745,7 @@ std::vector<UTIL::AVAILABLE_HID> UTIL::get_scanners_list_by_regex(std::vector<UT
     scanner_to_proceed.assign(ints.begin(), ints.end());
     for (const auto &vid : vids)
     {
-        for (int i = 0; i < hids.size(); ++i)
+        for (ssize_t i = 0; i < hids.size(); ++i)
         {
             if (CONVERT::hex_view(hids[i].vid_) == vid)
             {

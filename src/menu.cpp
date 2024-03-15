@@ -2,25 +2,14 @@
 
 boost::asio::io_service io;
 boost::asio::serial_port s_port(io);
-std::string com_port;
 
 int write(char *buf, int length)
 {
-    if (!s_port.is_open())
-    {
-        s_port.open(com_port);
-        std::this_thread::sleep_for(500ms);
-    }
     return boost::asio::write(s_port, boost::asio::buffer(buf, length));
 }
 
 int read(char *buf, int length)
 {
-    if (!s_port.is_open())
-    {
-        s_port.open(com_port);
-        std::this_thread::sleep_for(500ms);
-    }
     return boost::asio::read(s_port, boost::asio::buffer(buf, length));
 }
 
@@ -47,8 +36,8 @@ void MENU::PrintStartMenu()
 void MENU::PrintAttentionComToHID()
 {
     // logger("PrintAttentionComToHID");
-    std::cout << "Note:         Scanners found as COM-devices (if exist) \n";
-    std::cout << "              will automatically be passed into HID-devices";
+    std::cout << "Note:         Scanners in COM-mode (if exist) \n";
+    std::cout << "              will be automatically switched to HID-mode";
     //  std::cout << "Примечание:   Сканеры в режиме COM (если таковые имеются)\n";
     // std::cout << "              будут автоматически переведены в режим HID\n";
 }
@@ -59,53 +48,24 @@ void MENU::PrintAvailableDevices()
     MENU::PrintAttentionComToHID();
     std::cout << "\nWaiting for available scanners\n";
 
-    //  auto task = [&]()
-    // {
     std::vector<UTIL::AVAILABLE_COM> coms = UTIL::get_available_linux_com_ports();
     for (const auto &com : coms)
     {
-        std::cout << "\n 67";
         if (!HID::testing_to_pass_HID_from_COM(com.port_))
         {
             std::cout << "\n"
                       << com.port_ << " passing failed";
         }
-        std::cout << "\n 69";
     }
-    std::cout << "\n 71";
     std::this_thread::sleep_for(1000ms);
-    std::cout << "\n 73";
     std::vector<UTIL::AVAILABLE_HID> hids = UTIL::get_available_hid_devices();
     PRINT::print_all_hid_linux_devices(hids);
-    // };
-
-    // auto task_future = std::async(task);
-    // std::future_status status;
-
-    // while (status != std::future_status::ready)
-    // {
-    //     switch (status = task_future.wait_for(10s); status)
-    //     {
-    //     case std::future_status::timeout:
-    //         std::cerr << "\nTimeout\n";
-    //         break;
-    //     default:
-    //         break;
-    //     }
-    // }
-    // std::cout << "\r";
-    // std::flush(std::cout);
-    // task_future.get();
-    // // revise if error
-    // saving with printing lists
 }
 
 void MENU::SaveSettings()
 {
     MENU::PrintAttentionComToHID();
-    auto coms = UTIL::get_available_linux_com_ports();
-    PRINT::print_all_com_linux_devices(coms);
-
+    std::vector<UTIL::AVAILABLE_COM> coms = UTIL::get_available_linux_com_ports();
     for (const auto &com : coms)
     {
         if (!HID::testing_to_pass_HID_from_COM(com.port_))
@@ -120,9 +80,12 @@ void MENU::SaveSettings()
     auto hids = UTIL::get_available_hid_devices();
     PRINT::print_all_hid_linux_devices(hids);
 
-    // std::string scanner_numbers = PRINT::ChooseScannerToProceed();
-    // hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
-    // std::cout << "\n138 menu";
+    std::string scanner_numbers = PRINT::ChooseScannerToProceed();
+    hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
+
+    if (hids.empty())
+        return;
+
     if (UTIL::save_settings_to_files(hids))
         std::cout << "All scanners settings successfully saved into files\n";
     else
@@ -133,9 +96,7 @@ void MENU::WriteFromJson()
 {
     // logger("Write from json");
     MENU::PrintAttentionComToHID();
-    auto coms = UTIL::get_available_linux_com_ports();
-    PRINT::print_all_com_linux_devices(coms);
-
+    std::vector<UTIL::AVAILABLE_COM> coms = UTIL::get_available_linux_com_ports();
     for (const auto &com : coms)
     {
         if (!HID::testing_to_pass_HID_from_COM(com.port_))
@@ -152,29 +113,17 @@ void MENU::WriteFromJson()
     int json_file = PRINT::ChooseToProceed(jsons.size());
 
     auto hids = UTIL::get_available_hid_devices();
-    // std::cout<<"\nGood 166";
     PRINT::print_all_hid_linux_devices(hids);
-    // std::string scanner_numbers = PRINT::ChooseScannerToProceed();
-    // hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
+
+    std::string scanner_numbers = PRINT::ChooseScannerToProceed();
+    hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
+
+    if (hids.empty())
+        return;
 
     auto settings = UTIL::convert_json_to_bits(jsons[json_file].first);
-    // std::cout << "\nCONVERTED OK";
     for (const auto &hid : hids)
-    // for (const auto &com : coms)
     {
-        // boost::asio::io_service io;
-        // boost::asio::serial_port s_port(io);
-        // s_port.open(com.port_);
-        // if (0 == UTIL::write_settings_from_json(settings, s_port))
-        // {
-        //     std::cout << "Success";
-        // }
-        // else
-        // {
-        //     std::cout << "Failed!";
-        // }
-        // if (s_port.is_open())
-        //     s_port.close();
         handler device{hid_open_path(hid.path_), hid.path_, CONVERT::str(hid.serial_number_)};
         if (-1 == UTIL::write_settings_from_json(settings, device))
         {
@@ -193,8 +142,28 @@ void MENU::WriteFromJson()
 void MENU::RestoreFactorySettings()
 {
     // logger("Restoring factory settings");
+    MENU::PrintAttentionComToHID();
+    std::vector<UTIL::AVAILABLE_COM> coms = UTIL::get_available_linux_com_ports();
+    for (const auto &com : coms)
+    {
+        if (!HID::testing_to_pass_HID_from_COM(com.port_))
+        {
+            std::cout << "\n"
+                      << com.port_ << " passing failed";
+        }
+        std::this_thread::sleep_for(300ms);
+    }
+    std::this_thread::sleep_for(3000ms); // delay for reconnecting
+
     auto hids = UTIL::get_available_hid_devices();
     PRINT::print_all_hid_linux_devices(hids);
+
+    std::string scanner_numbers = PRINT::ChooseScannerToProceed();
+    hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
+
+    if (hids.empty())
+        return;
+
     for (const auto &hid : hids)
     {
         handler device{hid_open_path(hid.path_), hid.path_, CONVERT::str(hid.serial_number_)};
@@ -214,7 +183,28 @@ void MENU::RestoreFactorySettings()
 void MENU::RestoreCustomSettings()
 {
     // logger("Restoring custom settings");
+    MENU::PrintAttentionComToHID();
+    std::vector<UTIL::AVAILABLE_COM> coms = UTIL::get_available_linux_com_ports();
+    for (const auto &com : coms)
+    {
+        if (!HID::testing_to_pass_HID_from_COM(com.port_))
+        {
+            std::cout << "\n"
+                      << com.port_ << " passing failed";
+        }
+        std::this_thread::sleep_for(300ms);
+    }
+    std::this_thread::sleep_for(3000ms); // delay for reconnecting
+
     auto hids = UTIL::get_available_hid_devices();
+    PRINT::print_all_hid_linux_devices(hids);
+
+    std::string scanner_numbers = PRINT::ChooseScannerToProceed();
+    hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
+
+    if (hids.empty())
+        return;
+
     for (const auto &hid : hids)
     {
         handler device{hid_open_path(hid.path_), hid.path_, CONVERT::str(hid.serial_number_)};
@@ -245,8 +235,14 @@ void MENU::DownloadFirmware()
         std::this_thread::sleep_for(1s);
     }
 
-    std::vector<UTIL::AVAILABLE_HID> hids = UTIL::get_available_hid_devices();
+    auto hids = UTIL::get_available_hid_devices();
     PRINT::print_all_hid_linux_devices(hids);
+
+    std::string scanner_numbers = PRINT::ChooseScannerToProceed();
+    hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
+
+    if (hids.empty())
+        return;
 
     std::cout << std::endl;
 
@@ -262,7 +258,7 @@ void MENU::DownloadFirmware()
     for (auto &hid : hids)
     {
         auto firmware = firmware_files[number].first.data();
-        
+
         handler device{hid_open_path(hid.path_), hid.path_, CONVERT::str(hid.serial_number_)};
         if (!HID::testing_to_pass_COM_from_HID(device.ptr))
         {

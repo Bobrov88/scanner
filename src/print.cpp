@@ -45,7 +45,7 @@ void PRINT::print_all_hid_linux_devices(const std::vector<UTIL::AVAILABLE_HID> &
             table[row][2] = CONVERT::hex_view(hid.pid_);
             table[row][3] = CONVERT::str(hid.product_);
             table[row][4] = CONVERT::str(hid.serial_number_);
-            hid_device* ptr = hid_open_path(hid.path_);
+            hid_device *ptr = hid_open_path(hid.path_);
             boost::json::value obj = boost::json::parse(UTIL::get_firmware_device_name_model(ptr));
             table[row][5] = obj.at("deviceName").as_string().c_str();
             table[row][6] = obj.at("FwVer").as_string().c_str();
@@ -59,7 +59,7 @@ void PRINT::print_all_hid_linux_devices(const std::vector<UTIL::AVAILABLE_HID> &
     }
     std::ostringstream oss;
     oss << table;
-    //logger(oss.str());
+    // logger(oss.str());
     std::cout << table;
 }
 
@@ -94,7 +94,7 @@ void PRINT::print_all_com_linux_devices(const std::vector<UTIL::AVAILABLE_COM> &
     }
     std::ostringstream oss;
     oss << table;
-    //logger(oss.str());
+    // logger(oss.str());
     std::cout << table;
 }
 
@@ -154,16 +154,29 @@ void PRINT::print_all_firmware_files(std::vector<std::pair<std::string, int>> &f
 
 std::string PRINT::ChooseScannerToProceed() // take this function out of MENU namespace
 {
-    std::cout << "Enter scanner numbers with a space for selective saving settings.         E.g.: 1 4 5 \n";
-    std::cout << "or enter VIDs with a space to save settings from scanner with these VIDs. E.g.: 0x34eb 0x53da\n";
-    std::cout << "----------->: ";
-    std::cin.clear();
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    for (std::string s; getline(std::cin>>std::ws, s, ',');) {
-        if (s.empty()) { break;}
-        std::cout<<s;
-    }
-    return "";
+    std::cout << "Saving settings\n";
+    std::cout << "enter numbers with a space: 1 4 5 \n";
+    std::cout << "or enter VIDs with a space: 0x34eb 0x53da\n";
+    std::cout << "or enter 0 to save ALL scanners settings\n";
+
+    std::string result_string;
+    do
+    {
+        std::cout << "----------->: ";
+
+        std::string input, token;
+        std::getline(std::cin, input);
+
+        std::istringstream iss(input);
+
+        while (iss >> token)
+        {
+            result_string += token;
+            result_string += ' ';
+        }
+        
+    } while (!result_string.empty());
+    return result_string;
 }
 
 int PRINT::ChooseToProceed(size_t amount) // take this function out of MENU namespace

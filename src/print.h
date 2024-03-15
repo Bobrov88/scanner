@@ -1,5 +1,7 @@
 #pragma once
 #include <string>
+#include <vector>
+#include <sstream>
 #include <boost/json.hpp>
 #include <boost/system/error_code.hpp>
 #include "CppConsoleTable.hpp"
