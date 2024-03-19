@@ -1,6 +1,10 @@
 #include "menu.h"
 #include "logger.h"
 
+src::severity_logger<int> slg1;
+#define console BOOST_LOG_SEV(slg1, 0)
+#define logger BOOST_LOG_SEV(slg1, 1)
+
 boost::asio::io_service io;
 boost::asio::serial_port s_port(io);
 
@@ -38,7 +42,7 @@ void MENU::PrintStartMenu()
 
 void MENU::PrintAttentionComToHID()
 {
-    // logger("PrintAttentionComToHID");
+    logger << "PrintAttentionComToHID";
     std::cout << "Note:         Scanners in COM-mode (if exist) \n";
     std::cout << "              will be automatically switched to HID-mode\n";
     std::cout << "Waiting for available scanners\n";
@@ -48,7 +52,6 @@ void MENU::PrintAttentionComToHID()
 
 void MENU::PrintAvailableDevices()
 {
-    //  logger("PrintAvailableDevices");
     MENU::PrintAttentionComToHID();
     
     std::vector<UTIL::AVAILABLE_COM> coms = UTIL::get_available_linux_com_ports();

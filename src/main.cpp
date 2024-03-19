@@ -4,6 +4,9 @@
 #include "logger.h"
 
 using namespace std::string_literals;
+src::severity_logger<int> slg;
+#define console BOOST_LOG_SEV(slg, 0)
+#define logger BOOST_LOG_SEV(slg, 1)
 
 int main(int argc, char *argv[])
 {
@@ -45,19 +48,19 @@ int main(int argc, char *argv[])
     // setlocale(LC_ALL, "rus");
     //  setlocale(LC_CTYPE, "rus");
     // endwin(); // Завершение работы с ncurses
-
     logger_init();
-    src::severity_logger<int> slg;
-    BOOST_LOG_SEV(slg, 0) << "Это для консоли";
-    BOOST_LOG_SEV(slg, 1) << "Это для файла";
-  
+
+    console << "Это для консоли";
+    logger << "Это для файла";
+
+
     // if (argc == 1 || (argc == 2 && (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0)))
     // {
     //     MENU::PrintStartMenu();
     // }
     // else if (argc == 2 && (strcmp(argv[1], "-i") == 0 || strcmp(argv[1], "--info") == 0))
     // {
-    //     MENU::PrintAvailableDevices();
+         MENU::PrintAvailableDevices();
     // }
     // else if (argc == 2 && (strcmp(argv[1], "-s") == 0 || strcmp(argv[1], "--save") == 0))
     // {
