@@ -15,6 +15,7 @@ set(SOURCES
     src/commands.cpp
     src/commands_sequencies.cpp
     src/converters.cpp
+    src/logger.cpp
 )
 
 set(HEADERS
@@ -27,6 +28,7 @@ set(HEADERS
     src/menu.h
     src/utility.h
     src/CppConsoleTable.hpp
+    src/logger.h
 )
 
 add_subdirectory(src/utfcpp)
@@ -52,13 +54,12 @@ file(COPY ${CMAKE_BINARY_DIR}/FindZLIB.cmake DESTINATION ${modules})
 include(FindPkgConfig)
 find_package(Threads REQUIRED)
 find_package(spdlog REQUIRED)
-find_package(Curses REQUIRED)
 
 list(APPEND CMAKE_FIND_ROOT_PATH ${CONAN_BOOST_ROOT})
 set(Boost_USE_STATIC_LIBS ON)
 add_compile_definitions(_WIN32_WINNT=0x0601)
 
-find_package(Boost COMPONENTS json system REQUIRED)
+find_package(Boost COMPONENTS json system log log_setup REQUIRED)
 set(BUILD_SHARED_LIBS FALSE)
 
 # -------- Firmware downloal library ---------- #
@@ -78,16 +79,16 @@ include_directories(${FWLIB_INCLUDES})
 include_directories(${Boost_INCLUDE_DIRS})
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 target_link_libraries(${PROJECT_NAME} utf8cpp hidapi::hidapi spdlog::spdlog)
-target_link_libraries(${PROJECT_NAME} Boost::thread Boost::system Boost::json)
+target_link_libraries(${PROJECT_NAME} Boost::thread Boost::system Boost::json Boost::log Boost::log_setup)
 target_link_libraries(${PROJECT_NAME} ${FWLIB_TO_INCLUDE})
 
 if(${_DEBUG})
     message("-- Debug build --")
-    target_compile_definitions(${PROJECT_NAME} PUBLIC DEBUG_COMMENT=TRUE)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC DEBUG=TRUE)
     target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -g)
 else()
     message("-- Release build --")
-    target_compile_definitions(${PROJECT_NAME} PUBLIC DEBUG_COMMENT=FALSE)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC DEBUG=FALSE)
 endif()
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)

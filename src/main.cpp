@@ -1,7 +1,9 @@
 #include "menu.h"
 #include "locale.h"
 #include "commands_sequencies.h"
-#include <ncurses.h>
+#include "logger.h"
+
+using namespace std::string_literals;
 
 int main(int argc, char *argv[])
 {
@@ -40,46 +42,78 @@ int main(int argc, char *argv[])
     //         break;
     //     }
     // }
-   // setlocale(LC_ALL, "rus");
-  //  setlocale(LC_CTYPE, "rus");
-  //  endwin(); // Завершение работы с ncurses
+    // setlocale(LC_ALL, "rus");
+    //  setlocale(LC_CTYPE, "rus");
+    // endwin(); // Завершение работы с ncurses
+
+    logger_init();
+    src::severity_logger<int> slg;
+    BOOST_LOG_SEV(slg, 0) << "Это для консоли";
+    BOOST_LOG_SEV(slg, 1) << "Это для файла";
+  
     // if (argc == 1 || (argc == 2 && (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0)))
     // {
     //     MENU::PrintStartMenu();
-    //     return 0;
     // }
-    // if (argc == 2 && (strcmp(argv[1], "-i") == 0 || strcmp(argv[1], "--info") == 0))
+    // else if (argc == 2 && (strcmp(argv[1], "-i") == 0 || strcmp(argv[1], "--info") == 0))
     // {
     //     MENU::PrintAvailableDevices();
-    //     return 0;
     // }
-    // if (argc == 2 && (strcmp(argv[1], "-s") == 0 || strcmp(argv[1], "--save") == 0))
+    // else if (argc == 2 && (strcmp(argv[1], "-s") == 0 || strcmp(argv[1], "--save") == 0))
     // {
     //     MENU::SaveSettings();
-    //     return 0;
     // }
-    // if (argc == 2 && (strcmp(argv[1], "-w") == 0 || strcmp(argv[1], "--write") == 0))
+    // else if (argc == 2 && (strcmp(argv[1], "-w") == 0 || strcmp(argv[1], "--write") == 0))
     // {
     //     MENU::WriteFromJson();
-    //     return 0;
     // }
-    // if (argc == 2 && (strcmp(argv[1], "-f") == 0 || strcmp(argv[1], "--restore-factory") == 0))
+    // else if (argc == 2 && (strcmp(argv[1], "-f") == 0 || strcmp(argv[1], "--restore-factory") == 0))
     // {
     //     MENU::RestoreFactorySettings();
-    //     return 0;
     // }
-    // if (argc == 2 && (strcmp(argv[1], "-c") == 0 || strcmp(argv[1], "--restore-custom") == 0))
+    // else if (argc == 2 && (strcmp(argv[1], "-c") == 0 || strcmp(argv[1], "--restore-custom") == 0))
     // {
     //     MENU::RestoreCustomSettings();
-    //     return 0;
     // }
-    // if (argc == 2 && (strcmp(argv[1], "-d") == 0 || strcmp(argv[1], "--download") == 0))
+    // else if (argc == 2 && (strcmp(argv[1], "-d") == 0 || strcmp(argv[1], "--download") == 0))
     // {
     //     MENU::DownloadFirmware();
-    //     return 0;
     // }
-    while (true) {
-        PRINT::ChooseScannerToProceed();
-    }
+    // else
+    //     std::cout << "Unknown parameter";
+    // std::cout << "\nPress any key to exit...";
+    // char c = getchar();
     return 0;
 }
+
+// while (true) {
+//      PRINT::ChooseScannerToProceed();
+//  }
+//  BOOST::init_logging();
+//  BOOST_LOG_TRIVIAL(warning) << "Русское предупреждение";
+//  BOOST_LOG_TRIVIAL(warning) << "This is a debug severity message";
+//  BOOST_LOG_TRIVIAL(info) << "This is an informational severity message";
+//  BOOST_LOG_TRIVIAL(warning) << "This is a warning severity message";
+//  BOOST_LOG_TRIVIAL(error) << "This is an error severity message";
+//  BOOST_LOG_TRIVIAL(fatal) << "and this is a fatal severity message";
+
+// BOOST_LOG_TRIVIAL(fatal) << "Русские символы"s;
+
+// MENU::PrintStartMenu();
+
+// logging::add_common_attributes();
+
+// std::locale loc("ru_RU.UTF-8");
+// std::locale::global(loc);
+
+// BOOST::init_console_logging();
+// BOOST::init_file_logging();
+
+// src::severity_logger<logging::trivial::severity_level> console_logger;
+// src::severity_logger<logging::trivial::severity_level> file_logger;
+
+// BOOST_LOG_SEV(console_logger, logging::trivial::trace) << "Это сообщение для консоли";
+// BOOST_LOG_SEV(file_logger, logging::trivial::info) << "Это сообщение для файла";
+
+//   return 0;
+//}

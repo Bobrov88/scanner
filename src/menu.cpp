@@ -1,4 +1,5 @@
 #include "menu.h"
+#include "logger.h"
 
 boost::asio::io_service io;
 boost::asio::serial_port s_port(io);
@@ -31,13 +32,16 @@ void MENU::PrintStartMenu()
     // std::cout << "\t                     \t\tвосстановить пользовательские настройки сканера\n";
     std::cout << "\t -d --download       \t\tupdate scanner firmware\n";
     // std::cout << "\t                     \t\tобновить прошивку сканера\n";
+
+    // BOOST_LOG_TRIVIAL(fatal) << "111This is a trace severity message";
 }
 
 void MENU::PrintAttentionComToHID()
 {
     // logger("PrintAttentionComToHID");
     std::cout << "Note:         Scanners in COM-mode (if exist) \n";
-    std::cout << "              will be automatically switched to HID-mode";
+    std::cout << "              will be automatically switched to HID-mode\n";
+    std::cout << "Waiting for available scanners\n";
     //  std::cout << "Примечание:   Сканеры в режиме COM (если таковые имеются)\n";
     // std::cout << "              будут автоматически переведены в режим HID\n";
 }
@@ -46,8 +50,7 @@ void MENU::PrintAvailableDevices()
 {
     //  logger("PrintAvailableDevices");
     MENU::PrintAttentionComToHID();
-    std::cout << "\nWaiting for available scanners\n";
-
+    
     std::vector<UTIL::AVAILABLE_COM> coms = UTIL::get_available_linux_com_ports();
     for (const auto &com : coms)
     {
@@ -110,6 +113,9 @@ void MENU::WriteFromJson()
 
     auto jsons = UTIL::get_json_file_list();
     PRINT::print_all_json_files(jsons);
+    if (jsons.empty()) {
+        return;
+    }
     int json_file = PRINT::ChooseToProceed(jsons.size());
 
     auto hids = UTIL::get_available_hid_devices();
