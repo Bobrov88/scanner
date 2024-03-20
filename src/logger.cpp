@@ -14,7 +14,7 @@ BOOST_LOG_GLOBAL_LOGGER_INIT(my_logger, lg_type)
     f_sink->set_filter(expr::attr<int>("Severity") == 1);
     logging::formatter formatter = expr::stream << "["
                                                 << expr::attr<boost::posix_time::ptime>("TimeStamp")
-                                                << "] -> "
+                                                << "] > "
                                                 << expr::smessage;
     f_sink->set_formatter(formatter);
     logging::core::get()->add_sink(f_sink);

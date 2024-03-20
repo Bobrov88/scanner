@@ -112,5 +112,4 @@ namespace UTIL
     void merge_json(std::string &json);
     void trim(std::string &str);
     std::string parse_json_file(const std::string &source);
-    //std::string read_device_info();
 };

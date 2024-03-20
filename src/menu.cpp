@@ -1,10 +1,6 @@
 #include "menu.h"
 #include "logger.h"
 
-src::severity_logger<int> slg1;
-#define console BOOST_LOG_SEV(slg1, 0)
-#define logger BOOST_LOG_SEV(slg1, 1)
-
 boost::asio::io_service io;
 boost::asio::serial_port s_port(io);
 
@@ -36,13 +32,11 @@ void MENU::PrintStartMenu()
     // std::cout << "\t                     \t\tвосстановить пользовательские настройки сканера\n";
     std::cout << "\t -d --download       \t\tupdate scanner firmware\n";
     // std::cout << "\t                     \t\tобновить прошивку сканера\n";
-
-    // BOOST_LOG_TRIVIAL(fatal) << "111This is a trace severity message";
 }
 
 void MENU::PrintAttentionComToHID()
 {
-    logger << "PrintAttentionComToHID";
+   // logger << "PrintAttentionComToHID";
     std::cout << "Note:         Scanners in COM-mode (if exist) \n";
     std::cout << "              will be automatically switched to HID-mode\n";
     std::cout << "Waiting for available scanners\n";
@@ -374,32 +368,3 @@ void MENU::DownloadFirmware()
     }
     return;
 }
-
-// void MENU::ReadUsbIdentifiers(std::string dev_path){
-//     auto udev = udev_new();
-//     if (!udev) { return; }
-
-//     struct stat statbuf;
-//     if (stat(dev_path.c_str(), &statbuf) < 0) { return; }
-//     auto type =  S_ISBLK(statbuf.st_mode) ? 'b' : S_ISCHR(statbuf.st_mode) ? 'c' : 0;
-
-//     auto opened_dev = udev_device_new_from_devnum(udev, type, statbuf.st_rdev);
-//     auto dev = opened_dev;
-
-//     while (dev != nullptr)
-//     {
-//         auto serial = udev_device_get_sysattr_value(dev, "serial");
-//         if (nullptr == serial)
-//         {
-//             dev = udev_device_get_parent(dev);
-//         }
-//         else
-//         {
-//             std::cout << "VID: " <<  udev_device_get_sysattr_value(dev, "idVendor") << std::endl;
-//             std::cout << "PID: " <<  udev_device_get_sysattr_value(dev, "idProduct") << std::endl;
-//             std::cout << "Serial Number: " <<  serial << std::endl;
-//         }
-//     }
-//     if (opened_dev) { udev_device_unref(opened_dev); }
-//     udev_unref(udev);
-// }

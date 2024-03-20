@@ -154,8 +154,7 @@ void PRINT::print_all_firmware_files(std::vector<std::pair<std::string, int>> &f
 
 std::string PRINT::ChooseScannerToProceed() // take this function out of MENU namespace
 {
-    std::cout << "Saving settings\n";
-    std::cout << "enter numbers with a space, e.g. 1 4 5 \n";
+    std::cout << "Enter numbers with a space, e.g. 1 4 5 \n";
     std::cout << "or enter VIDs with a space, e.g. 0x34eb 0x53da\n";
     std::cout << "or enter 0 to save ALL scanners settings\n";
 

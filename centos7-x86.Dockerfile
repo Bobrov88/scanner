@@ -103,5 +103,5 @@ RUN cd /home/project/scanner && mkdir build_centos_x86 && \
 
 
 #docker run --rm -it --volume=./:/home/project/scanner scanner
-#cmake -Bbuild_centos_x86 . -DTARGET_SYSTEM=CENTOS -D_DEBUG=TRUE
+#cmake -Bbuild_centos_x86 . -DTARGET_SYSTEM=CENTOS -D_DEBUG=TRUE -DLANG=ru_RU
 #cmake --build ./build_centos_x86

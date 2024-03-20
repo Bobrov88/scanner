@@ -1,10 +1,11 @@
 cmake_minimum_required(VERSION 3.20)
 project(scanner CXX)
-message("Building project: " ${PROJECT_NAME})
+message("-- Building project: " ${PROJECT_NAME})
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CONAN_DISABLE_CHECK_COMPILER "1")
+set(CMAKE_EXE_LINKER_FLAGS "-static-libstdc++")
 
 set(SOURCES
     src/print.cpp
@@ -53,7 +54,6 @@ file(COPY ${CMAKE_BINARY_DIR}/FindZLIB.cmake DESTINATION ${modules})
 
 include(FindPkgConfig)
 find_package(Threads REQUIRED)
-find_package(spdlog REQUIRED)
 
 list(APPEND CMAKE_FIND_ROOT_PATH ${CONAN_BOOST_ROOT})
 set(Boost_USE_STATIC_LIBS ON)
@@ -63,13 +63,20 @@ find_package(Boost COMPONENTS json system log log_setup REQUIRED)
 set(BUILD_SHARED_LIBS FALSE)
 
 # -------- Firmware downloal library ---------- #
+if(NOT DEFINED TARGET_SYSTEM)
+    message(FATAL_ERROR "Specify target system first")
+    return()
+endif()
+
 if(${TARGET_SYSTEM} STREQUAL DEBIAN)
+    message(WARNING "-- Debian --")
     find_library(FWLIB_TO_INCLUDE appdownload.a src/lib_x64)
 elseif(${TARGET_SYSTEM} STREQUAL CENTOS)
+    message(WARNING "-- Centos --")
     find_library(FWLIB_TO_INCLUDE appdownload.a src/lib_x86)
-elseif(${TARGET_SYSTEM} STREQUAL WINDOWS)
+else(${TARGET_SYSTEM} STREQUAL WINDOWS)
+    message(WARNING "-- Windows --")
     find_library(FWLIB_TO_INCLUDE libfwdownload.lib src/win10)
-else()
 endif()
 
 # -------- Firmware downloal library ---------- #
@@ -78,28 +85,45 @@ include_directories(${FWLIB_INCLUDES})
 
 include_directories(${Boost_INCLUDE_DIRS})
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
-target_link_libraries(${PROJECT_NAME} utf8cpp hidapi::hidapi spdlog::spdlog)
+target_link_libraries(${PROJECT_NAME} utf8cpp hidapi::hidapi)
 target_link_libraries(${PROJECT_NAME} Boost::thread Boost::system Boost::json Boost::log Boost::log_setup)
 target_link_libraries(${PROJECT_NAME} ${FWLIB_TO_INCLUDE})
 
+if(NOT DEFINED _DEBUG)
+    message(WARNING "-- Release build --")
+endif()
+
 if(${_DEBUG})
-    message("-- Debug build --")
+    message(WARNING "-- Debug build --")
     target_compile_definitions(${PROJECT_NAME} PUBLIC DEBUG=TRUE)
-    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -g)
+    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wunused -g)
 else()
-    message("-- Release build --")
+    message(WARNING "-- Release build --")
     target_compile_definitions(${PROJECT_NAME} PUBLIC DEBUG=FALSE)
 endif()
 
-if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
-    if (STATIC_CRT)
+if(NOT DEFINED LANG)
+    message(FATAL_ERROR "Specify the language first")
+endif()
+
+if(${LANG} STREQUAL ru_RU)
+    configure_file(${CMAKE_SOURCE_DIR}/src/configure/ru_RU.h.in ${CMAKE_SOURCE_DIR}/src/phrases.h @ONLY)
+    message(WARNING "-- Language: RU --")
+else(${LANG} STREQUAL en_US)
+    configure_file(${CMAKE_SOURCE_DIR}/src/configure/en_US.h.in ${CMAKE_SOURCE_DIR}/src/phrases.h @ONLY)
+    message(WARNING "-- Language: EN --")
+endif()
+
+if(${TARGET_SYSTEM} STREQUAL Windows)
+    if(STATIC_CRT)
         string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
         string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
-    endif ()
+    endif()
+
     target_compile_definitions(${PROJECT_NAME} PRIVATE _WINDOWS_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
     target_compile_options(${PROJECT_NAME} PRIVATE /utf-8)
-endif ()
+endif()
 
-#conan install -pr .\conan_profiles\win10\win10_build -if build_win_x86_64 . --build=missing 
-#cmake -Bbuild_win_x86_64 . -DTARGET_SYSTEM=WINDOWS -D_DEBUG=TRUE
-#cmake --build ./build_win_x86_64
+# conan install -pr .\conan_profiles\win10\win10_build -if build_win_x86_64 . --build=missing
+# cmake -Bbuild_win_x86_64 . -DTARGET_SYSTEM=WINDOWS -D_DEBUG=TRUE -DLANG=RU
+# cmake --build ./build_win_x86_64

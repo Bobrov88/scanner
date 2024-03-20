@@ -2511,7 +2511,6 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
 
 std::string UTIL::get_string_possible_data(const std::vector<std::string> &variants, const std::string &key)
 {
-    std::cout << "get_string_possible_data\n";
     std::string result;
     result += "\nPossible values for ";
     result += key;
@@ -2526,7 +2525,6 @@ std::string UTIL::get_string_possible_data(const std::vector<std::string> &varia
 
 std::string UTIL::get_bool_possible_data(const std::string &key)
 {
-    std::cout << "get_bool_possible_data\n";
     std::string result;
     result += "\nPossible values for ";
     result += key;
@@ -2536,7 +2534,6 @@ std::string UTIL::get_bool_possible_data(const std::string &key)
 
 std::string UTIL::get_uint8_t_possible_data(const std::string &key, const uint8_t from, const int to)
 {
-    std::cout << "get_uint8_t_possible_data\n";
     std::string result;
     result += "\nPossible values for ";
     result += key;
@@ -2684,27 +2681,6 @@ bool UTIL::save_settings_to_files(const std::vector<UTIL::AVAILABLE_HID> &hids)
                     out.close(); });
     return ret;
 }
-
-// std::string UTIL::read_com_device_info()
-// {
-//     // uint8_t buf[15] = {0};
-//     // SEQ::read_device_info_command_by_com(buf);
-//     // boost::asio::io_service io;
-//     // boost::asio::serial_port s_port(io, com);
-//     // boost::asio::write(s_port, boost::asio::buffer(buf, sizeof(buf)));
-//     // std::this_thread::sleep_for(100ms);
-//     // std::vector<uint8_t> v;
-//     // uint8_t u;
-//     // do
-//     // {
-//     //     boost::asio::read(s_port, boost::asio::buffer(&u, 1));
-//     //     v.push_back(u);
-//     // } while (static_cast<char>(u) != '}');
-
-//     // s_port.close();
-//     // std::string str = CONVERT::convert_from_bytes_to_string(v);
-//     // return str;
-// }
 
 std::string UTIL::get_string_from_source(std::ifstream &file)
 {

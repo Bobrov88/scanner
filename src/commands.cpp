@@ -4,22 +4,16 @@ int HID::save_to_internal_flash(handler &device)
 {
     uint8_t c1[64] = {0};
     SEQ::save_to_internal_flash_command(c1);
-    // logger("Saving to internal flash", device.serial_number);
     if (-1 == UTIL::HID_WRITE(device, c1, 64))
     {
-        // logger(CONVERT::str(hid_error(device.ptr)), device.serial_number);
         return -1;
     };
-    // logger("Success");
     uint8_t c2[64] = {0};
     SEQ::save_as_custom_flash_command(c2);
-    // logger("Saving as custom settings", device.serial_number);
     if (-1 == UTIL::HID_WRITE(device, c2, 64))
     {
-        // logger(CONVERT::str(hid_error(device.ptr)), device.serial_number);
         return -1;
     }
-    // logger("Success");
     return 0;
 }
 
@@ -103,7 +97,6 @@ bool HID::testing_connect_for_erasing_duplicates(handler &device)
 {
     uint8_t c[64] = {0};
     SEQ::testing_connect_for_erasing_duplicates_command(c);
-    // SEQ::read_device_info_command_by_hid(c);
     if (-1 == UTIL::HID_WRITE(device, c, 64))
     {
         return false;
@@ -113,7 +106,6 @@ bool HID::testing_connect_for_erasing_duplicates(handler &device)
 
 bool HID::testing_to_pass_HID_from_COM(const std::string &com)
 {
-    //   logger("testing_to_pass_HID_from_COM", com);
     try
     {
         boost::asio::io_service io;
@@ -157,21 +149,18 @@ bool HID::testing_to_pass_HID_from_COM(const std::string &com)
             switch (read_result)
             {
             case 1:
-                // for (int i = 0; i < 92; ++i)
                 m_timer.cancel();
                 io.reset();
                 break;
             case 3:
                 s_port.cancel();
                 io.reset();
-                //  throw(std::string("Timeout exception"));
                 break;
             case 2:
                 m_timer.cancel();
                 s_port.cancel();
                 io.reset();
                 return true;
-                //   throw std::string{"Read error"};
             default: // if resultInProgress remain in the loop
                 break;
             }
