@@ -82,7 +82,7 @@ std::vector<UTIL::AVAILABLE_COM> UTIL::get_available_linux_com_ports()
     }
     catch (const fs::filesystem_error &ex)
     {
-        console << ex.what() ;
+        console << ex.what();
         throw ex;
     }
     return com_ports;
@@ -254,6 +254,7 @@ std::vector<uint8_t> UTIL::read_json_piece(hid_device *handle)
     int size_of_read_bytes = hid_read_timeout(handle, response, 64, 100);
     if (size_of_read_bytes <= 0)
     {
+        logger << "Read json piece failed";
         // TODO if result is negative
         return {};
     }
@@ -381,8 +382,10 @@ int UTIL::HID_WRITE(handler &device, uint8_t *c, int size)
                      r[7] == 0x00 &&
                      r[8] == 0x01)
             {
+                logger << "Successful read with " << (10 - attempt) << " attempt";
                 return 0;
             }
+            logger << device.serial_number << ": read failed -> " << CONVERT::to_hex(r, 16);
         }
     }
     catch (std::exception &ex)
@@ -428,7 +431,7 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
         std::vector<uint8_t> bytes;
         std::string incorrect_data;
 
-        auto set_bytes_from_symbols = [&str](const std::string &key, size_t length)
+        auto set_bytes_from_symbols = [&str, &incorrect_data](const std::string &key, size_t length)
         {
             std::vector<uint8_t> byte(length, 0);
             try
@@ -436,7 +439,7 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
                 std::string tmp = str.at(key).as_string().c_str();
                 if (tmp.size() > length)
                 {
-                    throw std::string{key + " "s + INCORR_STRING + " "s + std::to_string(length) + " "s + SYM};
+                    incorrect_data += key + ": " + INCORR_STRING + " "s + std::to_string(length) + " "s + SYM;
                 }
                 else
                 {
@@ -448,20 +451,19 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
             }
             catch (const std::out_of_range &ex)
             {
-                //
+                incorrect_data += key + ": " + NOT_KEY;
             }
             return byte;
         };
 
-        auto set_byte_if_key_uint_byte = [&str](uint8_t &byte, const std::string &key)
+        auto set_byte_if_key_uint_byte = [&str, &incorrect_data](uint8_t &byte, const std::string &key)
         {
             try
             {
                 auto value = str.at(key).to_number<int>();
                 if (value < 0 || value > 255)
                 {
-                    throw std::string{key + " "s + INCORR_NUM};
-                    // todo add error to string "incorrect keys"
+                    incorrect_data += key + ": " + INCORR_NUM;
                 }
                 else
                 {
@@ -474,7 +476,7 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
             }
         };
 
-        auto set_bit_if_key_bool_true = [&str](uint8_t &byte, uint8_t bit_number, const std::string &key)
+        auto set_bit_if_key_bool_true = [&str, &incorrect_data](uint8_t &byte, uint8_t bit_number, const std::string &key)
         {
             try
             {
@@ -507,7 +509,7 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
                         byte |= 0b10000000;
                         break;
                     default:
-                        throw INCORR_BYTES + std::to_string(byte) + IN + " "s + key;
+                        incorrect_data += INCORR_BYTES + " " + IN + " "s + key;
                     }
                 }
                 else
@@ -515,7 +517,7 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
             }
             catch (const std::out_of_range &ex)
             {
-                return;
+                incorrect_data += key + ": " + NOT_KEY;
             }
         };
 
@@ -2509,7 +2511,7 @@ std::string UTIL::get_string_possible_data(const std::vector<std::string> &varia
 std::string UTIL::get_bool_possible_data(const std::string &key)
 {
     std::string result;
-    result += POSS_VALUES;
+    result += POSS_VALUES; // todo USE this function
     result += " "s;
     result += key;
     result += ": true false";
@@ -2519,7 +2521,7 @@ std::string UTIL::get_bool_possible_data(const std::string &key)
 std::string UTIL::get_uint8_t_possible_data(const std::string &key, const uint8_t from, const int to)
 {
     std::string result;
-    result += POSS_VALUES;
+    result += POSS_VALUES; // todo USE this function
     result += " "s;
     result += key;
     result += ": ";
@@ -2537,7 +2539,6 @@ void UTIL::merge_json(std::string &json)
     {
         if (*it == '}' && *(it + 1) == '{')
         {
-            // todo comma to be lift
             merged_json.back() = ',';
             merged_json.push_back('\n');
             it += 2;
@@ -2607,18 +2608,14 @@ std::string UTIL::parse_json_file(const std::string &source)
 
 int UTIL::write_settings_from_json(const std::vector<std::pair<uint16_t, std::vector<uint8_t>>> &settings, handler &device)
 {
-    // logger("Write settings from json", device.path);
     for (const auto &[flag, bits] : settings)
     {
         uint8_t c[64] = {0};
         SEQ::create_subcommand(flag, bits, c);
         if (-1 == HID_WRITE(device, c, bits.size() + 11))
         {
-            // logger(CONVERT::str(hid_error(device.ptr)), device.serial_number);
             return -1;
         }
-        // HID::save_to_internal_flash(device);
-        // logger("Success", device.serial_number);
     }
     return 0;
 }
@@ -2630,13 +2627,10 @@ int UTIL::write_settings_from_json(const std::vector<std::pair<uint16_t, std::ve
         uint8_t c[64] = {0};
         SEQ::create_subcommand_for_com(flag, bits, c);
 
-        //   std::cout << "Bits: " << CONVERT::to_hex(c, bits.size() + 11);
         if (-1 == COM_WRITE(s_port, c, bits.size() + 8))
         {
-            // //logger(CONVERT::str(hid_error(device.ptr)), device.serial_number);
             return -1;
         }
-        // logger("Success");
     }
     return 0;
 }
@@ -2646,7 +2640,7 @@ bool UTIL::save_settings_to_files(const std::vector<UTIL::AVAILABLE_HID> &hids)
     bool ret = true;
     std::for_each(hids.begin(), hids.end(), [&ret](const auto &hid)
                   {
-                    //logger("Saving settings to files", std::string(hid.path_));
+                    logger << "Saving settings from "<<hid.path_;
                     hid_device *handle = hid_open_path(hid.path_);
                     std::string json = UTIL::get_full_json_response(handle);
                     std::string out_file_name = CONVERT::str(hid.serial_number_) + ".json"s;
@@ -2656,9 +2650,11 @@ bool UTIL::save_settings_to_files(const std::vector<UTIL::AVAILABLE_HID> &hids)
                     if (out) {
                     out << json;
                     console << out_file_name<<": "s << NEW_FILE;
+                    logger << out_file_name<<": "s << NEW_FILE;
                     }                    
                     else {
                         console << NO_NEW_FILE <<": "<<out_file_name;
+                        logger << NO_NEW_FILE <<": "<<out_file_name;
                         ret = false;
                     }
                     out.close(); });

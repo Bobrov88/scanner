@@ -56,3 +56,4 @@
 #define PARSE_FAIL "Ошибка парсинга:"s
 #define NEW_FILE "Файл создан"s
 #define NO_NEW_FILE "невозможно создать файл"s
+#define NOT_KEY "Ключ не найден"s

@@ -56,3 +56,4 @@
 #define PARSE_FAIL "Parsing failed"s
 #define NEW_FILE "File created"s
 #define NO_NEW_FILE "Unable to create file"s
+#define NOT_KEY "Key not found"s
