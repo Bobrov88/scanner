@@ -1,56 +1,58 @@
-#define EXCEPTION "\n Исключение"
-#define UNKNOWN "Неизвестный параметр"
-#define PRESS_KEY "\nНажмите любую клавишу для выхода..."
-#define USAGE "\nПараметры меню\n"
-#define GET_DESC "\t -h --help           \t\tОписание доступных функций\n";
-#define GET_INFO "\t -i --info           \t\tИнформация о USB-устройствах\n";
-#define GET_SAVE "\t -s --save           \t\tСохранение настроек в json-файл\n";
-#define GET_WRITE "\t -w --write          \t\tЗапись настроек из json-файла\n";
-#define GET_REST_FACT "\t -f --restore-factory\t\tВосстановление заводских настроек\n";
-#define GET_REST_CUST "\t -c --restore-custom \t\tВосстановление пользовательских настроек\n";
-#define GET_DWNLD "\t -d --download       \t\tПрошивка сканера\n";
-#define COM2HID "Примечание:         Сканеры в COM-режиме (если таковые имеются) \n              буду автоматически переведны в HID-режим\n"
-#define WAIT4SCAN "Ожидание доступных сканеров\n"
-#define PASS_FAIL " перевод невозможен"
-#define SAVE_OK "Настройки всех сканеров были успешно сохранены в json-файлы\n"
-#define SAVE_FAIL "\nСохранены настройки не со всех сканеров!\n"
-#define WRITE_FAIL "\n Сохранение не удалось"
-#define WRITE_FAIL "\n Сохранение настроек как пользовательских не удалось"
-#define SUCC "Успех\n"
-#define FAIL "Провал\n"
-#define REST_OK " возврат к заводским настройкам прошёл успешно\n"
-#define REST_FAIL " возврат к заводским настройкам не удался\n"
-#define CUST_OK " возврат к пользовательским настройкам прошёл успешно\n"
-#define CUST_FAIL " возврат к пользовательским настройкам не удался\n"
-#define FW_CORRUPT "\n Файл прошивки повреждён. Обновление невозможно!"
-#define HID2COM_FAIL " переход в COM-режим не удался!"
-#define CONN_ABORT ": соединение разорвано\n"
-#define FWDL ": обновление прошивки "
-#define HAS_FW ": уже содержит текущую прошивку\n"
-#define FW_OK ": обновление прошивки УСПЕШНО\n"
-#define PROD "Наименование"
-#define SN "Серийный номер"
-#define MODEL "Модель"
-#define FW_VER "Версия прошивки"
-#define NO_SCAN "Сканеры не найдены"
-#define COM "COM"
-#define JSON_NAME "Имя json-файла"
-#define ST "Статус"
-#define NO_JSON "Json-файлы не найдены"
-#define FW_NAME "Файл прошивки"
-#define OK "ОК"
-#define NO_FW "Файлы прошивки не найдены"
-#define CHOOSE_SCANNER "Введите номера через пробел, напр.: 1 4 5 \n" \
-           "либо введите VID через пробел, напр.: 0x34eb 0x53da\n" \
-           "либо введите 0 для выбора всех сканеров\n"
-#define CHOOSE "Выберите сканер по п/п:  "
-#define INCORR_STRING " некорректное значение, строка должна быть не более "
-#define SYM " символов"
-#define INCORR_NUM " значение должно быть от 0 до 255"
-#define IN "в"
-#define INCORR_BYTES "некорректные байты"
-#define INCORR_DATA "некорректные данные:\n"
-#define POSS_VALUES "\nДопустимые значения для "
-#define PARSE_FAIL "Ошибка парсинга: "
-#define NEW_FILE "Файл создан"
-#define NO_NEW_FILE "невозможно создать файл"
+#define EXCEPTION "Исключение"s
+#define UNKNOWN "Неизвестный параметр"s
+#define PRESS_KEY "Нажмите любую клавишу для выхода..."s
+#define USAGE "Параметры меню"s
+#define GET_DESC "\t -h --help           \t\tОписание доступных функций"s
+#define GET_INFO "\t -i --info           \t\tИнформация о USB-устройствах"s
+#define GET_SAVE "\t -s --save           \t\tСохранение настроек в json-файл"s
+#define GET_WRITE "\t -w --write          \t\tЗапись настроек из json-файла"s
+#define GET_REST_FACT "\t -f --restore-factory\t\tВосстановление заводских настроек"s
+#define GET_REST_CUST "\t -c --restore-custom \t\tВосстановление пользовательских настроек"s
+#define GET_DWNLD "\t -d --download       \t\tПрошивка сканера"s
+#define COM2HID "Примечание:         Сканеры в COM-режиме (если таковые имеются) \n"\
+                 "будут автоматически переведны в HID-режим"
+#define WAIT4SCAN "Ожидание доступных сканеров"s
+#define PASS_FAIL "перевод невозможен"s
+#define SAVE_OK "Настройки всех сканеров были успешно сохранены в json-файлы"s
+#define SAVE_FAIL "Сохранены настройки не со всех сканеров!"s
+#define WRITE_FAIL "Сохранение не удалось"s
+#define WRITE_CUS_FAIL "Сохранение настроек как пользовательских не удалось"s
+#define _SUCCESS_ "Успех"s
+#define _FAIL_ "Провал"s
+#define REST_OK "возврат к заводским настройкам прошёл успешно"s
+#define REST_FAIL "возврат к заводским настройкам не удался"s
+#define CUST_OK "возврат к пользовательским настройкам прошёл успешно"s
+#define CUST_FAIL "возврат к пользовательским настройкам не удался"s
+#define FW_CORRUPT "Файл прошивки повреждён. Обновление невозможно!"s
+#define HID2COM_FAIL "переход в COM-режим не удался!"s
+#define CONN_ABORT "соединение разорвано"s
+#define FWDL "обновление прошивки"s
+#define HAS_FW "уже содержит текущую прошивку"s
+#define FW_OK "обновление прошивки УСПЕШНО"s
+#define PROD "Наименование"s
+#define SN "Серийный номер"s
+#define MODEL "Модель"s
+#define FW_VER "Версия прошивки"s
+#define NO_SCAN "Сканеры не найдены"s
+#define COM "COM"s
+#define JSON_NAME "Имя json-файла"s
+#define ST "Статус"s
+#define NO_JSON "Json-файлы не найдены"s
+#define FW_NAME "Файл прошивки"s
+#define OK "ОК"s
+#define ERR "Ошибка"s
+#define NO_FW "Файлы прошивки не найдены"s
+#define CHOOSE_SCANNER "Введите номера через пробел, напр.: 1 4 5 \n"\      
+                       "либо введите VID через пробел, напр.: 0x34eb 0x53da\n"\
+                       "либо введите 0 для выбора всех сканеров"
+#define CHOOSE "Выберите сканер по п/п"s
+#define INCORR_STRING "некорректное значение, строка должна быть не более"s
+#define SYM "символов"s
+#define INCORR_NUM "значение должно быть от 0 до 255"s
+#define IN "в"s
+#define INCORR_BYTES "некорректные байты"s
+#define INCORR_DATA "некорректные данные:"s
+#define POSS_VALUES "Допустимые значения для"s
+#define PARSE_FAIL "Ошибка парсинга:"s
+#define NEW_FILE "Файл создан"s
+#define NO_NEW_FILE "невозможно создать файл"s

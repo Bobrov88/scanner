@@ -28,5 +28,3 @@ BOOST_LOG_GLOBAL_LOGGER(my_logger, lg_type)
 
 #define console BOOST_LOG_SEV(my_logger::get(), 0)
 #define logger BOOST_LOG_SEV(my_logger::get(), 1)
-
-//void logger_init();

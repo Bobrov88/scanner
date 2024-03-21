@@ -2,7 +2,6 @@
 
 BOOST_LOG_GLOBAL_LOGGER_INIT(my_logger, lg_type)
 {
-
     lg_type lg;
 
     typedef sinks::synchronous_sink<sinks::text_file_backend> file_sink;
