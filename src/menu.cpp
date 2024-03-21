@@ -257,12 +257,11 @@ void MENU::DownloadFirmware()
             firmware_parse_pro(firmware);
 
             int fw_download_start = firmware_download_start(write, read, false);
-            console << device.serial_number << ": " << FWDL;
             if (fw_download_start == 0)
-                console << "...";
+                console << device.serial_number << ": " << FWDL << "...";
             else
             {
-                console << " " << _FAIL_;
+                console << device.serial_number << ": " << FWDL << " " << _FAIL_;
                 return;
             }
 
@@ -276,8 +275,7 @@ void MENU::DownloadFirmware()
                 if (out_percent != (int)(persent * 100) / 10 * 10)
                 {
                     out_percent = (int)(persent * 100) / 10 * 10;
-                    console << out_percent << "%  ";
-                    std::flush(std::cout);
+                    std::cout << out_percent << "%  ";
                 }
 
                 if (!s_port.is_open())
@@ -315,12 +313,10 @@ void MENU::DownloadFirmware()
                     {
                         if (s_port.is_open())
                         {
-                            std::cout << "\n"
-                                      << device.serial_number;
                             if (state == DownloadState::FAIL_NONEEDUPDATE)
-                               console << " " << HAS_FW;
+                                console << device.serial_number << " " << HAS_FW;
                             else
-                                console << ": " << FW_OK;
+                                console << device.serial_number << ": " << FW_OK;
                             s_port.close();
                         }
                         break;

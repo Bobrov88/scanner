@@ -43,8 +43,8 @@ void PRINT::print_all_hid_linux_devices(const std::vector<UTIL::AVAILABLE_HID> &
             table[row][0] = row;
             table[row][1] = CONVERT::hex_view(hid.vid_);
             table[row][2] = CONVERT::hex_view(hid.pid_);
-            table[row][3] = CONVERT::str(hid.product_);
-            table[row][4] = CONVERT::str(hid.serial_number_);
+            table[row][3] = CONVERT::str(hid.product_).c_str();
+            table[row][4] = CONVERT::str(hid.serial_number_).c_str();
             hid_device *ptr = hid_open_path(hid.path_);
             boost::json::value obj = boost::json::parse(UTIL::get_firmware_device_name_model(ptr));
             table[row][5] = obj.at("deviceName").as_string().c_str();
@@ -60,7 +60,7 @@ void PRINT::print_all_hid_linux_devices(const std::vector<UTIL::AVAILABLE_HID> &
     std::ostringstream oss;
     oss << table;
     // logger(oss.str());
-    std::cout << table;
+    console << oss.str();
 }
 
 void PRINT::print_all_com_linux_devices(const std::vector<UTIL::AVAILABLE_COM> &coms)
@@ -94,7 +94,7 @@ void PRINT::print_all_com_linux_devices(const std::vector<UTIL::AVAILABLE_COM> &
     }
     std::ostringstream oss;
     oss << table;
-    std::cout << table;
+    console << oss.str();
 }
 
 void PRINT::print_all_json_files(std::vector<std::pair<std::string, std::string>> &json_list)
@@ -121,7 +121,7 @@ void PRINT::print_all_json_files(std::vector<std::pair<std::string, std::string>
         table[0][0] = NO_JSON;
     }
 
-    std::cout << table;
+    console << table;
 }
 
 void PRINT::print_all_firmware_files(std::vector<std::pair<std::string, int>> &firmware_list)
@@ -148,7 +148,7 @@ void PRINT::print_all_firmware_files(std::vector<std::pair<std::string, int>> &f
         table[0][0] = NO_FW;
     }
 
-    std::cout << table;
+    console << table;
 }
 
 std::string PRINT::ChooseScannerToProceed() // take this function out of MENU namespace

@@ -45,7 +45,7 @@
 #define CHOOSE_SCANNER "Enter numbers with a space, e.g. 1 4 5 \n"        \
                        "or enter VIDs with a space, e.g. 0x34eb 0x53da\n" \
                        "or enter 0 to save ALL scanners settings"
-#define CHHOSE "Choose by its number"s
+#define CHOOSE "Choose by its number"s
 #define INCORR_STRING "incorrect value, string length must be less than"s
 #define SYM "symbols"s
 #define INCORR_NUM "incorrect value, must be between 0 and 255"s
