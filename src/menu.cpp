@@ -33,8 +33,8 @@ void MENU::PrintAttentionComToHID()
 
 void MENU::PrintAvailableDevices()
 {
+    logger << "PrintAvailableDevices";
     MENU::PrintAttentionComToHID();
-
     std::vector<UTIL::AVAILABLE_COM> coms = UTIL::get_available_linux_com_ports();
     for (const auto &com : coms)
     {
@@ -43,13 +43,14 @@ void MENU::PrintAvailableDevices()
             console << com.port_ << " " << PASS_FAIL;
         }
     }
-    std::this_thread::sleep_for(1000ms);
+    std::this_thread::sleep_for(3000ms);
     std::vector<UTIL::AVAILABLE_HID> hids = UTIL::get_available_hid_devices();
     PRINT::print_all_hid_linux_devices(hids);
 }
 
 void MENU::SaveSettings()
 {
+    logger << "SaveSettings";
     MENU::PrintAttentionComToHID();
     std::vector<UTIL::AVAILABLE_COM> coms = UTIL::get_available_linux_com_ports();
     for (const auto &com : coms)
@@ -71,15 +72,21 @@ void MENU::SaveSettings()
     std::string scanner_numbers = PRINT::ChooseScannerToProceed();
     hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
 
-
     if (UTIL::save_settings_to_files(hids))
+    {
         console << SAVE_OK;
+        logger << SAVE_OK;
+    }
     else
+    {
         console << SAVE_FAIL;
+        logger << SAVE_FAIL;
+    }
 }
 
 void MENU::WriteFromJson()
 {
+    logger << "WriteFromJson";
     MENU::PrintAttentionComToHID();
     std::vector<UTIL::AVAILABLE_COM> coms = UTIL::get_available_linux_com_ports();
     for (const auto &com : coms)
@@ -102,12 +109,14 @@ void MENU::WriteFromJson()
 
     auto hids = UTIL::get_available_hid_devices();
     PRINT::print_all_hid_linux_devices(hids);
-    
+
     if (hids.empty())
         return;
 
     std::string scanner_numbers = PRINT::ChooseScannerToProceed();
     hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
+
+    logger << "Json file: " << jsons[json_file].first;
 
     auto settings = UTIL::convert_json_to_bits(jsons[json_file].first);
     for (const auto &hid : hids)
@@ -116,19 +125,25 @@ void MENU::WriteFromJson()
         if (-1 == UTIL::write_settings_from_json(settings, device))
         {
             console << WRITE_FAIL;
-            return;
+            logger << device.serial_number << ": " << WRITE_FAIL;
+            hid_close(device.ptr);
+            continue;
         }
         if (0 == HID::save_to_internal_flash(device))
-            console << SUCCESS;
+            console << _SUCCESS_;
         else
+        {
             console << WRITE_CUS_FAIL;
-        hid_close(device.ptr);
+            logger << device.serial_number << ": " << WRITE_CUS_FAIL;
+        }
+            hid_close(device.ptr);
+        hid_exit();
     }
-    hid_exit();
 }
 
 void MENU::RestoreFactorySettings()
 {
+    logger << "RestoreFactorySettings";
     MENU::PrintAttentionComToHID();
     std::vector<UTIL::AVAILABLE_COM> coms = UTIL::get_available_linux_com_ports();
     for (const auto &com : coms)
@@ -156,10 +171,12 @@ void MENU::RestoreFactorySettings()
         if (0 == HID::restore_to_factory_settings(device))
         {
             console << device.serial_number << " " << REST_OK;
+            logger << device.serial_number << ": " << REST_OK;
         }
         else
         {
             console << device.serial_number << " " << REST_FAIL;
+            logger << device.serial_number << ": " << REST_FAIL;
         }
         hid_close(device.ptr);
     }
@@ -167,6 +184,7 @@ void MENU::RestoreFactorySettings()
 
 void MENU::RestoreCustomSettings()
 {
+    logger << "RestoreCustomSettings";
     MENU::PrintAttentionComToHID();
     std::vector<UTIL::AVAILABLE_COM> coms = UTIL::get_available_linux_com_ports();
     for (const auto &com : coms)
@@ -194,10 +212,12 @@ void MENU::RestoreCustomSettings()
         if (0 == HID::restore_to_custom_settings(device))
         {
             console << device.serial_number << " " << CUST_OK;
+            logger << device.serial_number << ": " << CUST_OK;
         }
         else
         {
             console << device.serial_number << " " << CUST_FAIL;
+            logger << device.serial_number << ": " << CUST_FAIL;
         }
         hid_close(device.ptr);
     }
@@ -230,8 +250,11 @@ void MENU::DownloadFirmware()
     if (firmware_files[number].second != 0)
     {
         console << FW_CORRUPT;
+        logger << FW_NAME << " " << FW_CORRUPT;
         return;
     }
+    else
+        logger << FW_NAME << ": " << OK;
 
     for (auto &hid : hids)
     {
@@ -241,6 +264,7 @@ void MENU::DownloadFirmware()
         if (!HID::testing_to_pass_COM_from_HID(device.ptr))
         {
             console << hid.serial_number_ << HID2COM_FAIL;
+            logger << hid.serial_number_ << HID2COM_FAIL;
         }
         if (device.ptr)
             hid_close(device.ptr);
@@ -251,6 +275,7 @@ void MENU::DownloadFirmware()
             if (coms.empty())
             {
                 console << device.serial_number << ": " << CONN_ABORT;
+                logger << device.serial_number << ": " << CONN_ABORT;
                 continue;
             }
             s_port.open(coms[0].port_);
@@ -285,6 +310,7 @@ void MENU::DownloadFirmware()
                     if (coms.empty())
                     {
                         console << device.serial_number << ": " << CONN_ABORT;
+                        logger << device.serial_number << ": " << CONN_ABORT;
                         break;
                     }
                     s_port.open(coms[0].port_);
@@ -294,6 +320,7 @@ void MENU::DownloadFirmware()
                 {
                     if (state == DownloadState::RECONNECTDEVICE)
                     {
+                        logger << "Need reconnect: " << coms[0].port_;
                         if (s_port.is_open())
                         {
                             s_port.close();
@@ -303,6 +330,7 @@ void MENU::DownloadFirmware()
                         if (coms.empty())
                         {
                             console << device.serial_number << ": " << CONN_ABORT;
+                            logger << device.serial_number << ": " << CONN_ABORT;
                             break;
                         }
                         s_port.open(coms[0].port_);
@@ -315,9 +343,15 @@ void MENU::DownloadFirmware()
                         if (s_port.is_open())
                         {
                             if (state == DownloadState::FAIL_NONEEDUPDATE)
+                            {
                                 console << device.serial_number << " " << HAS_FW;
+                                logger << device.serial_number << " " << HAS_FW;
+                            }
                             else
+                            {
                                 console << device.serial_number << ": " << FW_OK;
+                                logger << device.serial_number << ": " << FW_OK;
+                            }
                             s_port.close();
                         }
                         break;
@@ -325,13 +359,15 @@ void MENU::DownloadFirmware()
                 }
                 std::this_thread::sleep_for(500ms);
             } while (persent < 100);
+            logger << "Last downloading status: " << state;
         }
         catch (boost::system::system_error &e)
         {
             boost::system::error_code ec = e.code();
-            std::cerr << ec.value() << '\n';
-            std::cerr << ec.category().name() << '\n';
-            std::cerr << ec.message() << '\n';
+            logger << ec.value()
+                   << " "
+                   << ec.category().name() << " " << ec.message();
+            console << EXCEPTION << " For detailed information look into log";
         }
     }
     return;
