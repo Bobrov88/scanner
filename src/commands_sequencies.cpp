@@ -41,6 +41,7 @@ void SEQ::save_to_internal_flash_command(uint8_t *c)
     uint16_t crc = crc_16(&c[5], 5);
     c[10] = crc >> 8;
     c[11] = crc & 0x00ff;
+    logger << CONVERT::to_hex(c, 12);
 }
 
 void SEQ::save_as_custom_flash_command(uint8_t *c)
@@ -58,6 +59,7 @@ void SEQ::save_as_custom_flash_command(uint8_t *c)
     uint16_t crc = crc_16(&c[5], 5);
     c[10] = crc >> 8;
     c[11] = crc & 0x00ff;
+    logger << CONVERT::to_hex(c, 12);
 }
 
 void SEQ::restore_to_factory_settings_command(uint8_t *c)
@@ -75,6 +77,7 @@ void SEQ::restore_to_factory_settings_command(uint8_t *c)
     uint16_t crc = crc_16(&c[5], 5);
     c[10] = crc >> 8;
     c[11] = crc & 0x00ff;
+    logger << CONVERT::to_hex(c, 12);
 }
 
 void SEQ::restore_to_custom_settings(uint8_t *c)
@@ -92,6 +95,7 @@ void SEQ::restore_to_custom_settings(uint8_t *c)
     uint16_t crc = crc_16(&c[5], 5);
     c[10] = crc >> 8;
     c[11] = crc & 0x00ff;
+    logger << CONVERT::to_hex(c, 12);
 }
 
 void SEQ::testing_connect_for_erasing_duplicates_command(uint8_t *c)
@@ -109,6 +113,7 @@ void SEQ::testing_connect_for_erasing_duplicates_command(uint8_t *c)
     uint16_t crc = crc_16(&c[5], 5);
     c[10] = crc >> 8;
     c[11] = crc & 0x00ff;
+    logger << CONVERT::to_hex(c, 12);
 }
 
 void SEQ::testing_com_connect_for_erasing_duplicates_command(uint8_t *c)
@@ -123,6 +128,7 @@ void SEQ::testing_com_connect_for_erasing_duplicates_command(uint8_t *c)
     uint16_t crc = crc_16(&c[2], 5);
     c[7] = crc >> 8;
     c[8] = crc & 0x00ff;
+    logger << CONVERT::to_hex(c, 9);
 }
 
 void SEQ::testing_to_pass_HID_from_COM_command(uint8_t *c)
@@ -137,6 +143,7 @@ void SEQ::testing_to_pass_HID_from_COM_command(uint8_t *c)
     uint16_t crc = crc_16(&c[2], 5);
     c[7] = crc >> 8;
     c[8] = crc & 0x00ff;
+    logger << CONVERT::to_hex(c, 9);
 }
 
 void SEQ::testing_to_pass_COM_from_HID_command(uint8_t *c)
@@ -154,6 +161,7 @@ void SEQ::testing_to_pass_COM_from_HID_command(uint8_t *c)
     uint16_t crc = crc_16(&c[5], 5);
     c[10] = crc >> 8;
     c[11] = crc & 0x00ff;
+    logger << CONVERT::to_hex(c, 12);
 }
 
 void SEQ::get_config_command(uint8_t *c, const uint8_t suffix)
@@ -173,6 +181,7 @@ void SEQ::get_config_command(uint8_t *c, const uint8_t suffix)
     c[12] = 0x30;
     c[13] = 0x30 + suffix;
     c[14] = 0x2E;
+    logger << CONVERT::to_hex(c, 15);
 }
 
 void SEQ::get_config02_command(uint8_t *c)
@@ -189,6 +198,7 @@ void SEQ::get_config02_command(uint8_t *c)
     c[9] = 0x30;
     c[10] = 0x32;
     c[11] = 0x2E;
+    logger << CONVERT::to_hex(c, 12);
 }
 
 void SEQ::read_device_info_command_by_hid(uint8_t *c)
@@ -211,6 +221,7 @@ void SEQ::read_device_info_command_by_hid(uint8_t *c)
     c[15] = 0x66;
     c[16] = 0x6F;
     c[17] = 0x2E;
+    logger << CONVERT::to_hex(c, 18);
 }
 
 void SEQ::read_device_info_command_by_com(uint8_t *c)
@@ -230,6 +241,7 @@ void SEQ::read_device_info_command_by_com(uint8_t *c)
     c[12] = 0x66;
     c[13] = 0x6F;
     c[14] = 0x2E;
+    logger << CONVERT::to_hex(c, 14);
 }
 
 void SEQ::create_subcommand(const uint16_t flag, const std::vector<uint8_t> &bits, uint8_t *c)
@@ -243,7 +255,7 @@ void SEQ::create_subcommand(const uint16_t flag, const std::vector<uint8_t> &bit
     c[6] = (uint8_t)bits.size();
     c[7] = flag >> 8;
     c[8] = flag & 0x00ff;
-    
+
     size_t i = 0;
     for (; i < bits.size(); ++i)
     {
@@ -251,8 +263,9 @@ void SEQ::create_subcommand(const uint16_t flag, const std::vector<uint8_t> &bit
     }
     uint16_t crc = crc_16(&c[5], bits.size() + 4);
 
-    c[9+i++] = crc >> 8;
-    c[9+i] = crc & 0x00ff;
+    c[9 + i++] = crc >> 8;
+    c[9 + i] = crc & 0x00ff;
+    logger << CONVERT::to_hex(c, 9 + i + 1);
 }
 
 void SEQ::create_subcommand_for_com(const uint16_t flag, const std::vector<uint8_t> &bits, uint8_t *c)
@@ -263,7 +276,7 @@ void SEQ::create_subcommand_for_com(const uint16_t flag, const std::vector<uint8
     c[3] = (uint8_t)bits.size();
     c[4] = flag >> 8;
     c[5] = flag & 0x00ff;
-    
+
     size_t i = 0;
     for (; i < bits.size(); ++i)
     {
@@ -271,6 +284,7 @@ void SEQ::create_subcommand_for_com(const uint16_t flag, const std::vector<uint8
     }
     uint16_t crc = crc_16(&c[2], bits.size() + 4);
 
-    c[6+i++] = crc >> 8;
-    c[6+i] = crc & 0x00ff;
+    c[6 + i++] = crc >> 8;
+    c[6 + i] = crc & 0x00ff;
+    logger << CONVERT::to_hex(c, 6 + i + 1);
 }

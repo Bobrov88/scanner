@@ -2,6 +2,7 @@
 
 int HID::save_to_internal_flash(handler &device)
 {
+    logger << "save_to_internal_flash";
     uint8_t c1[64] = {0};
     SEQ::save_to_internal_flash_command(c1);
     if (-1 == UTIL::HID_WRITE(device, c1, 64))

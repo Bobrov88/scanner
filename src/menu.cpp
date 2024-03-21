@@ -65,11 +65,12 @@ void MENU::SaveSettings()
     auto hids = UTIL::get_available_hid_devices();
     PRINT::print_all_hid_linux_devices(hids);
 
+    if (hids.empty())
+        return;
+
     std::string scanner_numbers = PRINT::ChooseScannerToProceed();
     hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
 
-    if (hids.empty())
-        return;
 
     if (UTIL::save_settings_to_files(hids))
         console << SAVE_OK;
@@ -101,12 +102,12 @@ void MENU::WriteFromJson()
 
     auto hids = UTIL::get_available_hid_devices();
     PRINT::print_all_hid_linux_devices(hids);
+    
+    if (hids.empty())
+        return;
 
     std::string scanner_numbers = PRINT::ChooseScannerToProceed();
     hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
-
-    if (hids.empty())
-        return;
 
     auto settings = UTIL::convert_json_to_bits(jsons[json_file].first);
     for (const auto &hid : hids)
@@ -143,11 +144,11 @@ void MENU::RestoreFactorySettings()
     auto hids = UTIL::get_available_hid_devices();
     PRINT::print_all_hid_linux_devices(hids);
 
-    std::string scanner_numbers = PRINT::ChooseScannerToProceed();
-    hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
-
     if (hids.empty())
         return;
+
+    std::string scanner_numbers = PRINT::ChooseScannerToProceed();
+    hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
 
     for (const auto &hid : hids)
     {
@@ -181,11 +182,11 @@ void MENU::RestoreCustomSettings()
     auto hids = UTIL::get_available_hid_devices();
     PRINT::print_all_hid_linux_devices(hids);
 
-    std::string scanner_numbers = PRINT::ChooseScannerToProceed();
-    hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
-
     if (hids.empty())
         return;
+
+    std::string scanner_numbers = PRINT::ChooseScannerToProceed();
+    hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
 
     for (const auto &hid : hids)
     {
@@ -217,11 +218,11 @@ void MENU::DownloadFirmware()
     auto hids = UTIL::get_available_hid_devices();
     PRINT::print_all_hid_linux_devices(hids);
 
-    std::string scanner_numbers = PRINT::ChooseScannerToProceed();
-    hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
-
     if (hids.empty())
         return;
+
+    std::string scanner_numbers = PRINT::ChooseScannerToProceed();
+    hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
 
     auto firmware_files = UTIL::get_firmware_list();
     PRINT::print_all_firmware_files(firmware_files);

@@ -2,6 +2,8 @@
 #include <iostream>
 #include <iomanip>
 #include <vector>
+#include "converters.h"
+#include "logger.h"
 
 namespace SEQ
 {
