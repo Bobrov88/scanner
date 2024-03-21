@@ -20,6 +20,7 @@ int HID::save_to_internal_flash(handler &device)
 
 int HID::restore_to_custom_settings(handler &device)
 {
+    logger << "restore_to_custom_settings";
     uint8_t c[64] = {0};
     SEQ::restore_to_custom_settings(c);
     if (-1 == UTIL::HID_WRITE(device, c, 64))
@@ -31,6 +32,7 @@ int HID::restore_to_custom_settings(handler &device)
 
 int HID::restore_to_factory_settings(handler &device)
 {
+    logger << "restore_to_factory_settings";
     uint8_t c[64] = {0};
     SEQ::restore_to_factory_settings_command(c);
 
@@ -96,6 +98,7 @@ int HID::restore_to_factory_settings(handler &device)
 
 bool HID::testing_connect_for_erasing_duplicates(handler &device)
 {
+    logger << "testing_connect_for_erasing_duplicates";
     uint8_t c[64] = {0};
     SEQ::testing_connect_for_erasing_duplicates_command(c);
     if (-1 == UTIL::HID_WRITE(device, c, 64))
@@ -107,6 +110,7 @@ bool HID::testing_connect_for_erasing_duplicates(handler &device)
 
 bool HID::testing_to_pass_HID_from_COM(const std::string &com)
 {
+    logger << "testing_to_pass_HID_from_COM: " << com;
     try
     {
         boost::asio::io_service io;
@@ -171,19 +175,22 @@ bool HID::testing_to_pass_HID_from_COM(const std::string &com)
     catch (boost::system::system_error &e)
     {
         boost::system::error_code ec = e.code();
-        std::cerr << ec.value() << '\n';
-        std::cerr << ec.category().name() << '\n';
-        std::cerr << ec.message() << '\n';
+        logger << ec.value()
+               << " "
+               << ec.category().name() << " " << ec.message();
+               console << EXCEPTION << " For detailed information look into log";
     }
     catch (const std::exception &ex)
     {
         console << EXCEPTION <<": "<< ex.what();
+        logger << EXCEPTION <<": "<< ex.what();
     }
     return false;
     // add error ec
 }
 
 bool HID::testing_to_pass_COM_from_HID(hid_device* handle) {
+    logger << "testing_to_pass_COM_from_HID";
     uint8_t c[64] = {0};
     SEQ::testing_to_pass_COM_from_HID_command(c);
     if (-1 == hid_write(handle, c, 64))
