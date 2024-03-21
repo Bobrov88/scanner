@@ -96,7 +96,10 @@ endif()
 if(${_DEBUG})
     message(WARNING "-- Debug build --")
     target_compile_definitions(${PROJECT_NAME} PUBLIC DEBUG=TRUE)
-    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wunused -g)
+
+    if(NOT ${TARGET_SYSTEM} STREQUAL WINDOWS)
+        target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wunused -g)
+    endif()
 else()
     message(WARNING "-- Release build --")
     target_compile_definitions(${PROJECT_NAME} PUBLIC DEBUG=FALSE)
@@ -125,5 +128,5 @@ if(${TARGET_SYSTEM} STREQUAL Windows)
 endif()
 
 # conan install -pr .\conan_profiles\win10\win10_build -if build_win_x86_64 . --build=missing
-# cmake -Bbuild_win_x86_64 . -DTARGET_SYSTEM=WINDOWS -D_DEBUG=TRUE -DLANG=RU
+# cmake -Bbuild_win_x86_64 . -DTARGET_SYSTEM=WINDOWS -D_DEBUG=TRUE -DLANG=RU -G "Visual Studio 16" -A x64
 # cmake --build ./build_win_x86_64
