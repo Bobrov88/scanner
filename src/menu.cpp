@@ -16,45 +16,31 @@ int read(char *buf, int length)
 
 void MENU::PrintStartMenu()
 {
-    //  logger("PrintStartMenu");
-    std::cout << "\nUsage\n";
-    std::cout << "\t -h --help           \t\tget description of available functions\n";
-    // std::cout << "\t                     \t\tполучить описание доступных функций\n";
-    std::cout << "\t -i --info           \t\tget information about usb-devices\n";
-    // std::cout << "\t                     \t\tполучить информацию о usb-устройствах\n";
-    std::cout << "\t -s --save           \t\tsave scanner settings to json\n";
-    // std::cout << "\t                     \t\tсохранить настройки сканера в json\n";
-    std::cout << "\t -w --write          \t\twrite setting into scanner from json\n";
-    // std::cout << "\t                     \t\tзаписать настройки в сканер из json\n";
-    std::cout << "\t -f --restore-factory\t\trestore scanner to factory default\n";
-    // std::cout << "\t                     \t\tвосстановить заводские настройки сканера\n";
-    std::cout << "\t -c --restore-custom \t\trestore scanner to user default\n";
-    // std::cout << "\t                     \t\tвосстановить пользовательские настройки сканера\n";
-    std::cout << "\t -d --download       \t\tupdate scanner firmware\n";
-    // std::cout << "\t                     \t\tобновить прошивку сканера\n";
+    console << USAGE;
+    console << GET_DESC;
+    console << GET_INFO;
+    console << GET_SAVE;
+    console << GET_WRITE;
+    console << GET_REST_FACT;
+    console << GET_REST_CUST;
 }
 
 void MENU::PrintAttentionComToHID()
 {
-   // logger << "PrintAttentionComToHID";
-    std::cout << "Note:         Scanners in COM-mode (if exist) \n";
-    std::cout << "              will be automatically switched to HID-mode\n";
-    std::cout << "Waiting for available scanners\n";
-    //  std::cout << "Примечание:   Сканеры в режиме COM (если таковые имеются)\n";
-    // std::cout << "              будут автоматически переведены в режим HID\n";
+    console << COM2HID;
+    console << WAIT4SCAN;
 }
 
 void MENU::PrintAvailableDevices()
 {
     MENU::PrintAttentionComToHID();
-    
+
     std::vector<UTIL::AVAILABLE_COM> coms = UTIL::get_available_linux_com_ports();
     for (const auto &com : coms)
     {
         if (!HID::testing_to_pass_HID_from_COM(com.port_))
         {
-            std::cout << "\n"
-                      << com.port_ << " passing failed";
+            console << com.port_ << " " << PASS_FAIL;
         }
     }
     std::this_thread::sleep_for(1000ms);
@@ -70,8 +56,7 @@ void MENU::SaveSettings()
     {
         if (!HID::testing_to_pass_HID_from_COM(com.port_))
         {
-            std::cout << "\n"
-                      << com.port_ << " passing failed";
+            console << com.port_ << " " << PASS_FAIL;
         }
         std::this_thread::sleep_for(300ms);
     }
@@ -87,22 +72,20 @@ void MENU::SaveSettings()
         return;
 
     if (UTIL::save_settings_to_files(hids))
-        std::cout << "All scanners settings successfully saved into files\n";
+        console << SAVE_OK;
     else
-        std::cout << "\nNot all scanners settings saved!\n";
+        console << SAVE_FAIL;
 }
 
 void MENU::WriteFromJson()
 {
-    // logger("Write from json");
     MENU::PrintAttentionComToHID();
     std::vector<UTIL::AVAILABLE_COM> coms = UTIL::get_available_linux_com_ports();
     for (const auto &com : coms)
     {
         if (!HID::testing_to_pass_HID_from_COM(com.port_))
         {
-            std::cout << "\n"
-                      << com.port_ << " passing failed";
+            console << com.port_ << " " << PASS_FAIL;
         }
         std::this_thread::sleep_for(300ms);
     }
@@ -110,7 +93,8 @@ void MENU::WriteFromJson()
 
     auto jsons = UTIL::get_json_file_list();
     PRINT::print_all_json_files(jsons);
-    if (jsons.empty()) {
+    if (jsons.empty())
+    {
         return;
     }
     int json_file = PRINT::ChooseToProceed(jsons.size());
@@ -130,13 +114,13 @@ void MENU::WriteFromJson()
         handler device{hid_open_path(hid.path_), hid.path_, CONVERT::str(hid.serial_number_)};
         if (-1 == UTIL::write_settings_from_json(settings, device))
         {
-            std::cout << "\n Settings write fail";
+            console << WRITE_FAIL;
             return;
         }
         if (0 == HID::save_to_internal_flash(device))
-            std::cout << "Success\n";
+            console << SUCCESS;
         else
-            std::cout << "Saving Failed\n";
+            console << WRITE_CUS_FAIL;
         hid_close(device.ptr);
     }
     hid_exit();
@@ -144,15 +128,13 @@ void MENU::WriteFromJson()
 
 void MENU::RestoreFactorySettings()
 {
-    // logger("Restoring factory settings");
     MENU::PrintAttentionComToHID();
     std::vector<UTIL::AVAILABLE_COM> coms = UTIL::get_available_linux_com_ports();
     for (const auto &com : coms)
     {
         if (!HID::testing_to_pass_HID_from_COM(com.port_))
         {
-            std::cout << "\n"
-                      << com.port_ << " passing failed";
+            console << com.port_ << " " << PASS_FAIL;
         }
         std::this_thread::sleep_for(300ms);
     }
@@ -172,12 +154,11 @@ void MENU::RestoreFactorySettings()
         handler device{hid_open_path(hid.path_), hid.path_, CONVERT::str(hid.serial_number_)};
         if (0 == HID::restore_to_factory_settings(device))
         {
-            std::cout << device.serial_number << " successfully restored to factory settings\n";
-            // logger("Restoring to factory - Success", device.serial_number);
+            console << device.serial_number << " " << REST_OK;
         }
         else
         {
-            std::cout << device.serial_number << " failed to restored to factory settings\n";
+            console << device.serial_number << " " << REST_FAIL;
         }
         hid_close(device.ptr);
     }
@@ -185,15 +166,13 @@ void MENU::RestoreFactorySettings()
 
 void MENU::RestoreCustomSettings()
 {
-    // logger("Restoring custom settings");
     MENU::PrintAttentionComToHID();
     std::vector<UTIL::AVAILABLE_COM> coms = UTIL::get_available_linux_com_ports();
     for (const auto &com : coms)
     {
         if (!HID::testing_to_pass_HID_from_COM(com.port_))
         {
-            std::cout << "\n"
-                      << com.port_ << " passing failed";
+            console << com.port_ << " " << PASS_FAIL;
         }
         std::this_thread::sleep_for(300ms);
     }
@@ -213,12 +192,11 @@ void MENU::RestoreCustomSettings()
         handler device{hid_open_path(hid.path_), hid.path_, CONVERT::str(hid.serial_number_)};
         if (0 == HID::restore_to_custom_settings(device))
         {
-            std::cout << device.serial_number << " successfully restored to custom settings\n";
-            // logger("Restoring to custom - Success", device.serial_number);
+            console << device.serial_number << " " << CUST_OK;
         }
         else
         {
-            std::cout << device.serial_number << " failed to restored to custom settings\n";
+            console << device.serial_number << " " << CUST_FAIL;
         }
         hid_close(device.ptr);
     }
@@ -226,14 +204,12 @@ void MENU::RestoreCustomSettings()
 
 void MENU::DownloadFirmware()
 {
-    // logger("Download firmware");
     std::vector<UTIL::AVAILABLE_COM> coms = UTIL::get_available_linux_com_ports();
     for (const auto &com : coms)
     {
         if (!HID::testing_to_pass_HID_from_COM(com.port_))
         {
-            std::cout << "\n"
-                      << com.port_ << " passing failed";
+            console << com.port_ << " " << PASS_FAIL;
         }
         std::this_thread::sleep_for(1s);
     }
@@ -247,14 +223,12 @@ void MENU::DownloadFirmware()
     if (hids.empty())
         return;
 
-    std::cout << std::endl;
-
     auto firmware_files = UTIL::get_firmware_list();
     PRINT::print_all_firmware_files(firmware_files);
     int number = PRINT::ChooseToProceed(firmware_files.size());
     if (firmware_files[number].second != 0)
     {
-        std::cout << "\n Firmware file corrupted. Downloading canceled!";
+        console << FW_CORRUPT;
         return;
     }
 
@@ -265,8 +239,7 @@ void MENU::DownloadFirmware()
         handler device{hid_open_path(hid.path_), hid.path_, CONVERT::str(hid.serial_number_)};
         if (!HID::testing_to_pass_COM_from_HID(device.ptr))
         {
-            std::cout << "\n"
-                      << hid.serial_number_ << " passing to COM failed!";
+            console << hid.serial_number_ << HID2COM_FAIL;
         }
         if (device.ptr)
             hid_close(device.ptr);
@@ -276,7 +249,7 @@ void MENU::DownloadFirmware()
             coms = UTIL::get_available_linux_com_ports();
             if (coms.empty())
             {
-                std::cout << device.serial_number << ": connection aborted\n";
+                console << device.serial_number << ": " << CONN_ABORT;
                 continue;
             }
             s_port.open(coms[0].port_);
@@ -284,12 +257,12 @@ void MENU::DownloadFirmware()
             firmware_parse_pro(firmware);
 
             int fw_download_start = firmware_download_start(write, read, false);
-            std::cout << device.serial_number << ": firmware downloading ";
+            console << device.serial_number << ": " << FWDL;
             if (fw_download_start == 0)
-                std::cout << "...\n";
+                console << "...";
             else
             {
-                std::cout << " FAILED\n";
+                console << " " << _FAIL_;
                 return;
             }
 
@@ -303,7 +276,7 @@ void MENU::DownloadFirmware()
                 if (out_percent != (int)(persent * 100) / 10 * 10)
                 {
                     out_percent = (int)(persent * 100) / 10 * 10;
-                    std::cout << out_percent << "%  ";
+                    console << out_percent << "%  ";
                     std::flush(std::cout);
                 }
 
@@ -312,8 +285,7 @@ void MENU::DownloadFirmware()
                     coms = UTIL::get_available_linux_com_ports();
                     if (coms.empty())
                     {
-                        std::cout << "\n"
-                                  << device.serial_number << ": connection aborted\n";
+                        console << device.serial_number << ": " << CONN_ABORT;
                         break;
                     }
                     s_port.open(coms[0].port_);
@@ -331,8 +303,7 @@ void MENU::DownloadFirmware()
                         coms = UTIL::get_available_linux_com_ports();
                         if (coms.empty())
                         {
-                            std::cout << "\n"
-                                      << device.serial_number << ": connection aborted\n";
+                            console << device.serial_number << ": " << CONN_ABORT;
                             break;
                         }
                         s_port.open(coms[0].port_);
@@ -347,9 +318,9 @@ void MENU::DownloadFirmware()
                             std::cout << "\n"
                                       << device.serial_number;
                             if (state == DownloadState::FAIL_NONEEDUPDATE)
-                                std::cout << ": already has current firmware\n";
+                               console << " " << HAS_FW;
                             else
-                                std::cout << ": download SUCCESS\n";
+                                console << ": " << FW_OK;
                             s_port.close();
                         }
                         break;

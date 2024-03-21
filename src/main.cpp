@@ -2,7 +2,6 @@
 #include "locale.h"
 #include "commands_sequencies.h"
 #include "logger.h"
-#include "phrases.h"
 
 using namespace std::string_literals;
 
@@ -37,8 +36,10 @@ int main(int argc, char *argv[])
         MENU::DownloadFirmware();
     }
     else
-        std::cout << "Unknown parameter";
-    std::cout << "\nPress any key to exit...";
+    {
+        console << UNKNOWN;
+    }
+    console << PRESS_KEY;
     char c = getchar();
     return 0;
 }

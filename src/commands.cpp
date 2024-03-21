@@ -126,7 +126,7 @@ bool HID::testing_to_pass_HID_from_COM(const std::string &com)
                            {
                 if (!error && read_result == 0) read_result = 3; });
         boost::asio::async_read(s_port, boost::asio::buffer(resp, 1),
-                                [&read_result](const boost::system::error_code &error, const size_t transferred)
+                                [&read_result](const boost::system::error_code &error, [[maybe_unused]] const size_t transferred)
                                 {
                                     if (error)
                                     {
@@ -176,7 +176,7 @@ bool HID::testing_to_pass_HID_from_COM(const std::string &com)
     }
     catch (const std::exception &ex)
     {
-        std::cout<<"\nException: "<<ex.what();
+        console << EXCEPTION <<": "<< ex.what();
     }
     return false;
     // add error ec

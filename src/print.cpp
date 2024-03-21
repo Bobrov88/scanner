@@ -32,10 +32,10 @@ void PRINT::print_all_hid_linux_devices(const std::vector<UTIL::AVAILABLE_HID> &
         table[0][0] = "#";
         table[0][1] = "VID";
         table[0][2] = "PID";
-        table[0][3] = "Product";
-        table[0][4] = "Serial Number";
-        table[0][5] = "Model";
-        table[0][6] = "Firmware Version";
+        table[0][3] = PROD;
+        table[0][4] = SN;
+        table[0][5] = MODEL;
+        table[0][6] = FW_VER;
 
         int row = 1;
         for (const auto &hid : hids)
@@ -55,7 +55,7 @@ void PRINT::print_all_hid_linux_devices(const std::vector<UTIL::AVAILABLE_HID> &
     }
     else
     {
-        table[0][0] = "Scanners not found";
+        table[0][0] = NO_SCAN;
     }
     std::ostringstream oss;
     oss << table;
@@ -70,11 +70,11 @@ void PRINT::print_all_com_linux_devices(const std::vector<UTIL::AVAILABLE_COM> &
     if (!coms.empty())
     {
         table[0][0] = "#";
-        table[0][1] = "COM";
-        table[0][2] = "Product";
-        table[0][3] = "Model";
-        table[0][4] = "Serial number";
-        table[0][5] = "Firmware Version";
+        table[0][1] = COM;
+        table[0][2] = PROD;
+        table[0][3] = MODEL;
+        table[0][4] = SN;
+        table[0][5] = FW_VER;
 
         int row = 1;
         for (const auto &com : coms)
@@ -90,11 +90,10 @@ void PRINT::print_all_com_linux_devices(const std::vector<UTIL::AVAILABLE_COM> &
     }
     else
     {
-        table[0][0] = "Scanners not found";
+        table[0][0] = NO_SCAN;
     }
     std::ostringstream oss;
     oss << table;
-    // logger(oss.str());
     std::cout << table;
 }
 
@@ -105,8 +104,8 @@ void PRINT::print_all_json_files(std::vector<std::pair<std::string, std::string>
     if (!json_list.empty())
     {
         table[0][0] = "#";
-        table[0][1] = "Json file name";
-        table[0][2] = "Status";
+        table[0][1] = JSON_NAME;
+        table[0][2] = ST;
 
         int row = 1;
         for (const auto &[name, status] : json_list)
@@ -119,7 +118,7 @@ void PRINT::print_all_json_files(std::vector<std::pair<std::string, std::string>
     }
     else
     {
-        table[0][0] = "Json files not found";
+        table[0][0] = NO_JSON;
     }
 
     std::cout << table;
@@ -132,21 +131,21 @@ void PRINT::print_all_firmware_files(std::vector<std::pair<std::string, int>> &f
     if (!firmware_list.empty())
     {
         table[0][0] = "#";
-        table[0][1] = "Firmware file name";
-        table[0][2] = "Status";
+        table[0][1] = FW_NAME;
+        table[0][2] = ST;
 
         int row = 1;
         for (const auto &[name, status] : firmware_list)
         {
             table[row][0] = row;
             table[row][1] = name;
-            (status == 0) ? table[row][2] = "OK"s : table[row][2] = "ERROR: " + std::to_string(status);
+            (status == 0) ? table[row][2] = OK : table[row][2] = ERR + ": "s + std::to_string(status);
             ++row;
         }
     }
     else
     {
-        table[0][0] = "Firmware files not found";
+        table[0][0] = NO_FW;
     }
 
     std::cout << table;
@@ -154,15 +153,13 @@ void PRINT::print_all_firmware_files(std::vector<std::pair<std::string, int>> &f
 
 std::string PRINT::ChooseScannerToProceed() // take this function out of MENU namespace
 {
-    std::cout << "Enter numbers with a space, e.g. 1 4 5 \n";
-    std::cout << "or enter VIDs with a space, e.g. 0x34eb 0x53da\n";
-    std::cout << "or enter 0 to save ALL scanners settings\n";
+    console << CHOOSE_SCANNER;
 
     std::string result_string;
     do
     {
         result_string.clear();
-        std::cout << "----------->: ";
+        console << "----------->: ";
 
         std::string input, token;
         std::getline(std::cin, input);
@@ -174,7 +171,7 @@ std::string PRINT::ChooseScannerToProceed() // take this function out of MENU na
             result_string += token;
             result_string += ' ';
         }
-        
+
     } while (result_string.empty());
 
     return result_string;
@@ -185,7 +182,7 @@ int PRINT::ChooseToProceed(size_t amount) // take this function out of MENU name
     size_t number;
     while (true)
     {
-        std::cout << "Choose by its number:  ";
+        console << CHOOSE <<": ";
         if (std::cin >> number)
         {
             if (number > amount || number < 1)

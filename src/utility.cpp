@@ -82,7 +82,7 @@ std::vector<UTIL::AVAILABLE_COM> UTIL::get_available_linux_com_ports()
     }
     catch (const fs::filesystem_error &ex)
     {
-        std::cout << ex.what() << '\n';
+        console << ex.what() ;
         throw ex;
     }
     return com_ports;
@@ -328,12 +328,10 @@ std::string UTIL::get_firmware_device_name_model(hid_device *handle)
         a = hid_write(handle, ch, 64);
         if (64 != a)
         {
-            //      std::cout << "\n a=" << a;
             continue;
         }
         else
         {
-            //           std::cout << "\n a=" << a;
             break;
         }
     }
@@ -345,9 +343,7 @@ std::string UTIL::read_json_settings(hid_device *handle)
     std::vector<uint8_t> result;
     while (true)
     {
-        //  std::cout << "\n 342";
         std::vector<uint8_t> tmp = read_json_piece(handle);
-        //   std::cout << "\n 344 size temp=" << tmp.size();
 
         if (tmp.empty())
             break;
@@ -391,12 +387,8 @@ int UTIL::HID_WRITE(handler &device, uint8_t *c, int size)
     }
     catch (std::exception &ex)
     {
-        std::cout << ex.what();
+        console << ex.what();
     }
-    // write to log
-    // bytes
-    // result with error
-    // TODO
     return -1; // todo error
 }
 
@@ -409,17 +401,11 @@ int UTIL::COM_WRITE(boost::asio::serial_port &s_port, uint8_t *c, int size)
         --attempt;
         if (write_result < size)
             continue;
-        // write to log
-        // bytes
-        // result with error
         std::this_thread::sleep_for(100ms);
         uint8_t r[64] = {0};
         int a = boost::asio::read(s_port, boost::asio::buffer(r, 7));
         if (a == 0 || r[0] == 0)
         {
-            //      device.ptr = RECONNECT::hid_reconnect(device.serial_number);
-            //         std::cout << "\n a=" << a << " "
-            //                 << "r[0]=" << r[0];
             continue;
         }
         else if (r[0] == 0x02 &&
@@ -428,10 +414,6 @@ int UTIL::COM_WRITE(boost::asio::serial_port &s_port, uint8_t *c, int size)
                  r[3] == 0x01)
             return 0;
     }
-    // write to log
-    // bytes
-    // result with error
-    // TODO
     return -1; // todo error
 }
 
@@ -454,7 +436,7 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
                 std::string tmp = str.at(key).as_string().c_str();
                 if (tmp.size() > length)
                 {
-                    throw std::string{key + " incorrect value, string length must be less than "s + std::to_string(length) + " symbols"s};
+                    throw std::string{key + " "s + INCORR_STRING + " "s + std::to_string(length) + " "s + SYM};
                 }
                 else
                 {
@@ -478,7 +460,7 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
                 auto value = str.at(key).to_number<int>();
                 if (value < 0 || value > 255)
                 {
-                    throw std::string{key + " incorrect value, must be between 0 and 255"};
+                    throw std::string{key + " "s + INCORR_NUM};
                     // todo add error to string "incorrect keys"
                 }
                 else
@@ -525,7 +507,7 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
                         byte |= 0b10000000;
                         break;
                     default:
-                        throw "Incorrect byte="s + std::to_string(byte) + "in "s + key;
+                        throw INCORR_BYTES + std::to_string(byte) + IN + " "s + key;
                     }
                 }
                 else
@@ -2499,12 +2481,12 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
     }
     catch (const std::exception &e)
     {
-        std::cout << "Exception: " << e.what() << "\n";
+        console << EXCEPTION << " "s << e.what();
     }
     catch (const std::string &e)
     {
-        std::cout << "Incorrect data:\n"
-                  << e << "\n";
+        console << INCORR_DATA;
+        console << e;
     }
     return set_of_bytes;
 }
@@ -2512,13 +2494,14 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
 std::string UTIL::get_string_possible_data(const std::vector<std::string> &variants, const std::string &key)
 {
     std::string result;
-    result += "\nPossible values for ";
+    result += POSS_VALUES;
+    result += " "s;
     result += key;
-    result += ": ";
+    result += ": "s;
     for (const auto &str : variants)
     {
         result += str;
-        result += " ";
+        result += " "s;
     }
     return result;
 }
@@ -2526,7 +2509,8 @@ std::string UTIL::get_string_possible_data(const std::vector<std::string> &varia
 std::string UTIL::get_bool_possible_data(const std::string &key)
 {
     std::string result;
-    result += "\nPossible values for ";
+    result += POSS_VALUES;
+    result += " "s;
     result += key;
     result += ": true false";
     return result;
@@ -2535,7 +2519,8 @@ std::string UTIL::get_bool_possible_data(const std::string &key)
 std::string UTIL::get_uint8_t_possible_data(const std::string &key, const uint8_t from, const int to)
 {
     std::string result;
-    result += "\nPossible values for ";
+    result += POSS_VALUES;
+    result += " "s;
     result += key;
     result += ": ";
     result += from;
@@ -2612,11 +2597,11 @@ std::string UTIL::parse_json_file(const std::string &source)
     auto value = boost::json::parse(get_string_from_source(file), ec);
     if (ec)
     {
-        return std::string{"Parsing failed. Error: "s + ec.message()};
+        return PARSE_FAIL + " "s + ERR + ": "s + ec.message();
     }
     else
     {
-        return std::string{"OK"};
+        return OK;
     }
 }
 
@@ -2670,12 +2655,10 @@ bool UTIL::save_settings_to_files(const std::vector<UTIL::AVAILABLE_HID> &hids)
                     out.open(out_file_name);
                     if (out) {
                     out << json;
-                    std::cout<<"File "<<out_file_name<<" created\n";
-                    //logger(out_file_name + " file created");
+                    console << out_file_name<<": "s << NEW_FILE;
                     }                    
                     else {
-                        //logger(out_file_name + " file not created");
-                        std::cerr<<"Unable to create file: "<<out_file_name<<"\n";
+                        console << NO_NEW_FILE <<": "<<out_file_name;
                         ret = false;
                     }
                     out.close(); });
@@ -2721,7 +2704,7 @@ std::vector<UTIL::AVAILABLE_HID> UTIL::get_scanners_list_by_regex(std::vector<UT
     scanner_to_proceed.assign(ints.begin(), ints.end());
     for (const auto &vid : vids)
     {
-        for (ssize_t i = 0; i < hids.size(); ++i)
+        for (size_t i = 0; i < hids.size(); ++i)
         {
             if (CONVERT::hex_view(hids[i].vid_) == vid)
             {

@@ -1,56 +1,58 @@
-#define EXCEPTION "\n Exception"
-#define UNKNOWN "Unknown parameter"
-#define PRESS_KEY "\nPress any key to exit..."
-#define USAGE "\nUsage\n"
-#define GET_DESC "\t -h --help           \t\tget description of available functions\n";
-#define GET_INFO "\t -i --info           \t\tget information about usb-devices\n";
-#define GET_SAVE "\t -s --save           \t\tsave scanner settings to json\n";
-#define GET_WRITE "\t -w --write          \t\twrite setting into scanner from json\n";
-#define GET_REST_FACT "\t -f --restore-factory\t\trestore scanner to factory default\n";
-#define GET_REST_CUST "\t -c --restore-custom \t\trestore scanner to user default\n";
-#define GET_DWNLD "\t -d --download       \t\tupdate scanner firmware\n";
-#define COM2HID "Note:         Scanners in COM-mode (if exist) \n              will be automatically switched to HID-mode\n"
-#define WAIT4SCAN "Waiting for available scanners\n"
-#define PASS_FAIL " passing failed"
-#define SAVE_OK "All scanners settings successfully saved into files\n"
-#define SAVE_FAIL "\nNot all scanners settings saved!\n"
-#define WRITE_FAIL "\n Settings saving failed"
-#define WRITE_FAIL "\n Settings saving as custom failed"
-#define SUCC "SUCCESS\n"
-#define FAIL "FAILED\n"
-#define REST_OK " successfully restored to factory settings\n"
-#define REST_FAIL " failed to restored to factory settings\n"
-#define CUST_OK " successfully restored to custom settings\n"
-#define CUST_FAIL " failed to restored to custom settings\n"
-#define FW_CORRUPT "\n Firmware file corrupted. Downloading canceled!"
-#define HID2COM_FAIL " passing to COM failed!"
-#define CONN_ABORT ": connection aborted\n"
-#define FWDL ": firmware downloading "
-#define HAS_FW ": already has current firmware\n"
-#define FW_OK ": download SUCCESS\n"
-#define PROD "Product"
-#define SN "Serial number"
-#define MODEL "Model"
-#define FW_VER "Firmware version"
-#define NO_SCAN "Scanners not found"
-#define COM "COM"
-#define JSON_NAME "JSON file name"
-#define ST "Status"
-#define NO_JSON "Json files not found"
-#define FW_NAME "Firmware file name"
-#define OK "OK"
-#define NO_FW "Firmware files not found"
-#define CHOOSE_SCANNER "Enter numbers with a space, e.g. 1 4 5 \n" \
-           "or enter VIDs with a space, e.g. 0x34eb 0x53da\n" \
-           "or enter 0 to save ALL scanners settings\n"
-#define CHHOSE "Choose by its number:  "
-#define INCORR_STRING " incorrect value, string length must be less than "
-#define SYM " symbols"
-#define INCORR_NUM " incorrect value, must be between 0 and 255"
-#define IN "in"
-#define INCORR_BYTES "Incorrect byte="
-#define INCORR_DATA "Incorrect data:\n"
-#define POSS_VALUES "\nPossible values for "
-#define PARSE_FAIL "Parsing failed. Error: "
-#define NEW_FILE "File created"
-#define NO_NEW_FILE "Unable to create file"
+#define EXCEPTION "Exception"s
+#define UNKNOWN "Unknown parameter"s
+#define PRESS_KEY "Press any key to exit..."s
+#define USAGE "Usage"s
+#define GET_DESC "\t -h --help           \t\tget description of available functions"s
+#define GET_INFO "\t -i --info           \t\tget information about usb-devices"s
+#define GET_SAVE "\t -s --save           \t\tsave scanner settings to json"s
+#define GET_WRITE "\t -w --write          \t\twrite setting into scanner from json"s
+#define GET_REST_FACT "\t -f --restore-factory\t\trestore scanner to factory default"s
+#define GET_REST_CUST "\t -c --restore-custom \t\trestore scanner to user default"s
+#define GET_DWNLD "\t -d --download       \t\tupdate scanner firmware\n"
+#define COM2HID "Note:         Scanners in COM-mode (if exist) \n"\
+                 "will be automatically switched to HID - mode "
+#define WAIT4SCAN "Waiting for available scanners"s
+#define PASS_FAIL " passing failed"s
+#define SAVE_OK "All scanners settings successfully saved into files"s
+#define SAVE_FAIL "Not all scanners settings saved!"s
+#define WRITE_FAIL "Settings saving failed"s
+#define WRITE_CUS_FAIL "Settings saving as custom failed"s
+#define _SUCCESS_ "SUCCESS"s
+#define _FAIL_ "FAILED"s
+#define REST_OK "successfully restored to factory settings"s
+#define REST_FAIL "failed to restored to factory settings"s
+#define CUST_OK "successfully restored to custom settings"s
+#define CUST_FAIL "failed to restored to custom settings"s
+#define FW_CORRUPT "Firmware file corrupted. Downloading canceled!"s
+#define HID2COM_FAIL "passing to COM failed!"s
+#define CONN_ABORT "connection aborted"s
+#define FWDL "firmware downloading"s
+#define HAS_FW "already has current firmware"s
+#define FW_OK "download SUCCESS"s
+#define PROD "Product"s
+#define SN "Serial number"s
+#define MODEL "Model"s
+#define FW_VER "Firmware version"s
+#define NO_SCAN "Scanners not found"s
+#define COM "COM"s
+#define JSON_NAME "JSON file name"s
+#define ST "Status"s
+#define NO_JSON "Json files not found"s
+#define FW_NAME "Firmware file name"s
+#define OK "OK"s
+#define ERR "ERROR"s
+#define NO_FW "Firmware files not found"s
+#define CHOOSE_SCANNER "Enter numbers with a space, e.g. 1 4 5 \n"        \
+                       "or enter VIDs with a space, e.g. 0x34eb 0x53da\n" \
+                       "or enter 0 to save ALL scanners settings"
+#define CHHOSE "Choose by its number"s
+#define INCORR_STRING "incorrect value, string length must be less than"s
+#define SYM "symbols"s
+#define INCORR_NUM "incorrect value, must be between 0 and 255"s
+#define IN "in"s
+#define INCORR_BYTES "Incorrect byte="s
+#define INCORR_DATA "Incorrect data:"s
+#define POSS_VALUES "Possible values for"s
+#define PARSE_FAIL "Parsing failed"s
+#define NEW_FILE "File created"s
+#define NO_NEW_FILE "Unable to create file"s
