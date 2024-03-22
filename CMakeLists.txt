@@ -5,7 +5,10 @@ message("-- Building project: " ${PROJECT_NAME})
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CONAN_DISABLE_CHECK_COMPILER "1")
-set(CMAKE_EXE_LINKER_FLAGS "-static-libstdc++")
+
+if(NOT ${TARGET_SYSTEM} STREQUAL WINDOWS)
+    set(CMAKE_EXE_LINKER_FLAGS "-static-libstdc++")
+endif()
 
 set(SOURCES
     src/print.cpp
@@ -71,12 +74,15 @@ endif()
 if(${TARGET_SYSTEM} STREQUAL DEBIAN)
     message(WARNING "-- Debian --")
     find_library(FWLIB_TO_INCLUDE appdownload.a src/lib_x64)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC __DEBIAN__)
 elseif(${TARGET_SYSTEM} STREQUAL CENTOS)
     message(WARNING "-- Centos --")
     find_library(FWLIB_TO_INCLUDE appdownload.a src/lib_x86)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC __CENTOS__)
 elseif(${TARGET_SYSTEM} STREQUAL WINDOWS)
     message(WARNING "-- Windows --")
     find_library(FWLIB_TO_INCLUDE libfwdownload.lib src/win10)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC __WIN__)
 endif()
 
 # -------- Firmware downloal library ---------- #
@@ -85,9 +91,6 @@ include_directories(${FWLIB_INCLUDES})
 
 include_directories(${Boost_INCLUDE_DIRS})
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
-target_link_libraries(${PROJECT_NAME} utf8cpp hidapi::hidapi)
-target_link_libraries(${PROJECT_NAME} Boost::thread Boost::system Boost::json Boost::log Boost::log_setup)
-target_link_libraries(${PROJECT_NAME} ${FWLIB_TO_INCLUDE})
 
 if(NOT DEFINED _DEBUG)
     message(WARNING "-- Release build --")
@@ -95,14 +98,14 @@ endif()
 
 if(${_DEBUG})
     message(WARNING "-- Debug build --")
-    target_compile_definitions(${PROJECT_NAME} PUBLIC DEBUG=TRUE)
 
-    if(NOT ${TARGET_SYSTEM} STREQUAL WINDOWS)
+    if(NOT ${TARGET_SYSTEM} STREQUAL Windows)
         target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wunused -g)
+    elseif()
+        target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wunused -g)
     endif()
 else()
     message(WARNING "-- Release build --")
-    target_compile_definitions(${PROJECT_NAME} PUBLIC DEBUG=FALSE)
 endif()
 
 if(NOT DEFINED LANG)
@@ -122,11 +125,15 @@ if(${TARGET_SYSTEM} STREQUAL Windows)
         string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
         string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
     endif()
-
     target_compile_definitions(${PROJECT_NAME} PRIVATE _WINDOWS_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
     target_compile_options(${PROJECT_NAME} PRIVATE /utf-8)
 endif()
 
+target_link_libraries(${PROJECT_NAME} utf8cpp hidapi::hidapi)
+target_link_libraries(${PROJECT_NAME} Boost::thread Boost::system Boost::json Boost::log Boost::log_setup)
+target_link_libraries(${PROJECT_NAME} ${FWLIB_TO_INCLUDE})
+
 # conan install -pr .\conan_profiles\win10\win10_build -if build_win_x86_64 . --build=missing
-# cmake -Bbuild_win_x86_64 . -DTARGET_SYSTEM=WINDOWS -D_DEBUG=TRUE -DLANG=RU -G "Visual Studio 16" -A x64
+# conan install -pr .\conan_profiles\win10\win10_build -if build_win_x86_64 . -s build_type=Debug -s compiler="Visual Studio" -s compiler.runtime=MDd --build=missing
+# cmake -Bbuild_win_x86_64 . -DTARGET_SYSTEM=WINDOWS -D_DEBUG=TRUE -DLANG=ru_RU -G "Visual Studio 16" -A x64
 # cmake --build ./build_win_x86_64

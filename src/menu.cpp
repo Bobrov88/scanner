@@ -35,7 +35,12 @@ void MENU::PrintAvailableDevices()
 {
     logger << "PrintAvailableDevices";
     MENU::PrintAttentionComToHID();
-    std::vector<UTIL::AVAILABLE_COM> coms = UTIL::get_available_linux_com_ports();
+    std::vector<UTIL::AVAILABLE_COM> coms;
+    #ifdef __WIN__
+    coms = UTIL::get_available_windows_com_ports();
+    #elif (__DEBIAN__ || __CENTOS__)
+    coms = UTIL::get_available_linux_com_ports();
+    #endif
     for (const auto &com : coms)
     {
         if (!HID::testing_to_pass_HID_from_COM(com.port_))
@@ -45,7 +50,7 @@ void MENU::PrintAvailableDevices()
     }
     std::this_thread::sleep_for(3000ms);
     std::vector<UTIL::AVAILABLE_HID> hids = UTIL::get_available_hid_devices();
-    PRINT::print_all_hid_linux_devices(hids);
+    PRINT::print_all_hid_devices(hids);
 }
 
 void MENU::SaveSettings()
@@ -64,7 +69,7 @@ void MENU::SaveSettings()
     std::this_thread::sleep_for(3000ms); // delay for reconnecting
 
     auto hids = UTIL::get_available_hid_devices();
-    PRINT::print_all_hid_linux_devices(hids);
+    PRINT::print_all_hid_devices(hids);
 
     if (hids.empty())
         return;
@@ -108,7 +113,7 @@ void MENU::WriteFromJson()
     int json_file = PRINT::ChooseToProceed(jsons.size());
 
     auto hids = UTIL::get_available_hid_devices();
-    PRINT::print_all_hid_linux_devices(hids);
+    PRINT::print_all_hid_devices(hids);
 
     if (hids.empty())
         return;
@@ -157,7 +162,7 @@ void MENU::RestoreFactorySettings()
     std::this_thread::sleep_for(3000ms); // delay for reconnecting
 
     auto hids = UTIL::get_available_hid_devices();
-    PRINT::print_all_hid_linux_devices(hids);
+    PRINT::print_all_hid_devices(hids);
 
     if (hids.empty())
         return;
@@ -198,7 +203,7 @@ void MENU::RestoreCustomSettings()
     std::this_thread::sleep_for(3000ms); // delay for reconnecting
 
     auto hids = UTIL::get_available_hid_devices();
-    PRINT::print_all_hid_linux_devices(hids);
+    PRINT::print_all_hid_devices(hids);
 
     if (hids.empty())
         return;
@@ -236,7 +241,7 @@ void MENU::DownloadFirmware()
     }
 
     auto hids = UTIL::get_available_hid_devices();
-    PRINT::print_all_hid_linux_devices(hids);
+    PRINT::print_all_hid_devices(hids);
 
     if (hids.empty())
         return;

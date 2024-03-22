@@ -23,10 +23,9 @@ ConsoleTable PRINT::getTableInitialSetup()
     return table;
 }
 
-void PRINT::print_all_hid_linux_devices(const std::vector<UTIL::AVAILABLE_HID> &hids)
+void PRINT::print_all_hid_devices(const std::vector<UTIL::AVAILABLE_HID> &hids)
 {
     ConsoleTable table = getTableInitialSetup();
-
     if (!hids.empty())
     {
         table[0][0] = "#";
@@ -46,9 +45,33 @@ void PRINT::print_all_hid_linux_devices(const std::vector<UTIL::AVAILABLE_HID> &
             table[row][3] = CONVERT::str(hid.product_).c_str();
             table[row][4] = CONVERT::str(hid.serial_number_).c_str();
             hid_device *ptr = hid_open_path(hid.path_);
-            boost::json::value obj = boost::json::parse(UTIL::get_firmware_device_name_model(ptr));
-            table[row][5] = obj.at("deviceName").as_string().c_str();
-            table[row][6] = obj.at("FwVer").as_string().c_str();
+            try
+            {
+                auto resp = UTIL::get_firmware_device_name_model(ptr);
+                if (!resp.empty()) {
+                boost::json::value obj = boost::json::parse(UTIL::get_firmware_device_name_model(ptr));
+                table[row][5] = obj.at("deviceName").as_string().c_str();
+                table[row][6] = obj.at("FwVer").as_string().c_str();
+                } else {
+                    table[row][5] = table[row][5] = ERR;
+                    continue;
+                }
+            }
+            catch (const boost::system::system_error &e)
+            {
+                boost::system::error_code ec = e.code();
+                logger << CONVERT::str(hid.serial_number_).c_str() << ": " << READ_ERROR;
+                logger << ec.value()
+                       << " "
+                       << ec.category().name() << " " << ec.message();
+                console << EXCEPTION << " For detailed information look into log";
+                table[row][5] = table[row][5] = ERR;
+            }
+            catch (const std::exception& ex) {
+                logger << CONVERT::str(hid.serial_number_).c_str() << ": " << READ_ERROR;
+                console << EXCEPTION << " For detailed information look into log";
+                table[row][5] = table[row][5] = ERR;
+            }
             ++row;
             hid_close(ptr);
         }
@@ -182,7 +205,7 @@ int PRINT::ChooseToProceed(size_t amount) // take this function out of MENU name
     size_t number;
     while (true)
     {
-        console << CHOOSE <<": ";
+        console << CHOOSE << ": ";
         if (std::cin >> number)
         {
             if (number > amount || number < 1)

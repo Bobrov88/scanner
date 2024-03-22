@@ -1,6 +1,6 @@
 #include "utility.h"
 
-#ifdef __WINDOWS__
+#ifdef __WIN__
 #include "windows.h"
 #include "tchar.h"
 
@@ -251,13 +251,28 @@ void UTIL::remove_dublicates_of_hid_devices(std::vector<AVAILABLE_HID> &hids)
 std::vector<uint8_t> UTIL::read_json_piece(hid_device *handle)
 {
     uint8_t response[64] = {0};
-    int size_of_read_bytes = hid_read_timeout(handle, response, 64, 100);
-    if (size_of_read_bytes <= 0)
-    {
-        logger << "Read json piece failed";
-        // TODO if result is negative
-        return {};
-    }
+    int size_of_read_bytes = 0;
+ //   int attempt = 10;
+ // while (attempt != 0)
+//    {
+  //      --attempt;
+   //     size_of_read_bytes = hid_read_timeout(handle, response, 64, 100);
+ //       if (size_of_read_bytes <= 0)
+   //     {
+     //       continue;
+     //   }
+      //  else
+     //   {
+     //       logger << "Successful read with " << (10 - attempt) << " attempt";
+      //      break;
+       // }
+        if (size_of_read_bytes == 0 /*&& attempt == 0*/)
+        {
+            logger << "Read json piece failed";
+            return {};
+        }
+    //}
+
     size_t size_of_json_piece = static_cast<size_t>(response[1]);
     std::vector<uint8_t> json_bytes;
     json_bytes.reserve(size_of_json_piece);
@@ -357,6 +372,7 @@ int UTIL::HID_WRITE(handler &device, uint8_t *c, int size)
 {
     try
     {
+        logger << "Trying connect " << device.serial_number << " " << get_trimmed_long_HID_path(device.path);
         int attempt = 10; // define as a system var
         while (attempt != 0)
         {
@@ -509,7 +525,7 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
                         byte |= 0b10000000;
                         break;
                     default:
-                        incorrect_data += INCORR_BYTES + " " + IN + " "s + key;
+                        incorrect_data += INCORR_BYTES + " " + V_IN + " "s + key;
                     }
                 }
                 else
@@ -2477,9 +2493,10 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
     catch (boost::system::system_error &e)
     {
         boost::system::error_code ec = e.code();
-        std::cerr << ec.value() << '\n';
-        std::cerr << ec.category().name() << '\n';
-        std::cerr << ec.message() << '\n';
+        logger << ec.value()
+               << " "
+               << ec.category().name() << " " << ec.message();
+        console << EXCEPTION << " For detailed information look into log";
     }
     catch (const std::exception &e)
     {
@@ -2561,6 +2578,14 @@ void UTIL::trim(std::string &str)
     }
 }
 
+std::string UTIL::get_trimmed_long_HID_path(const std::string &str)
+{
+    auto b = std::find(str.cbegin(), str.cend(), '#');
+    ++b;
+    auto e = std::find(b, str.cend(), '#');
+    return str.substr(std::distance(str.begin(), b), std::distance(b, e));
+}
+
 std::vector<std::pair<std::string, std::string>> UTIL::get_json_file_list()
 {
     std::vector<std::pair<std::string, std::string>> json_files;
@@ -2640,7 +2665,7 @@ bool UTIL::save_settings_to_files(const std::vector<UTIL::AVAILABLE_HID> &hids)
     bool ret = true;
     std::for_each(hids.begin(), hids.end(), [&ret](const auto &hid)
                   {
-                    logger << "Saving settings from "<<hid.path_;
+                    logger << "Saving settings from "<<hid.serial_number_<<" "<<UTIL::get_trimmed_long_HID_path(hid.path_);
                     hid_device *handle = hid_open_path(hid.path_);
                     std::string json = UTIL::get_full_json_response(handle);
                     std::string out_file_name = CONVERT::str(hid.serial_number_) + ".json"s;

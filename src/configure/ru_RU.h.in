@@ -1,3 +1,4 @@
+#pragma once
 #define EXCEPTION "Исключение"s
 #define UNKNOWN "Неизвестный параметр"s
 #define PRESS_KEY "Нажмите любую клавишу для выхода..."s
@@ -9,8 +10,7 @@
 #define GET_REST_FACT "\t -f --restore-factory\t\tВосстановление заводских настроек"s
 #define GET_REST_CUST "\t -c --restore-custom \t\tВосстановление пользовательских настроек"s
 #define GET_DWNLD "\t -d --download       \t\tПрошивка сканера"s
-#define COM2HID "Примечание:         Сканеры в COM-режиме (если таковые имеются) \n"\
-                 "будут автоматически переведны в HID-режим"
+#define COM2HID "Примечание:         Сканеры в COM-режиме (если таковые имеются) \n                    будут автоматически переведны в HID-режим"s
 #define WAIT4SCAN "Ожидание доступных сканеров"s
 #define PASS_FAIL "перевод невозможен"s
 #define SAVE_OK "Настройки всех сканеров были успешно сохранены в json-файлы"s
@@ -42,18 +42,17 @@
 #define OK "ОК"s
 #define ERR "Ошибка"s
 #define NO_FW "Файлы прошивки не найдены"s
-#define CHOOSE_SCANNER "Введите номера через пробел, напр.: 1 4 5 \n"\      
-                       "либо введите VID через пробел, напр.: 0x34eb 0x53da\n"\
-                       "либо введите 0 для выбора всех сканеров"
+#define CHOOSE_SCANNER "Введите номера через пробел, напр.: 1 4 5 \nлибо введите VID через пробел, напр.: 0x34eb 0x53da\nлибо введите 0 для выбора всех сканеров"s
 #define CHOOSE "Выберите сканер по п/п"s
 #define INCORR_STRING "некорректное значение, строка должна быть не более"s
 #define SYM "символов"s
 #define INCORR_NUM "значение должно быть от 0 до 255"s
-#define IN "в"s
+#define V_IN "в"s
 #define INCORR_BYTES "некорректные байты"s
 #define INCORR_DATA "некорректные данные:"s
 #define POSS_VALUES "Допустимые значения для"s
-#define PARSE_FAIL "Ошибка парсинга:"s
+#define PARSE_FAIL "Ошибка парсинга"s
 #define NEW_FILE "Файл создан"s
 #define NO_NEW_FILE "невозможно создать файл"s
 #define NOT_KEY "Ключ не найден"s
+#define READ_ERROR "Ошибка чтения данных. Переподключите устройство и попробуйте снова"s
