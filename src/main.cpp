@@ -7,6 +7,7 @@ using namespace std::string_literals;
 
 int main(int argc, char *argv[])
 {
+    system("chcp 65001");
     // if (argc == 1 || (argc == 2 && (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0)))
     // {
     //     MENU::PrintStartMenu();
@@ -40,16 +41,14 @@ int main(int argc, char *argv[])
     //     console << UNKNOWN;
     // }
     // console << PRESS_KEY;
-
-    for (int i = 0; i < 255; ++i)
-    {
-        console << static_cast<char>(i);
-    }
-    for (int i = 0; i < 255; ++i)
-    {
-        std::cout << static_cast<char>(i);
-    }
+    // MENU::PrintAvailableDevices();
+    // auto coms = UTIL::get_available_windows_com_ports();
+    // for (auto &com : coms)
+    // {
+    //     console << "Порты " << com.port_;
+    // }
     MENU::PrintAvailableDevices();
+   // SetupDiGetClass
 
     char c = getchar();
     return 0;

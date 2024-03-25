@@ -48,11 +48,14 @@ void PRINT::print_all_hid_devices(const std::vector<UTIL::AVAILABLE_HID> &hids)
             try
             {
                 auto resp = UTIL::get_firmware_device_name_model(ptr);
-                if (!resp.empty()) {
-                boost::json::value obj = boost::json::parse(UTIL::get_firmware_device_name_model(ptr));
-                table[row][5] = obj.at("deviceName").as_string().c_str();
-                table[row][6] = obj.at("FwVer").as_string().c_str();
-                } else {
+                if (!resp.empty())
+                {
+                    boost::json::value obj = boost::json::parse(resp);
+                    table[row][5] = obj.at("deviceName").as_string().c_str();
+                    table[row][6] = obj.at("FwVer").as_string().c_str();
+                }
+                else
+                {
                     table[row][5] = table[row][5] = ERR;
                     continue;
                 }
@@ -67,7 +70,8 @@ void PRINT::print_all_hid_devices(const std::vector<UTIL::AVAILABLE_HID> &hids)
                 console << EXCEPTION << " For detailed information look into log";
                 table[row][5] = table[row][5] = ERR;
             }
-            catch (const std::exception& ex) {
+            catch (const std::exception &ex)
+            {
                 logger << CONVERT::str(hid.serial_number_).c_str() << ": " << READ_ERROR;
                 console << EXCEPTION << " For detailed information look into log";
                 table[row][5] = table[row][5] = ERR;
@@ -80,10 +84,10 @@ void PRINT::print_all_hid_devices(const std::vector<UTIL::AVAILABLE_HID> &hids)
     {
         table[0][0] = NO_SCAN;
     }
-    std::ostringstream oss;
-    oss << table;
+    // std::ostringstream oss;
+    // oss << table;
     // logger(oss.str());
-    console << oss.str();
+    std::cout << table;
 }
 
 void PRINT::print_all_com_linux_devices(const std::vector<UTIL::AVAILABLE_COM> &coms)
@@ -115,9 +119,9 @@ void PRINT::print_all_com_linux_devices(const std::vector<UTIL::AVAILABLE_COM> &
     {
         table[0][0] = NO_SCAN;
     }
-    std::ostringstream oss;
-    oss << table;
-    console << oss.str();
+    // std::ostringstream oss;
+    // oss << table;
+    std::cout << table;
 }
 
 void PRINT::print_all_json_files(std::vector<std::pair<std::string, std::string>> &json_list)
@@ -144,7 +148,7 @@ void PRINT::print_all_json_files(std::vector<std::pair<std::string, std::string>
         table[0][0] = NO_JSON;
     }
 
-    console << table;
+    std::cout << table;
 }
 
 void PRINT::print_all_firmware_files(std::vector<std::pair<std::string, int>> &firmware_list)
@@ -171,7 +175,7 @@ void PRINT::print_all_firmware_files(std::vector<std::pair<std::string, int>> &f
         table[0][0] = NO_FW;
     }
 
-    console << table;
+    std::cout << table;
 }
 
 std::string PRINT::ChooseScannerToProceed() // take this function out of MENU namespace

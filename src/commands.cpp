@@ -156,16 +156,16 @@ bool HID::testing_to_pass_HID_from_COM(const std::string &com)
             case 1:
                 m_timer.cancel();
                 io.reset();
-                break;
+                return true;
             case 3:
                 s_port.cancel();
                 io.reset();
-                break;
+                return false;
             case 2:
                 m_timer.cancel();
                 s_port.cancel();
                 io.reset();
-                return true;
+                break;
             default: // if resultInProgress remain in the loop
                 break;
             }

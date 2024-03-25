@@ -7,6 +7,9 @@
 #include "CppConsoleTable.hpp"
 #include "utility.h"
 #include "converters.h"
+#ifdef __WIN__
+#include <windows.h>
+#endif
 
 using samilton::ConsoleTable;
 

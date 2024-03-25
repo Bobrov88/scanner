@@ -10,7 +10,7 @@
 #define GET_REST_FACT "\t -f --restore-factory\t\tВосстановление заводских настроек"s
 #define GET_REST_CUST "\t -c --restore-custom \t\tВосстановление пользовательских настроек"s
 #define GET_DWNLD "\t -d --download       \t\tПрошивка сканера"s
-#define COM2HID "Примечание:         Сканеры в COM-режиме (если таковые имеются) \n                    будут автоматически переведны в HID-режим"s
+#define COM2HID "Примечание:         Сканеры в COM-режиме (если таковые имеются) \n                    будут автоматически переведены в HID-режим"s
 #define WAIT4SCAN "Ожидание доступных сканеров"s
 #define PASS_FAIL "перевод невозможен"s
 #define SAVE_OK "Настройки всех сканеров были успешно сохранены в json-файлы"s

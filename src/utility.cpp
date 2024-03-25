@@ -401,7 +401,7 @@ int UTIL::HID_WRITE(handler &device, uint8_t *c, int size)
                 logger << "Successful read with " << (10 - attempt) << " attempt";
                 return 0;
             }
-            logger << device.serial_number << ": read failed -> " << CONVERT::to_hex(r, 16);
+            logger << device.serial_number << ": read failed -> " << CONVERT::to_hex(r, 64);
         }
     }
     catch (std::exception &ex)
