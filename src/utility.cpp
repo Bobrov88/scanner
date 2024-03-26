@@ -439,7 +439,6 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
     {
         std::ifstream file(json);
         boost::json::value str = boost::json::parse(get_string_from_source(file));
-
         std::vector<uint8_t> bytes;
         std::string incorrect_data;
 
@@ -455,7 +454,7 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
                 }
                 else
                 {
-                    for (size_t i = 0; i < length; ++i)
+                    for (size_t i = 0; i < tmp.size(); ++i)
                     {
                         byte[i] = static_cast<uint8_t>(tmp[i]);
                     }
@@ -1071,7 +1070,7 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
             uint8_t byte = 0;
             {
                 {
-                    std::vector<std::string> variants = {"High"s, "CONVERT::low"s};
+                    std::vector<std::string> variants = {"High"s, "Low"s};
                     const std::string key = "ledWorkLevel"s;
                     std::string tmp = str.at(key).as_string().c_str();
                     if (CONVERT::low(tmp) == CONVERT::low(variants[0]))

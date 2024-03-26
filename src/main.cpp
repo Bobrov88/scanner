@@ -13,6 +13,8 @@ int main(int argc, char *argv[])
     if (argc == 1 || (argc == 2 && (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0)))
     {
         MENU::PrintStartMenu();
+        console << PRESS_KEY;
+        char c = getchar();
     }
     else if (argc == 2 && (strcmp(argv[1], "-i") == 0 || strcmp(argv[1], "--info") == 0))
     {
@@ -42,16 +44,5 @@ int main(int argc, char *argv[])
     {
         console << UNKNOWN;
     }
-    console << PRESS_KEY;
-    // MENU::PrintAvailableDevices();
-    // auto coms = UTIL::get_available_windows_com_ports();
-    // for (auto &com : coms)
-    // {
-    //     console << "Порты " << com.port_;
-    // }
-    //  MENU::PrintAvailableDevices();
-    // SetupDiGetClass
-
-    char c = getchar();
     return 0;
 }
