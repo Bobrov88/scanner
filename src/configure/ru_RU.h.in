@@ -43,16 +43,17 @@
 #define ERR "Ошибка"s
 #define NO_FW "Файлы прошивки не найдены"s
 #define CHOOSE_SCANNER "Введите номера через пробел, напр.: 1 4 5 \nлибо введите VID через пробел, напр.: 0x34eb 0x53da\nлибо введите 0 для выбора всех сканеров"s
-#define CHOOSE "Выберите сканер по п/п"s
+#define CHOOSE "Введите номер"s
 #define INCORR_STRING "некорректное значение, строка должна быть не более"s
 #define SYM "символов"s
 #define INCORR_NUM "значение должно быть от 0 до 255"s
 #define V_IN "в"s
-#define INCORR_BYTES "некорректные байты"s
-#define INCORR_DATA "некорректные данные:"s
+#define INCORR_BYTES "Некорректные байты"s
+#define INCORR_DATA "Некорректные данные"s
 #define POSS_VALUES "Допустимые значения для"s
 #define PARSE_FAIL "Ошибка парсинга"s
 #define NEW_FILE "Файл создан"s
 #define NO_NEW_FILE "невозможно создать файл"s
 #define NOT_KEY "Ключ не найден"s
 #define READ_ERROR "Ошибка чтения данных. Переподключите устройство и попробуйте снова"s
+#define FLAGS_FILLED_ERR "Пожалуйста, проверьте чтоб ключи имели допустимые названия и значения"

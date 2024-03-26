@@ -23,6 +23,7 @@ void MENU::PrintStartMenu()
     console << GET_WRITE;
     console << GET_REST_FACT;
     console << GET_REST_CUST;
+    console << GET_DWNLD;
 }
 
 void MENU::PrintAttentionComToHID()
@@ -62,7 +63,7 @@ void MENU::SaveSettings()
     {
         if (!HID::testing_to_pass_HID_from_COM(com.port_))
         {
-            console << com.port_ << " " << PASS_FAIL;
+            logger << com.port_ << " " << PASS_FAIL;
         }
         std::this_thread::sleep_for(300ms);
     }
@@ -98,7 +99,7 @@ void MENU::WriteFromJson()
     {
         if (!HID::testing_to_pass_HID_from_COM(com.port_))
         {
-            console << com.port_ << " " << PASS_FAIL;
+            logger << com.port_ << " " << PASS_FAIL;
         }
         std::this_thread::sleep_for(300ms);
     }
@@ -124,21 +125,29 @@ void MENU::WriteFromJson()
     logger << "Json file: " << jsons[json_file].first;
 
     auto settings = UTIL::convert_json_to_bits(jsons[json_file].first);
+    if (settings.empty())
+    {
+        console << FLAGS_FILLED_ERR;
+        return;
+    }
     for (const auto &hid : hids)
     {
         handler device{hid_open_path(hid.path_), hid.path_, CONVERT::str(hid.serial_number_)};
         if (-1 == UTIL::write_settings_from_json(settings, device))
         {
-            console << WRITE_FAIL;
+            console << device.serial_number << ": " << WRITE_FAIL;
             logger << device.serial_number << ": " << WRITE_FAIL;
             hid_close(device.ptr);
             continue;
         }
         if (0 == HID::save_to_internal_flash(device))
-            console << _SUCCESS_;
+        {
+            console << device.serial_number << ": " << OK;
+            logger << device.serial_number << ": " << OK;
+        }
         else
         {
-            console << WRITE_CUS_FAIL;
+            console << device.serial_number << ": " << WRITE_CUS_FAIL;
             logger << device.serial_number << ": " << WRITE_CUS_FAIL;
         }
         hid_close(device.ptr);
@@ -155,7 +164,7 @@ void MENU::RestoreFactorySettings()
     {
         if (!HID::testing_to_pass_HID_from_COM(com.port_))
         {
-            console << com.port_ << " " << PASS_FAIL;
+            logger << com.port_ << " " << PASS_FAIL;
         }
         std::this_thread::sleep_for(300ms);
     }
@@ -196,7 +205,7 @@ void MENU::RestoreCustomSettings()
     {
         if (!HID::testing_to_pass_HID_from_COM(com.port_))
         {
-            console << com.port_ << " " << PASS_FAIL;
+            logger << com.port_ << " " << PASS_FAIL;
         }
         std::this_thread::sleep_for(300ms);
     }
@@ -235,7 +244,7 @@ void MENU::DownloadFirmware()
     {
         if (!HID::testing_to_pass_HID_from_COM(com.port_))
         {
-            console << com.port_ << " " << PASS_FAIL;
+            logger << com.port_ << " " << PASS_FAIL;
         }
         std::this_thread::sleep_for(1s);
     }
@@ -307,6 +316,7 @@ void MENU::DownloadFirmware()
                 {
                     out_percent = (int)(persent * 100) / 10 * 10;
                     std::cout << out_percent << "%  ";
+                    std::flush(std::cout);
                 }
 
                 if (!s_port.is_open())

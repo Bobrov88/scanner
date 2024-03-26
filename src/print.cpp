@@ -186,7 +186,9 @@ std::string PRINT::ChooseScannerToProceed() // take this function out of MENU na
     do
     {
         result_string.clear();
-        console << "----------->: ";
+
+        std::cout << "----------->: ";
+        std::flush(std::cout);
 
         std::string input, token;
         std::getline(std::cin, input);
@@ -209,7 +211,7 @@ int PRINT::ChooseToProceed(size_t amount) // take this function out of MENU name
     size_t number;
     while (true)
     {
-        console << CHOOSE << ": ";
+        std::cout << CHOOSE << ": ";
         if (std::cin >> number)
         {
             if (number > amount || number < 1)

@@ -43,16 +43,17 @@
 #define ERR "ERROR"s
 #define NO_FW "Firmware files not found"s
 #define CHOOSE_SCANNER "Enter numbers with a space, e.g. 1 4 5 \nor enter VIDs with a space, e.g. 0x34eb 0x53da\nor enter 0 to save ALL scanners settings"s
-#define CHOOSE "Choose by its number"s
+#define CHOOSE "Enter a number"s
 #define INCORR_STRING "incorrect value, string length must be less than"s
 #define SYM "symbols"s
 #define INCORR_NUM "incorrect value, must be between 0 and 255"s
 #define V_IN "in"s
-#define INCORR_BYTES "Incorrect byte="s
-#define INCORR_DATA "Incorrect data:"s
+#define INCORR_BYTES "Incorrect byte"s
+#define INCORR_DATA "Incorrect data"s
 #define POSS_VALUES "Possible values for"s
 #define PARSE_FAIL "Parsing failed"s
 #define NEW_FILE "File created"s
 #define NO_NEW_FILE "Unable to create file"s
 #define NOT_KEY "Key not found"s
 #define READ_ERROR "Read data error. Please, reconnect device and try again"s
+#define FLAGS_FILLED_ERR "Please, check that the keys have valid names and values"

@@ -252,27 +252,21 @@ std::vector<uint8_t> UTIL::read_json_piece(hid_device *handle)
 {
     uint8_t response[64] = {0};
     int size_of_read_bytes = 0;
- //   int attempt = 10;
- // while (attempt != 0)
-//    {
-  //      --attempt;
-   //     size_of_read_bytes = hid_read_timeout(handle, response, 64, 100);
- //       if (size_of_read_bytes <= 0)
-   //     {
-     //       continue;
-     //   }
-      //  else
-     //   {
-     //       logger << "Successful read with " << (10 - attempt) << " attempt";
-      //      break;
-       // }
-        if (size_of_read_bytes == 0 /*&& attempt == 0*/)
+    int attempt = 10;
+    while (attempt != 0)
+    {
+        --attempt;
+        size_of_read_bytes = hid_read_timeout(handle, response, 64, 100);
+        if (size_of_read_bytes <= 0)
         {
-            logger << "Read json piece failed";
-            return {};
+            continue;
         }
-    //}
-
+        else
+        {
+            logger << "Successful read with " << (10 - attempt) << " attempt";
+            break;
+        }
+    }
     size_t size_of_json_piece = static_cast<size_t>(response[1]);
     std::vector<uint8_t> json_bytes;
     json_bytes.reserve(size_of_json_piece);
@@ -372,7 +366,11 @@ int UTIL::HID_WRITE(handler &device, uint8_t *c, int size)
 {
     try
     {
+#ifdef __WIN__
         logger << "Trying connect " << device.serial_number << " " << get_trimmed_long_HID_path(device.path);
+#elif __DEBIAN__ || __CENTOS__
+        logger << "Trying connect " << device.serial_number << " " << device.path;
+#endif
         int attempt = 10; // define as a system var
         while (attempt != 0)
         {
@@ -467,7 +465,7 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
             }
             catch (const std::out_of_range &ex)
             {
-                incorrect_data += key + ": " + NOT_KEY;
+                incorrect_data += NOT_KEY + ": "s + key + "\n";
             }
             return byte;
         };
@@ -533,7 +531,7 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
             }
             catch (const std::out_of_range &ex)
             {
-                incorrect_data += key + ": " + NOT_KEY;
+                incorrect_data += key + ": " + NOT_KEY + "\n";
             }
         };
 
@@ -753,8 +751,8 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
             {
                 const std::string key1 = "keyboardLead(Ctrl+Shift+R)"s;
                 set_bit_if_key_bool_true(byte, 0, key1);
-                const std::string key2 = "keyboardLead"s;
-                set_bit_if_key_bool_true(byte, 0, key2);
+                //const std::string key2 = "keyboardLead"s; // different names in other version
+                //set_bit_if_key_bool_true(byte, 0, key2);
             }
             bytes.push_back(byte);
         }
@@ -1857,10 +1855,10 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
                 // Reserved 5-2
             }
             {
-                const std::string key1 = "DMAIBracketOut"s;
-                set_bit_if_key_bool_true(byte, 6, key1);
+               // const std::string key1 = "DMAIBracketOut"s;
+               // set_bit_if_key_bool_true(byte, 6, key1);
                 const std::string key2 = "DMBracketOut"s;
-                set_bit_if_key_bool_true(byte, 6, key2);
+                set_bit_if_key_bool_true(byte, 6, key2); // different names in other version
             }
             {
                 // Reserved 7
@@ -2504,8 +2502,9 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
     }
     catch (const std::string &e)
     {
-        console << INCORR_DATA;
-        console << e;
+        console << INCORR_DATA << ": " << e;
+        logger << INCORR_DATA << ": " << e;
+        return {};
     }
     return set_of_bytes;
 }
@@ -2577,7 +2576,7 @@ void UTIL::trim(std::string &str)
         str = str.substr(first, (last - first + 1));
     }
 }
-
+#ifdef __WIN__
 std::string UTIL::get_trimmed_long_HID_path(const std::string &str)
 {
     auto b = std::find(str.cbegin(), str.cend(), '#');
@@ -2585,6 +2584,7 @@ std::string UTIL::get_trimmed_long_HID_path(const std::string &str)
     auto e = std::find(b, str.cend(), '#');
     return str.substr(std::distance(str.begin(), b), std::distance(b, e));
 }
+#endif
 
 std::vector<std::pair<std::string, std::string>> UTIL::get_json_file_list()
 {
@@ -2665,7 +2665,11 @@ bool UTIL::save_settings_to_files(const std::vector<UTIL::AVAILABLE_HID> &hids)
     bool ret = true;
     std::for_each(hids.begin(), hids.end(), [&ret](const auto &hid)
                   {
+                    #ifdef __WIN__
                     logger << "Saving settings from "<<hid.serial_number_<<" "<<UTIL::get_trimmed_long_HID_path(hid.path_);
+                    #elif __DEBIAN__ || __CENTOS__
+                    logger << "Saving settings from "<<hid.serial_number_<<" "<<hid.path_;
+                    #endif
                     hid_device *handle = hid_open_path(hid.path_);
                     std::string json = UTIL::get_full_json_response(handle);
                     std::string out_file_name = CONVERT::str(hid.serial_number_) + ".json"s;
