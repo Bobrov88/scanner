@@ -56,4 +56,5 @@
 #define NO_NEW_FILE "Unable to create file"s
 #define NOT_KEY "Key not found"s
 #define READ_ERROR "Read data error. Please, reconnect device and try again"s
-#define FLAGS_FILLED_ERR "Please, check that the keys have valid names and values"
+#define FLAGS_FILLED_ERR "Please, check that the keys have valid names and values"s
+#define LOOK_TO_LOG "For detailed information look into log"

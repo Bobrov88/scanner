@@ -178,7 +178,7 @@ bool HID::testing_to_pass_HID_from_COM(const std::string &com)
         logger << ec.value()
                << " "
                << ec.category().name() << " " << ec.message();
-               console << EXCEPTION << " For detailed information look into log";
+               console << EXCEPTION << " "s << LOOK_TO_LOG;
     }
     catch (const std::exception &ex)
     {

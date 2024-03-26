@@ -7,7 +7,9 @@ using namespace std::string_literals;
 
 int main(int argc, char *argv[])
 {
-//    system("chcp 65001");
+#ifdef __WIN__
+    system("chcp 65001 > nul");
+#endif
     if (argc == 1 || (argc == 2 && (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0)))
     {
         MENU::PrintStartMenu();
@@ -47,8 +49,8 @@ int main(int argc, char *argv[])
     // {
     //     console << "Порты " << com.port_;
     // }
-  //  MENU::PrintAvailableDevices();
-   // SetupDiGetClass
+    //  MENU::PrintAvailableDevices();
+    // SetupDiGetClass
 
     char c = getchar();
     return 0;

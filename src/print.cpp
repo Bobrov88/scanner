@@ -67,13 +67,13 @@ void PRINT::print_all_hid_devices(const std::vector<UTIL::AVAILABLE_HID> &hids)
                 logger << ec.value()
                        << " "
                        << ec.category().name() << " " << ec.message();
-                console << EXCEPTION << " For detailed information look into log";
+                console << EXCEPTION << " "s << LOOK_TO_LOG;
                 table[row][5] = table[row][5] = ERR;
             }
             catch (const std::exception &ex)
             {
                 logger << CONVERT::str(hid.serial_number_).c_str() << ": " << READ_ERROR;
-                console << EXCEPTION << " For detailed information look into log";
+                console << EXCEPTION << " "s << LOOK_TO_LOG;
                 table[row][5] = table[row][5] = ERR;
             }
             ++row;
@@ -212,6 +212,7 @@ int PRINT::ChooseToProceed(size_t amount) // take this function out of MENU name
     while (true)
     {
         std::cout << CHOOSE << ": ";
+        std::flush(std::cout);
         if (std::cin >> number)
         {
             if (number > amount || number < 1)

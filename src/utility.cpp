@@ -263,7 +263,6 @@ std::vector<uint8_t> UTIL::read_json_piece(hid_device *handle)
         }
         else
         {
-            logger << "Successful read with " << (10 - attempt) << " attempt";
             break;
         }
     }
@@ -308,7 +307,6 @@ std::string UTIL::get_json_responce_for_com_detection(boost::asio::serial_port &
 
     // s_port.close();
     std::string str = CONVERT::convert_from_bytes_to_string(v);
-    //    std::cout<<"\nSTR="<<str;
     return str;
 }
 
@@ -751,8 +749,8 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
             {
                 const std::string key1 = "keyboardLead(Ctrl+Shift+R)"s;
                 set_bit_if_key_bool_true(byte, 0, key1);
-                //const std::string key2 = "keyboardLead"s; // different names in other version
-                //set_bit_if_key_bool_true(byte, 0, key2);
+                // const std::string key2 = "keyboardLead"s; // different names in other version
+                // set_bit_if_key_bool_true(byte, 0, key2);
             }
             bytes.push_back(byte);
         }
@@ -1855,8 +1853,8 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
                 // Reserved 5-2
             }
             {
-               // const std::string key1 = "DMAIBracketOut"s;
-               // set_bit_if_key_bool_true(byte, 6, key1);
+                // const std::string key1 = "DMAIBracketOut"s;
+                // set_bit_if_key_bool_true(byte, 6, key1);
                 const std::string key2 = "DMBracketOut"s;
                 set_bit_if_key_bool_true(byte, 6, key2); // different names in other version
             }
@@ -2494,7 +2492,7 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
         logger << ec.value()
                << " "
                << ec.category().name() << " " << ec.message();
-        console << EXCEPTION << " For detailed information look into log";
+        console << EXCEPTION << " "s << LOOK_TO_LOG;
     }
     catch (const std::exception &e)
     {
@@ -2553,7 +2551,7 @@ void UTIL::merge_json(std::string &json)
     merged_json.reserve(json.size());
     for (auto it = json.cbegin(); it != json.cend(); ++it)
     {
-        if (*it == '}' && *(it + 1) == '{')
+        if (*it == '}' && (it + 1) != json.cend())
         {
             merged_json.back() = ',';
             merged_json.push_back('\n');
@@ -2665,11 +2663,11 @@ bool UTIL::save_settings_to_files(const std::vector<UTIL::AVAILABLE_HID> &hids)
     bool ret = true;
     std::for_each(hids.begin(), hids.end(), [&ret](const auto &hid)
                   {
-                    #ifdef __WIN__
+#ifdef __WIN__
                     logger << "Saving settings from "<<hid.serial_number_<<" "<<UTIL::get_trimmed_long_HID_path(hid.path_);
-                    #elif __DEBIAN__ || __CENTOS__
+#elif __DEBIAN__ || __CENTOS__
                     logger << "Saving settings from "<<hid.serial_number_<<" "<<hid.path_;
-                    #endif
+#endif
                     hid_device *handle = hid_open_path(hid.path_);
                     std::string json = UTIL::get_full_json_response(handle);
                     std::string out_file_name = CONVERT::str(hid.serial_number_) + ".json"s;

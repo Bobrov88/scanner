@@ -105,14 +105,6 @@ void MENU::WriteFromJson()
     }
     std::this_thread::sleep_for(3000ms); // delay for reconnecting
 
-    auto jsons = UTIL::get_json_file_list();
-    PRINT::print_all_json_files(jsons);
-    if (jsons.empty())
-    {
-        return;
-    }
-    int json_file = PRINT::ChooseToProceed(jsons.size());
-
     auto hids = UTIL::get_available_hid_devices();
     PRINT::print_all_hid_devices(hids);
 
@@ -121,6 +113,15 @@ void MENU::WriteFromJson()
 
     std::string scanner_numbers = PRINT::ChooseScannerToProceed();
     hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
+    
+    auto jsons = UTIL::get_json_file_list();
+    PRINT::print_all_json_files(jsons);
+    if (jsons.empty())
+    {
+        return;
+    }
+    int json_file = PRINT::ChooseToProceed(jsons.size());
+
 
     logger << "Json file: " << jsons[json_file].first;
 
@@ -382,7 +383,7 @@ void MENU::DownloadFirmware()
             logger << ec.value()
                    << " "
                    << ec.category().name() << " " << ec.message();
-            console << EXCEPTION << " For detailed information look into log";
+            console << EXCEPTION << " "s << LOOK_TO_LOG;
         }
     }
     return;
