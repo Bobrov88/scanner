@@ -54,6 +54,28 @@ void MENU::PrintAvailableDevices()
     PRINT::print_all_hid_devices(hids);
 }
 
+void MENU::PrintSoftwareVersion()
+{
+    logger << "PrintSoftwareVersion";
+    MENU::PrintAttentionComToHID();
+    std::vector<UTIL::AVAILABLE_COM> coms;
+#ifdef __WIN__
+    coms = UTIL::get_available_windows_com_ports();
+#elif (__DEBIAN__ || __CENTOS__)
+    coms = UTIL::get_available_linux_com_ports();
+#endif
+    for (const auto &com : coms)
+    {
+        if (!HID::testing_to_pass_HID_from_COM(com.port_))
+        {
+            logger << com.port_ << " " << PASS_FAIL;
+        }
+    }
+    std::this_thread::sleep_for(3000ms);
+    std::vector<UTIL::AVAILABLE_HID> hids = UTIL::get_available_hid_devices();
+    PRINT::print_software_version(hids);
+}
+
 void MENU::SaveSettings()
 {
     logger << "SaveSettings";

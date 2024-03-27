@@ -26,6 +26,10 @@ int main(int argc, char *argv[])
     {
         MENU::PrintAvailableDevices();
     }
+    else if (argc == 2 && (strcmp(argv[1], "-a") == 0 || strcmp(argv[1], "--all_info") == 0))
+    {
+        MENU::PrintSoftwareVersion();
+    }
     else if (argc == 2 && (strcmp(argv[1], "-s") == 0 || strcmp(argv[1], "--save") == 0))
     {
         MENU::SaveSettings();

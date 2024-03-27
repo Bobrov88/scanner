@@ -5,13 +5,14 @@
 #define USAGE "Usage"s
 #define GET_DESC "\t -h --help           \t\tget description of available functions"s
 #define GET_INFO "\t -i --info           \t\tget information about usb-devices"s
+#define GET_ALL_INFO "\t -a --all_info           \t\tget all information about software versions"s
 #define GET_SAVE "\t -s --save           \t\tsave scanner settings to json"s
 #define GET_WRITE "\t -w --write          \t\twrite setting into scanner from json"s
 #define GET_REST_FACT "\t -f --restore-factory\t\trestore scanner to factory default"s
 #define GET_REST_CUST "\t -c --restore-custom \t\trestore scanner to user default"s
 #define GET_DWNLD "\t -d --download       \t\tupdate scanner firmware\n"
 #define COM2HID "Note:         Scanners in COM-mode (if exist) \n              will be automatically switched to HID - mode "s
-#define WAIT4SCAN "Waiting for available scanners"s
+#define WAIT4SCAN "Search for available scanners among USB devices..."s
 #define PASS_FAIL " passing failed"s
 #define SAVE_OK "All scanners settings successfully saved into files"s
 #define SAVE_FAIL "Not all scanners settings saved!"s
@@ -33,6 +34,9 @@
 #define SN "Serial number"s
 #define MODEL "Model"s
 #define FW_VER "Firmware version"s
+#define HW_VER "Hardware version"s
+#define BOOT_VER "Boot version"s
+#define LIB_VER "Library version"s
 #define NO_SCAN "Scanners not found"s
 #define COM "COM"s
 #define JSON_NAME "JSON file name"s

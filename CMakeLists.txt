@@ -114,9 +114,11 @@ endif()
 
 if(${LANG} STREQUAL ru_RU)
     configure_file(${CMAKE_SOURCE_DIR}/src/configure/ru_RU.h.in ${CMAKE_SOURCE_DIR}/src/phrases.h @ONLY)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC RUS)
     message(WARNING "-- Language: RU --")
 elseif(${LANG} STREQUAL en_US)
     configure_file(${CMAKE_SOURCE_DIR}/src/configure/en_US.h.in ${CMAKE_SOURCE_DIR}/src/phrases.h @ONLY)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC ENG)
     message(WARNING "-- Language: EN --")
 endif()
 

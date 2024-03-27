@@ -280,12 +280,8 @@ std::string UTIL::get_json_responce_for_com_detection(boost::asio::serial_port &
 {
     uint8_t buf[12] = {0};
     SEQ::get_config02_command(buf); // GetConfig02.
-//  uint8_t buf[15] = {0};
-//   SEQ::read_device_info_command_by_com(buf);
 #if DEBUG_COMMENT == TRUE
 #endif
-    // boost::asio::io_service io;
-    // boost::asio::serial_port s_port(io, com);
     boost::asio::write(s_port, boost::asio::buffer(buf, sizeof(buf)));
     std::this_thread::sleep_for(300ms);
     std::vector<uint8_t> v;
@@ -346,6 +342,28 @@ std::string UTIL::get_firmware_device_name_model(hid_device *handle)
     return read_json_settings(handle);
 }
 
+std::string UTIL::get_read_device_info(hid_device *handle)
+{
+    uint8_t ch[64] = {0};
+    SEQ::read_device_info_command(ch);
+    int attempt = 10;
+    int a = 0;
+    while (attempt != 0)
+    {
+        --attempt;
+        a = hid_write(handle, ch, 64);
+        if (64 != a)
+        {
+            continue;
+        }
+        else
+        {
+            break;
+        }
+    }
+    return read_json_settings(handle); // using json-reading for readDeviceInfo
+}
+
 std::string UTIL::read_json_settings(hid_device *handle)
 {
     std::vector<uint8_t> result;
@@ -358,6 +376,28 @@ std::string UTIL::read_json_settings(hid_device *handle)
         result.insert(result.end(), tmp.begin(), tmp.end());
     }
     return CONVERT::convert_from_bytes_to_string(result);
+}
+
+std::vector<std::string> UTIL::split_for_read_device_info(const std::string &vers)
+{
+    std::vector<std::string> datas;
+    datas.resize(5);
+    datas[0] = vers.substr(vers.find("DeviceName") + 11, std::distance(vers.begin(),
+                                                                 std::find(std::next(vers.begin(), vers.find("DeviceName")), vers.end(), '\n')) -
+                                                       vers.find("DeviceName") - 11);
+    datas[1] = vers.substr(vers.find("HwVer") + 6, std::distance(vers.begin(),
+                                                                 std::find(std::next(vers.begin(), vers.find("HwVer")), vers.end(), '\n')) -
+                                                       vers.find("HwVer") - 6);
+    datas[2] = vers.substr(vers.find("BootVer") + 8, std::distance(vers.begin(),
+                                                                   std::find(std::next(vers.begin(), vers.find("BootVer")), vers.end(), '\n')) -
+                                                         vers.find("BootVer") - 8);
+    datas[3] = vers.substr(vers.find("FwVer") + 6, std::distance(vers.begin(),
+                                                                 std::find(std::next(vers.begin(), vers.find("FwVer")), vers.end(), '\n')) -
+                                                       vers.find("FwVer") - 6);
+    datas[4] = vers.substr(vers.find("LibVer") + 7, std::distance(vers.begin(),
+                                                                  std::find(std::next(vers.begin(), vers.find("LibVer")), vers.end(), '\n')) -
+                                                        vers.find("LibVer") - 7);
+    return datas;
 }
 
 int UTIL::HID_WRITE(handler &device, uint8_t *c, int size)

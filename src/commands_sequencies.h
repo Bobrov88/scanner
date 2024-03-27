@@ -20,6 +20,5 @@ namespace SEQ
     void get_config02_command(uint8_t *c);
     void create_subcommand(const uint16_t flag, const std::vector<uint8_t> &bits, uint8_t *c);
     void create_subcommand_for_com(const uint16_t flag, const std::vector<uint8_t> &bits, uint8_t *c);
-    void read_device_info_command_by_hid(uint8_t *c);
-    void read_device_info_command_by_com(uint8_t *c);
+    void read_device_info_command(uint8_t *c);
 }

@@ -84,10 +84,64 @@ void PRINT::print_all_hid_devices(const std::vector<UTIL::AVAILABLE_HID> &hids)
     {
         table[0][0] = NO_SCAN;
     }
-    // std::ostringstream oss;
-    // oss << table;
-    // logger(oss.str());
-    std::cout << table;
+
+    console << table;
+}
+
+void PRINT::print_software_version(const std::vector<UTIL::AVAILABLE_HID> &hids)
+{
+    ConsoleTable table = getTableInitialSetup();
+    if (!hids.empty())
+    {
+        table[0][0] = "#";
+        table[0][1] = PROD;
+        table[0][2] = SN;
+        table[0][3] = MODEL;
+        table[0][4] = HW_VER;
+        table[0][5] = BOOT_VER;
+        table[0][6] = FW_VER;
+        table[0][7] = LIB_VER;
+
+        int row = 1;
+        for (const auto &hid : hids)
+        {
+            table[row][0] = row;
+            table[row][1] = CONVERT::str(hid.product_).c_str();
+            table[row][2] = CONVERT::str(hid.serial_number_).c_str();
+            hid_device *ptr = hid_open_path(hid.path_);
+            try
+            {
+                auto info = UTIL::get_read_device_info(ptr);
+                auto vers = UTIL::split_for_read_device_info(info);
+                if (!vers.empty())
+                {
+                    table[row][3] = vers[0];
+                    table[row][4] = vers[1];
+                    table[row][5] = vers[2];
+                    table[row][6] = vers[3];
+                    table[row][7] = vers[4];
+                }
+                else
+                {
+                    table[row][3] = table[row][4] = table[row][5] = table[row][6] = table[row][7] = ERR;
+                    continue;
+                }
+            }
+            catch (const std::exception &ex)
+            {
+                logger << CONVERT::str(hid.serial_number_).c_str() << ": " << READ_ERROR;
+                console << EXCEPTION << " "s << LOOK_TO_LOG;
+                table[row][3] = table[row][4] = table[row][5] = table[row][6] = table[row][7] = ERR;
+            }
+            ++row;
+            hid_close(ptr);
+        }
+    }
+    else
+    {
+        table[0][0] = NO_SCAN;
+    }
+    console << table;
 }
 
 void PRINT::print_all_com_linux_devices(const std::vector<UTIL::AVAILABLE_COM> &coms)
@@ -119,9 +173,7 @@ void PRINT::print_all_com_linux_devices(const std::vector<UTIL::AVAILABLE_COM> &
     {
         table[0][0] = NO_SCAN;
     }
-    // std::ostringstream oss;
-    // oss << table;
-    std::cout << table;
+    console << table;
 }
 
 void PRINT::print_all_json_files(std::vector<std::pair<std::string, std::string>> &json_list)
@@ -147,8 +199,7 @@ void PRINT::print_all_json_files(std::vector<std::pair<std::string, std::string>
     {
         table[0][0] = NO_JSON;
     }
-
-    std::cout << table;
+    console << table;
 }
 
 void PRINT::print_all_firmware_files(std::vector<std::pair<std::string, int>> &firmware_list)
@@ -174,11 +225,11 @@ void PRINT::print_all_firmware_files(std::vector<std::pair<std::string, int>> &f
     {
         table[0][0] = NO_FW;
     }
-
-    std::cout << table;
+    console << table;
 }
 
-void PRINT::download_attention() {
+void PRINT::download_attention()
+{
     ConsoleTable table = getTableInitialSetup();
     table[0][0] = FW_DOWNLOAD_ATTENTION;
     console << table;

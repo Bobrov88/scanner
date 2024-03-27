@@ -5,13 +5,14 @@
 #define USAGE "Параметры меню"s
 #define GET_DESC "\t -h --help           \t\tОписание доступных функций"s
 #define GET_INFO "\t -i --info           \t\tИнформация о USB-устройствах"s
+#define GET_ALL_INFO "\t -a --all_info           \t\tПолучить полную информацию о версии ПО"s
 #define GET_SAVE "\t -s --save           \t\tСохранение настроек в json-файл"s
 #define GET_WRITE "\t -w --write          \t\tЗапись настроек из json-файла"s
 #define GET_REST_FACT "\t -f --restore-factory\t\tВосстановление заводских настроек"s
 #define GET_REST_CUST "\t -c --restore-custom \t\tВосстановление пользовательских настроек"s
 #define GET_DWNLD "\t -d --download       \t\tПрошивка сканера"s
 #define COM2HID "Примечание:         Сканеры в COM-режиме (если таковые имеются) \n                    будут автоматически переведены в HID-режим"s
-#define WAIT4SCAN "Ожидание доступных сканеров"s
+#define WAIT4SCAN "Поиск доступных сканеров среди USB-устройств..."s
 #define PASS_FAIL "перевод невозможен"s
 #define SAVE_OK "Настройки всех сканеров были успешно сохранены в json-файлы"s
 #define SAVE_FAIL "Сохранены настройки не со всех сканеров!"s
@@ -33,6 +34,9 @@
 #define SN "Серийный номер"s
 #define MODEL "Модель"s
 #define FW_VER "Версия прошивки"s
+#define HW_VER "Версия оборудования"s
+#define BOOT_VER "Версия загрузчика"s
+#define LIB_VER "Версия библиотеки"s
 #define NO_SCAN "Сканеры не найдены"s
 #define COM "COM"s
 #define JSON_NAME "Имя json-файла"s

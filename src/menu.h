@@ -26,6 +26,7 @@ namespace MENU
     void PrintStartMenu();
     void PrintAttentionComToHID();
     void PrintAvailableDevices();
+    void PrintSoftwareVersion();
     void SaveSettings();
     void WriteFromJson();
     void RestoreFactorySettings();

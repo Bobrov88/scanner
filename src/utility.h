@@ -93,6 +93,7 @@ namespace UTIL
     std::vector<std::pair<std::string, int>> get_firmware_list();
     std::string get_json_responce_for_com_detection(boost::asio::serial_port &s_port);
     std::string get_firmware_device_name_model(hid_device *handle);
+    std::string get_read_device_info(hid_device *handle);
     std::string get_full_json_response(hid_device *handle);
     std::string get_string_possible_data(const std::vector<std::string> &variants, const std::string &key);
     std::string get_bool_possible_data(const std::string &key);
@@ -109,6 +110,7 @@ namespace UTIL
 
     std::vector<uint8_t> read_json_piece(hid_device *handle);
     std::string read_json_settings(hid_device *handle);
+    std::vector<std::string> split_for_read_device_info(const std::string &vers);
 
     std::vector<std::pair<uint16_t, std::vector<uint8_t>>> convert_json_to_bits(const std::string &json);
     void merge_json(std::string &json);
