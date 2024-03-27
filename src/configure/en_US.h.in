@@ -58,3 +58,4 @@
 #define READ_ERROR "Read data error. Please, reconnect device and try again"s
 #define FLAGS_FILLED_ERR "Please, check that the keys have valid names and values"s
 #define LOOK_TO_LOG "For detailed information look into log"
+#define FW_DOWNLOAD_ATTENTION "Warning! During the software update procedure\nit is highly recommended not to turn off the computer\nor otherwise affect the connected equipment!"s

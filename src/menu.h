@@ -15,7 +15,6 @@
 #include "reconnect.h"
 #ifdef __WIN__
 #include "windows.h"
-#include "SetupAPI.h"
 #endif
 
 typedef int (*pSendData)(char *psendbuf, int sendlen);

@@ -12,7 +12,7 @@ endif()
 
 set(SOURCES
     src/print.cpp
-    src/reconnect.cpp
+  #  src/reconnect.cpp
     src/main.cpp
     src/menu.cpp
     src/utility.cpp
@@ -25,7 +25,7 @@ set(SOURCES
 set(HEADERS
     src/print.h
     src/converters.h
-    src/reconnect.h
+  #  src/reconnect.h
     src/handler.h
     src/commands_sequencies.h
     src/commands.h
@@ -72,8 +72,8 @@ if(NOT DEFINED TARGET_SYSTEM)
 endif()
 
 # -------- Firmware downloal library ---------- #
-find_path(FWLIB_INCLUDES fwdlinterface.h src/include)
-include_directories(${FWLIB_INCLUDES})
+find_path(LIB_INCLUDES fwdlinterface.h src/include)
+include_directories(${LIB_INCLUDES})
 
 include_directories(${Boost_INCLUDE_DIRS})
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
@@ -125,6 +125,7 @@ if(${TARGET_SYSTEM} STREQUAL WINDOWS)
         string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
         string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
     endif()
+
     target_compile_definitions(${PROJECT_NAME} PRIVATE _WINDOWS_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
     target_compile_options(${PROJECT_NAME} PRIVATE /utf-8)
 endif()

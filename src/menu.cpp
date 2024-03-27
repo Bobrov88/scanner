@@ -58,7 +58,12 @@ void MENU::SaveSettings()
 {
     logger << "SaveSettings";
     MENU::PrintAttentionComToHID();
-    std::vector<UTIL::AVAILABLE_COM> coms = UTIL::get_available_linux_com_ports();
+    std::vector<UTIL::AVAILABLE_COM> coms;
+#ifdef __WIN__
+    coms = UTIL::get_available_windows_com_ports();
+#elif (__DEBIAN__ || __CENTOS__)
+    coms = UTIL::get_available_linux_com_ports();
+#endif
     for (const auto &com : coms)
     {
         if (!HID::testing_to_pass_HID_from_COM(com.port_))
@@ -94,7 +99,12 @@ void MENU::WriteFromJson()
 {
     logger << "WriteFromJson";
     MENU::PrintAttentionComToHID();
-    std::vector<UTIL::AVAILABLE_COM> coms = UTIL::get_available_linux_com_ports();
+    std::vector<UTIL::AVAILABLE_COM> coms;
+#ifdef __WIN__
+    coms = UTIL::get_available_windows_com_ports();
+#elif (__DEBIAN__ || __CENTOS__)
+    coms = UTIL::get_available_linux_com_ports();
+#endif
     for (const auto &com : coms)
     {
         if (!HID::testing_to_pass_HID_from_COM(com.port_))
@@ -113,7 +123,7 @@ void MENU::WriteFromJson()
 
     std::string scanner_numbers = PRINT::ChooseScannerToProceed();
     hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
-    
+
     auto jsons = UTIL::get_json_file_list();
     PRINT::print_all_json_files(jsons);
     if (jsons.empty())
@@ -121,7 +131,6 @@ void MENU::WriteFromJson()
         return;
     }
     int json_file = PRINT::ChooseToProceed(jsons.size());
-
 
     logger << "Json file: " << jsons[json_file].first;
 
@@ -160,7 +169,12 @@ void MENU::RestoreFactorySettings()
 {
     logger << "RestoreFactorySettings";
     MENU::PrintAttentionComToHID();
-    std::vector<UTIL::AVAILABLE_COM> coms = UTIL::get_available_linux_com_ports();
+    std::vector<UTIL::AVAILABLE_COM> coms;
+#ifdef __WIN__
+    coms = UTIL::get_available_windows_com_ports();
+#elif (__DEBIAN__ || __CENTOS__)
+    coms = UTIL::get_available_linux_com_ports();
+#endif
     for (const auto &com : coms)
     {
         if (!HID::testing_to_pass_HID_from_COM(com.port_))
@@ -201,7 +215,12 @@ void MENU::RestoreCustomSettings()
 {
     logger << "RestoreCustomSettings";
     MENU::PrintAttentionComToHID();
-    std::vector<UTIL::AVAILABLE_COM> coms = UTIL::get_available_linux_com_ports();
+    std::vector<UTIL::AVAILABLE_COM> coms;
+#ifdef __WIN__
+    coms = UTIL::get_available_windows_com_ports();
+#elif (__DEBIAN__ || __CENTOS__)
+    coms = UTIL::get_available_linux_com_ports();
+#endif
     for (const auto &com : coms)
     {
         if (!HID::testing_to_pass_HID_from_COM(com.port_))
@@ -240,15 +259,27 @@ void MENU::RestoreCustomSettings()
 
 void MENU::DownloadFirmware()
 {
-    std::vector<UTIL::AVAILABLE_COM> coms = UTIL::get_available_linux_com_ports();
+    logger << "DownloadFirmware";
+    std::vector<UTIL::AVAILABLE_COM> coms;
+#ifdef __WIN__
+    coms = UTIL::get_available_windows_com_ports();
+#elif (__DEBIAN__ || __CENTOS__)
+    coms = UTIL::get_available_linux_com_ports();
+#endif
     for (const auto &com : coms)
     {
         if (!HID::testing_to_pass_HID_from_COM(com.port_))
         {
             logger << com.port_ << " " << PASS_FAIL;
+            std::this_thread::sleep_for(300ms);
         }
-        std::this_thread::sleep_for(1s);
     }
+
+#ifdef __WIN__
+    coms = UTIL::get_available_windows_com_ports();
+#endif
+
+    std::this_thread::sleep_for(3000ms); // delay for reconnecting
 
     auto hids = UTIL::get_available_hid_devices();
     PRINT::print_all_hid_devices(hids);
@@ -258,6 +289,8 @@ void MENU::DownloadFirmware()
 
     std::string scanner_numbers = PRINT::ChooseScannerToProceed();
     hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
+
+    PRINT::download_attention();
 
     auto firmware_files = UTIL::get_firmware_list();
     PRINT::print_all_firmware_files(firmware_files);
@@ -270,6 +303,9 @@ void MENU::DownloadFirmware()
     }
     else
         logger << FW_NAME << ": " << OK;
+
+    std::string com_to_connect;
+    std::vector<UTIL::AVAILABLE_COM> tmp;
 
     for (auto &hid : hids)
     {
@@ -286,14 +322,22 @@ void MENU::DownloadFirmware()
         std::this_thread::sleep_for(3000ms);
         try
         {
-            coms = UTIL::get_available_linux_com_ports();
-            if (coms.empty())
+#ifdef __WIN__
+            com_to_connect = UTIL::get_com_port(coms, UTIL::get_available_windows_com_ports());
+#elif (__DEBIAN__ || __CENTOS__)
+            tmp = UTIL::get_available_linux_com_ports();
+            if (!tmp.empty())
+                com_to_connect = tmp[0];
+            else
+                com_to_connect == "";
+#endif
+            if (com_to_connect.empty())
             {
                 console << device.serial_number << ": " << CONN_ABORT;
                 logger << device.serial_number << ": " << CONN_ABORT;
                 continue;
             }
-            s_port.open(coms[0].port_);
+            s_port.open(com_to_connect);
             s_port.set_option(boost::asio::serial_port_base::baud_rate(115200));
             firmware_parse_pro(firmware);
 
@@ -322,14 +366,23 @@ void MENU::DownloadFirmware()
 
                 if (!s_port.is_open())
                 {
-                    coms = UTIL::get_available_linux_com_ports();
-                    if (coms.empty())
+#ifdef __WIN__
+                    com_to_connect = UTIL::get_com_port(coms, UTIL::get_available_windows_com_ports());
+#elif (__DEBIAN__ || __CENTOS__)
+                    tmp = UTIL::get_available_linux_com_ports();
+                    if (!tmp.empty())
+                        com_to_connect = tmp[0];
+                    else
+                        com_to_connect == "";
+#endif
+                    if (com_to_connect.empty())
                     {
                         console << device.serial_number << ": " << CONN_ABORT;
                         logger << device.serial_number << ": " << CONN_ABORT;
-                        break;
+                        continue;
                     }
-                    s_port.open(coms[0].port_);
+                    s_port.open(com_to_connect);
+                    s_port.set_option(boost::asio::serial_port_base::baud_rate(115200));
                 }
 
                 if (state == DownloadState::SUCCESS || state < DownloadState::SUCCESS)
@@ -342,15 +395,25 @@ void MENU::DownloadFirmware()
                             s_port.close();
                         }
                         std::this_thread::sleep_for(3000ms);
-                        coms = UTIL::get_available_linux_com_ports();
-                        if (coms.empty())
+
+#ifdef __WIN__
+                        com_to_connect = UTIL::get_com_port(coms, UTIL::get_available_windows_com_ports());
+#elif (__DEBIAN__ || __CENTOS__)
+                        tmp = UTIL::get_available_linux_com_ports();
+                        if (!tmp.empty())
+                            com_to_connect = tmp[0];
+                        else
+                            com_to_connect == "";
+#endif
+                        if (com_to_connect.empty())
                         {
                             console << device.serial_number << ": " << CONN_ABORT;
                             logger << device.serial_number << ": " << CONN_ABORT;
-                            break;
+                            continue;
                         }
-                        s_port.open(coms[0].port_);
+                        s_port.open(com_to_connect);
                         s_port.set_option(boost::asio::serial_port_base::baud_rate(115200));
+
                         std::this_thread::sleep_for(1000ms);
                         fw_download_start = firmware_download_start(write, read, false);
                     }

@@ -35,10 +35,10 @@ namespace UTIL
     struct AVAILABLE_COM
     {
         std::string port_ = "";
-        std::string product_ = "";
-        std::string model_ = "";
-        std::string serial_number_ = "";
-        std::string firmware_ = "";
+        // std::string product_ = "";
+        // std::string model_ = "";
+        // std::string serial_number_ = "";
+        // std::string firmware_ = "";
         // todo from JSON straight to here
         AVAILABLE_COM(std::string port) : port_(port) {}
     };
@@ -113,8 +113,9 @@ namespace UTIL
     std::vector<std::pair<uint16_t, std::vector<uint8_t>>> convert_json_to_bits(const std::string &json);
     void merge_json(std::string &json);
     void trim(std::string &str);
-    #ifdef __WIN__
+#ifdef __WIN__
     std::string get_trimmed_long_HID_path(const std::string &str);
-    #endif
+    std::string get_com_port(const std::vector<AVAILABLE_COM> &not_scanners, const std::vector<AVAILABLE_COM> &all_com);
+#endif
     std::string parse_json_file(const std::string &source);
 };

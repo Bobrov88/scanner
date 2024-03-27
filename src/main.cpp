@@ -1,7 +1,15 @@
+#include <iostream>
+#include <string>
 #include "menu.h"
 #include "locale.h"
 #include "commands_sequencies.h"
 #include "logger.h"
+#ifdef __WIN__
+#include <windows.h>
+#include <setupapi.h>
+#include "tchar.h"
+#pragma comment(lib, "Setupapi.lib")
+#endif
 
 using namespace std::string_literals;
 
@@ -13,8 +21,6 @@ int main(int argc, char *argv[])
     if (argc == 1 || (argc == 2 && (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0)))
     {
         MENU::PrintStartMenu();
-        console << PRESS_KEY;
-        char c = getchar();
     }
     else if (argc == 2 && (strcmp(argv[1], "-i") == 0 || strcmp(argv[1], "--info") == 0))
     {
@@ -44,5 +50,7 @@ int main(int argc, char *argv[])
     {
         console << UNKNOWN;
     }
+    console << PRESS_KEY;
+    char c = getchar();
     return 0;
 }

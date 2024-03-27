@@ -108,10 +108,10 @@ void PRINT::print_all_com_linux_devices(const std::vector<UTIL::AVAILABLE_COM> &
         {
             table[row][0] = row;
             table[row][1] = com.port_;
-            table[row][2] = com.product_;
-            table[row][3] = com.model_;
-            table[row][4] = com.serial_number_;
-            table[row][5] = com.firmware_;
+            // table[row][2] = com.product_;
+            // table[row][3] = com.model_;
+            // table[row][4] = com.serial_number_;
+            // table[row][5] = com.firmware_;
             ++row;
         }
     }
@@ -176,6 +176,12 @@ void PRINT::print_all_firmware_files(std::vector<std::pair<std::string, int>> &f
     }
 
     std::cout << table;
+}
+
+void PRINT::download_attention() {
+    ConsoleTable table = getTableInitialSetup();
+    table[0][0] = FW_DOWNLOAD_ATTENTION;
+    console << table;
 }
 
 std::string PRINT::ChooseScannerToProceed() // take this function out of MENU namespace

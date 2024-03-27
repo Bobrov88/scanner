@@ -22,6 +22,7 @@ namespace PRINT
     void print_all_com_linux_devices(const std::vector<UTIL::AVAILABLE_COM> &coms);
     void print_all_json_files(std::vector<std::pair<std::string, std::string>> &json_list);
     void print_all_firmware_files(std::vector<std::pair<std::string, int>> &firmware_list);
+    void download_attention();
     std::string ChooseScannerToProceed();
     int ChooseToProceed(size_t amount);
 }
