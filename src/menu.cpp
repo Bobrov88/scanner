@@ -49,7 +49,10 @@ void MENU::PrintAvailableDevices()
             logger << com.port_ << " " << PASS_FAIL;
         }
     }
-    std::this_thread::sleep_for(3000ms);
+    if (!coms.empty())
+    {
+        std::this_thread::sleep_for(3000ms);
+    }
     std::vector<UTIL::AVAILABLE_HID> hids = UTIL::get_available_hid_devices();
     PRINT::print_all_hid_devices(hids);
 }
@@ -71,7 +74,10 @@ void MENU::PrintSoftwareVersion()
             logger << com.port_ << " " << PASS_FAIL;
         }
     }
-    std::this_thread::sleep_for(3000ms);
+    if (!coms.empty())
+    {
+        std::this_thread::sleep_for(3000ms);
+    }
     std::vector<UTIL::AVAILABLE_HID> hids = UTIL::get_available_hid_devices();
     PRINT::print_software_version(hids);
 }
@@ -92,9 +98,11 @@ void MENU::SaveSettings()
         {
             logger << com.port_ << " " << PASS_FAIL;
         }
-        std::this_thread::sleep_for(300ms);
     }
-    std::this_thread::sleep_for(3000ms); // delay for reconnecting
+    if (!coms.empty())
+    {
+        std::this_thread::sleep_for(3000ms);
+    } // delay for reconnecting
 
     auto hids = UTIL::get_available_hid_devices();
     PRINT::print_all_hid_devices(hids);
@@ -133,9 +141,11 @@ void MENU::WriteFromJson()
         {
             logger << com.port_ << " " << PASS_FAIL;
         }
-        std::this_thread::sleep_for(300ms);
     }
-    std::this_thread::sleep_for(3000ms); // delay for reconnecting
+    if (!coms.empty())
+    {
+        std::this_thread::sleep_for(3000ms);
+    } // delay for reconnecting
 
     auto hids = UTIL::get_available_hid_devices();
     PRINT::print_all_hid_devices(hids);
@@ -203,9 +213,11 @@ void MENU::RestoreFactorySettings()
         {
             logger << com.port_ << " " << PASS_FAIL;
         }
-        std::this_thread::sleep_for(300ms);
     }
-    std::this_thread::sleep_for(3000ms); // delay for reconnecting
+    if (!coms.empty())
+    {
+        std::this_thread::sleep_for(3000ms);
+    } // delay for reconnecting
 
     auto hids = UTIL::get_available_hid_devices();
     PRINT::print_all_hid_devices(hids);
@@ -249,9 +261,11 @@ void MENU::RestoreCustomSettings()
         {
             logger << com.port_ << " " << PASS_FAIL;
         }
-        std::this_thread::sleep_for(300ms);
     }
-    std::this_thread::sleep_for(3000ms); // delay for reconnecting
+    if (!coms.empty())
+    {
+        std::this_thread::sleep_for(3000ms);
+    } // delay for reconnecting
 
     auto hids = UTIL::get_available_hid_devices();
     PRINT::print_all_hid_devices(hids);
@@ -293,7 +307,6 @@ void MENU::DownloadFirmware()
         if (!HID::testing_to_pass_HID_from_COM(com.port_))
         {
             logger << com.port_ << " " << PASS_FAIL;
-            std::this_thread::sleep_for(300ms);
         }
     }
 
@@ -301,7 +314,10 @@ void MENU::DownloadFirmware()
     coms = UTIL::get_available_windows_com_ports();
 #endif
 
-    std::this_thread::sleep_for(3000ms); // delay for reconnecting
+    if (!coms.empty())
+    {
+        std::this_thread::sleep_for(3000ms);
+    } // delay for reconnecting
 
     auto hids = UTIL::get_available_hid_devices();
     PRINT::print_all_hid_devices(hids);
