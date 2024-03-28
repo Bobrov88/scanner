@@ -88,6 +88,106 @@ std::vector<UTIL::AVAILABLE_COM> UTIL::get_available_linux_com_ports()
     return com_ports;
 }
 
+// void UTIL::remove_com_devices_if_not_scanner(std::vector<AVAILABLE_COM> &coms)
+// {
+//     std::vector<UTIL::AVAILABLE_COM> really_scanner;
+//     try
+//     {
+//         for (auto &com : coms)
+//         {
+//             boost::asio::io_service io;
+//             boost::asio::serial_port s_port(io);
+//             s_port.open(com.port_);
+//             s_port.set_option(boost::asio::serial_port_base::baud_rate(115200));
+//             uint8_t c[15] = {0};
+//             SEQ::read_device_info_command_by_com(c);
+//             // todo test-and-erase redundant com definition
+//             boost::asio::write(s_port, boost::asio::buffer(c, 15));
+//             std::this_thread::sleep_for(300ms);
+//             char resp[92] = {0};
+//             boost::posix_time::time_duration m_timeout = boost::posix_time::seconds(5);
+//             boost::asio::deadline_timer m_timer(io);
+//             boost::system::error_code e;
+//             int read_result = 0;
+//             m_timer.expires_from_now(m_timeout);
+//             m_timer.async_wait([&read_result](const boost::system::error_code &error)
+//                                {
+//                 if (!error && read_result == 0) read_result = 3; });
+//             boost::asio::async_read(s_port, boost::asio::buffer(resp, 92),
+//                                     [&read_result](const boost::system::error_code &error, const size_t transferred)
+//                                     {
+//                                         if (error)
+//                                         {
+//                                             if (error != boost::asio::error::operation_aborted)
+//                                                 read_result = 2;
+//                                         }
+//                                         else
+//                                         {
+//                                             if (read_result != 0)
+//                                             {
+//                                                 return;
+//                                             }
+//                                             read_result = 1;
+//                                         }
+//                                     });
+//             read_result = 0;
+//             while (read_result != 1)
+//             {
+//                 io.run_one();
+//                 switch (read_result)
+//                 {
+//                 case 1:
+//                     // for (int i = 0; i < 92; ++i)
+//                     m_timer.cancel();
+//                     break;
+//                 case 3:
+//                     s_port.cancel();
+//                     // io.reset();
+//                     throw(std::string("Timeout exception"));
+//                 case 2:
+//                     m_timer.cancel();
+//                     s_port.cancel();
+//                     throw std::string{"Read error"};
+//                 default: // if resultInProgress remain in the loop
+//                     break;
+//                 }
+//             }
+//             if (resp[0] == 'D' && resp[1] == 'e' && resp[2] == 'v' && resp[3] == 'i')
+//             {
+//                 really_scanner.push_back(std::move(com));
+//                 auto &current_com = really_scanner.back();
+//                 std::string data = get_json_responce_for_com_detection(s_port);
+//                 boost::json::value obj = boost::json::parse(data);
+//                 current_com.product_ = obj.at("FID").as_string().c_str();
+//                 current_com.model_ = obj.at("deviceName").as_string().c_str();
+//                 current_com.serial_number_ = obj.at("deviceID").as_string().c_str();
+//                 current_com.firmware_ = obj.at("FwVer").as_string().c_str();
+//             }
+//             s_port.close();
+//         }
+//     }
+//     catch (boost::system::system_error &e)
+//     {
+//         boost::system::error_code ec = e.code();
+//         std::cerr << ec.value() << '\n';
+//         std::cerr << ec.category().name() << '\n';
+//         std::cerr << ec.message() << '\n';
+//     }
+//     catch (const std::exception &ex)
+//     {
+//         std::cout << "\nException: " << ex.what();
+//     }
+//     catch (std::string &err)
+//     {
+//         return;
+//     }
+//     if (!coms.empty())
+//     {
+//         coms.clear();
+//         coms.assign(really_scanner.begin(), really_scanner.end());
+//     }
+// }
+
 std::vector<UTIL::AVAILABLE_HID> UTIL::list_all_hid()
 {
     std::vector<UTIL::AVAILABLE_HID> devices;
@@ -127,6 +227,9 @@ std::vector<UTIL::AVAILABLE_HID> UTIL::get_available_hid_devices()
 
 void UTIL::remove_dublicates_of_hid_devices(std::vector<AVAILABLE_HID> &hids)
 {
+    // todo maybe not connected with first try
+    // I delete all being connected with failure
+    // todo define passing value type hid_device or handler
     std::vector<AVAILABLE_HID> unique_hids;
     unique_hids.reserve(hids.size());
     for (auto &hid : hids)
@@ -171,6 +274,36 @@ std::vector<uint8_t> UTIL::read_json_piece(hid_device *handle)
         json_bytes.push_back(*(&response[5] + i));
     }
     return json_bytes;
+}
+
+std::string UTIL::get_json_responce_for_com_detection(boost::asio::serial_port &s_port)
+{
+    uint8_t buf[12] = {0};
+    SEQ::get_config02_command(buf); // GetConfig02.
+#if DEBUG_COMMENT == TRUE
+#endif
+    boost::asio::write(s_port, boost::asio::buffer(buf, sizeof(buf)));
+    std::this_thread::sleep_for(300ms);
+    std::vector<uint8_t> v;
+    uint8_t u;
+    // todo clear buffer before new record
+    bool miss_open_bracket = true;
+    do
+    {
+        boost::asio::read(s_port, boost::asio::buffer(&u, 1));
+        if (miss_open_bracket)
+        {
+            if (static_cast<char>(u) != '{')
+                continue;
+            else
+                miss_open_bracket = false;
+        }
+        v.push_back(u);
+    } while (static_cast<char>(u) != '}');
+
+    // s_port.close();
+    std::string str = CONVERT::convert_from_bytes_to_string(v);
+    return str;
 }
 
 std::string UTIL::get_full_json_response(hid_device *handle)
@@ -250,8 +383,8 @@ std::vector<std::string> UTIL::split_for_read_device_info(const std::string &ver
     std::vector<std::string> datas;
     datas.resize(5);
     datas[0] = vers.substr(vers.find("DeviceName") + 11, std::distance(vers.begin(),
-                                                                       std::find(std::next(vers.begin(), vers.find("DeviceName")), vers.end(), '\n')) -
-                                                             vers.find("DeviceName") - 11);
+                                                                 std::find(std::next(vers.begin(), vers.find("DeviceName")), vers.end(), '\n')) -
+                                                       vers.find("DeviceName") - 11);
     datas[1] = vers.substr(vers.find("HwVer") + 6, std::distance(vers.begin(),
                                                                  std::find(std::next(vers.begin(), vers.find("HwVer")), vers.end(), '\n')) -
                                                        vers.find("HwVer") - 6);
@@ -287,7 +420,6 @@ int UTIL::HID_WRITE(handler &device, uint8_t *c, int size)
             --attempt;
             if (write_result < size)
             {
-                logger << device.serial_number << " hid error: " << hid_error(device.ptr);
                 continue;
             }
 
@@ -306,14 +438,38 @@ int UTIL::HID_WRITE(handler &device, uint8_t *c, int size)
                 return 0;
             }
             logger << device.serial_number << ": read failed -> " << CONVERT::to_hex(r, 64);
-            logger << "Hid error: " << hid_error(device.ptr);
         }
     }
     catch (std::exception &ex)
     {
         console << ex.what();
     }
-    return -1;
+    return -1; // todo error
+}
+
+int UTIL::COM_WRITE(boost::asio::serial_port &s_port, uint8_t *c, int size)
+{
+    int attempt = 10; // define as a system var
+    while (attempt)
+    {
+        int write_result = boost::asio::write(s_port, boost::asio::buffer(c, size));
+        --attempt;
+        if (write_result < size)
+            continue;
+        std::this_thread::sleep_for(100ms);
+        uint8_t r[64] = {0};
+        int a = boost::asio::read(s_port, boost::asio::buffer(r, 7));
+        if (a == 0 || r[0] == 0)
+        {
+            continue;
+        }
+        else if (r[0] == 0x02 &&
+                 r[1] == 0x00 &&
+                 r[2] == 0x00 &&
+                 r[3] == 0x01)
+            return 0;
+    }
+    return -1; // todo error
 }
 
 std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bits(const std::string &json)
@@ -358,7 +514,7 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
                 auto value = str.at(key).to_number<int>();
                 if (value < 0 || value > 255)
                 {
-                    incorrect_data += key + ": " + INCORR_NUM + "\n";
+                    incorrect_data += key + ": " + INCORR_NUM;
                 }
                 else
                 {
@@ -367,7 +523,7 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
             }
             catch (const std::out_of_range &ex)
             {
-                incorrect_data += key + ": " + NOT_KEY + "\n";
+                byte = 0;
             }
         };
 
@@ -404,11 +560,11 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
                         byte |= 0b10000000;
                         break;
                     default:
-                        incorrect_data += INCORR_BYTES + " " + V_IN + " "s + key + "\n";
+                        incorrect_data += INCORR_BYTES + " " + V_IN + " "s + key;
                     }
                 }
                 else
-                    incorrect_data += get_bool_possible_data(key);
+                    byte |= 0b00000000; // todo incorrect value
             }
             catch (const std::out_of_range &ex)
             {
@@ -2408,7 +2564,7 @@ std::string UTIL::get_string_possible_data(const std::vector<std::string> &varia
 std::string UTIL::get_bool_possible_data(const std::string &key)
 {
     std::string result;
-    result += POSS_VALUES;
+    result += POSS_VALUES; // todo USE this function
     result += " "s;
     result += key;
     result += ": true false";
@@ -2418,7 +2574,7 @@ std::string UTIL::get_bool_possible_data(const std::string &key)
 std::string UTIL::get_uint8_t_possible_data(const std::string &key, const uint8_t from, const int to)
 {
     std::string result;
-    result += POSS_VALUES;
+    result += POSS_VALUES; // todo USE this function
     result += " "s;
     result += key;
     result += ": ";
@@ -2519,6 +2675,21 @@ int UTIL::write_settings_from_json(const std::vector<std::pair<uint16_t, std::ve
         uint8_t c[64] = {0};
         SEQ::create_subcommand(flag, bits, c);
         if (-1 == HID_WRITE(device, c, bits.size() + 11))
+        {
+            return -1;
+        }
+    }
+    return 0;
+}
+
+int UTIL::write_settings_from_json(const std::vector<std::pair<uint16_t, std::vector<uint8_t>>> &settings, boost::asio::serial_port &s_port)
+{
+    for (const auto &[flag, bits] : settings)
+    {
+        uint8_t c[64] = {0};
+        SEQ::create_subcommand_for_com(flag, bits, c);
+
+        if (-1 == COM_WRITE(s_port, c, bits.size() + 8))
         {
             return -1;
         }
