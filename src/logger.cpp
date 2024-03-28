@@ -12,7 +12,7 @@ BOOST_LOG_GLOBAL_LOGGER_INIT(my_logger, lg_type)
         keywords::max_size = 10 * 1024 * 1024));
     f_sink->set_filter(expr::attr<int>("Severity") == 1);
     logging::formatter formatter = expr::stream << "["
-                                                << expr::attr<boost::posix_time::ptime>("TimeStamp")
+                                                << expr::format_date_time<boost::posix_time::ptime>("TimeStamp", "%d-%m-%Y %H:%M:%S.%f")
                                                 << "] > "
                                                 << expr::smessage;
     f_sink->set_formatter(formatter);
@@ -23,7 +23,7 @@ BOOST_LOG_GLOBAL_LOGGER_INIT(my_logger, lg_type)
     c_sink->locked_backend()->auto_flush(true);
     logging::core::get()->add_sink(c_sink);
 
-    logging::core::get()->add_global_attribute("TimeStamp", attrs::utc_clock());
+    logging::core::get()->add_global_attribute("TimeStamp", attrs::local_clock());
 
     return lg;
 }
