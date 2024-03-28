@@ -12,7 +12,6 @@ endif()
 
 set(SOURCES
     src/print.cpp
-  #  src/reconnect.cpp
     src/main.cpp
     src/menu.cpp
     src/utility.cpp
@@ -25,7 +24,6 @@ set(SOURCES
 set(HEADERS
     src/print.h
     src/converters.h
-  #  src/reconnect.h
     src/handler.h
     src/commands_sequencies.h
     src/commands.h

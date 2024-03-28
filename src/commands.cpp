@@ -38,62 +38,9 @@ int HID::restore_to_factory_settings(handler &device)
 
     if (-1 == UTIL::HID_WRITE(device, c, 64))
     {
-        // logger(CONVERT::str(hid_error(device.ptr)), device.serial_number);
         return -1;
     };
     return 0;
-
-    // if (write_result == -1)
-    // {
-    //     std::cout << "Save to internal flash failed. Reason: ";
-    //     std::cout << CONVERT::str(hid_error(device.ptr));
-    //     return -1;
-    // }
-    // if (write_result < 64)
-    // {
-    //     std::cout << "The device received fewer bytes than it sent.";
-    //     std::cout << CONVERT::str(hid_error(device.ptr));
-    //     return 1;
-    // }
-
-    // uint8_t r[64] = {0};
-    // int read_result = hid_read_timeout(device.ptr, r, 64, 100);
-    // if (read_result == -1)
-    // {
-    //     std::cout << "Reading result of saving to internal flash failed. Reason: ";
-    //     std::cout << CONVERT::str(hid_error(device.ptr));
-    //     return -1;
-    // }
-    // if (read_result == 0)
-    // {
-    //     std::cout << "No available packets to read. Reason: ";
-    //     std::cout << CONVERT::str(hid_error(device.ptr));
-    //     return 0;
-    // }
-    // if (read_result < 64)
-    // {
-    //     std::cout << "Response is not complete. Reason: ";
-    //     std::cout << CONVERT::str(hid_error(device.ptr));
-    //     return 2;
-    // }
-    // // todo
-    // // add check_crc
-    // if (r[5] == 0x02 &&
-    //     r[6] == 0x00 &&
-    //     r[7] == 0x00 &&
-    //     r[8] == 0x01 &&
-    //     r[9] == 0x00 &&
-    //     r[10] == 0x33 &&
-    //     r[11] == 0x31)
-    // {
-    //     std::cout << "Save to internal flash: Success";
-    //     return 0;
-    // }
-    // else
-    // {
-    //     std::cout << "Unknown error";
-    //     return 3;
-    // }
 }
 
 bool HID::testing_connect_for_erasing_duplicates(handler &device)
@@ -186,7 +133,6 @@ bool HID::testing_to_pass_HID_from_COM(const std::string &com)
         logger << EXCEPTION <<": "<< ex.what();
     }
     return false;
-    // add error ec
 }
 
 bool HID::testing_to_pass_COM_from_HID(hid_device* handle) {
