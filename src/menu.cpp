@@ -42,14 +42,17 @@ void MENU::PrintAvailableDevices()
 #elif (__DEBIAN__ || __CENTOS__)
     coms = UTIL::get_available_linux_com_ports();
 #endif
+    bool switched = false;
     for (const auto &com : coms)
     {
         if (!HID::testing_to_pass_HID_from_COM(com.port_))
         {
             logger << com.port_ << " " << PASS_FAIL;
+            continue;
         }
+        switched = true;
     }
-    if (!coms.empty())
+    if (switched)
     {
         std::this_thread::sleep_for(3000ms);
     }
@@ -67,14 +70,17 @@ void MENU::PrintSoftwareVersion()
 #elif (__DEBIAN__ || __CENTOS__)
     coms = UTIL::get_available_linux_com_ports();
 #endif
+    bool switched = false;
     for (const auto &com : coms)
     {
         if (!HID::testing_to_pass_HID_from_COM(com.port_))
         {
             logger << com.port_ << " " << PASS_FAIL;
+            continue;
         }
+        switched = true;
     }
-    if (!coms.empty())
+    if (switched)
     {
         std::this_thread::sleep_for(3000ms);
     }
@@ -92,17 +98,20 @@ void MENU::SaveSettings()
 #elif (__DEBIAN__ || __CENTOS__)
     coms = UTIL::get_available_linux_com_ports();
 #endif
+    bool switched = false;
     for (const auto &com : coms)
     {
         if (!HID::testing_to_pass_HID_from_COM(com.port_))
         {
             logger << com.port_ << " " << PASS_FAIL;
+            continue;
         }
+        switched = true;
     }
-    if (!coms.empty())
+    if (switched)
     {
         std::this_thread::sleep_for(3000ms);
-    } // delay for reconnecting
+    }
 
     auto hids = UTIL::get_available_hid_devices();
     PRINT::print_all_hid_devices(hids);
@@ -135,17 +144,20 @@ void MENU::WriteFromJson()
 #elif (__DEBIAN__ || __CENTOS__)
     coms = UTIL::get_available_linux_com_ports();
 #endif
+    bool switched = false;
     for (const auto &com : coms)
     {
         if (!HID::testing_to_pass_HID_from_COM(com.port_))
         {
             logger << com.port_ << " " << PASS_FAIL;
+            continue;
         }
+        switched = true;
     }
-    if (!coms.empty())
+    if (switched)
     {
         std::this_thread::sleep_for(3000ms);
-    } // delay for reconnecting
+    }
 
     auto hids = UTIL::get_available_hid_devices();
     PRINT::print_all_hid_devices(hids);
@@ -207,17 +219,20 @@ void MENU::RestoreFactorySettings()
 #elif (__DEBIAN__ || __CENTOS__)
     coms = UTIL::get_available_linux_com_ports();
 #endif
+    bool switched = false;
     for (const auto &com : coms)
     {
         if (!HID::testing_to_pass_HID_from_COM(com.port_))
         {
             logger << com.port_ << " " << PASS_FAIL;
+            continue;
         }
+        switched = true;
     }
-    if (!coms.empty())
+    if (switched)
     {
         std::this_thread::sleep_for(3000ms);
-    } // delay for reconnecting
+    }
 
     auto hids = UTIL::get_available_hid_devices();
     PRINT::print_all_hid_devices(hids);
@@ -255,17 +270,20 @@ void MENU::RestoreCustomSettings()
 #elif (__DEBIAN__ || __CENTOS__)
     coms = UTIL::get_available_linux_com_ports();
 #endif
+    bool switched = false;
     for (const auto &com : coms)
     {
         if (!HID::testing_to_pass_HID_from_COM(com.port_))
         {
             logger << com.port_ << " " << PASS_FAIL;
+            continue;
         }
+        switched = true;
     }
-    if (!coms.empty())
+    if (switched)
     {
         std::this_thread::sleep_for(3000ms);
-    } // delay for reconnecting
+    }
 
     auto hids = UTIL::get_available_hid_devices();
     PRINT::print_all_hid_devices(hids);
@@ -302,22 +320,24 @@ void MENU::DownloadFirmware()
 #elif (__DEBIAN__ || __CENTOS__)
     coms = UTIL::get_available_linux_com_ports();
 #endif
+    bool switched = false;
     for (const auto &com : coms)
     {
         if (!HID::testing_to_pass_HID_from_COM(com.port_))
         {
             logger << com.port_ << " " << PASS_FAIL;
+            continue;
         }
+        switched = true;
+    }
+    if (switched)
+    {
+        std::this_thread::sleep_for(3000ms);
     }
 
 #ifdef __WIN__
     coms = UTIL::get_available_windows_com_ports();
 #endif
-
-    if (!coms.empty())
-    {
-        std::this_thread::sleep_for(3000ms);
-    } // delay for reconnecting
 
     auto hids = UTIL::get_available_hid_devices();
     PRINT::print_all_hid_devices(hids);
