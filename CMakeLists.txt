@@ -12,7 +12,8 @@ endif()
 
 set(SOURCES
     src/print.cpp
-  #  src/reconnect.cpp
+
+    # src/reconnect.cpp
     src/main.cpp
     src/menu.cpp
     src/utility.cpp
@@ -25,7 +26,8 @@ set(SOURCES
 set(HEADERS
     src/print.h
     src/converters.h
-  #  src/reconnect.h
+
+    # src/reconnect.h
     src/handler.h
     src/commands_sequencies.h
     src/commands.h
@@ -99,10 +101,12 @@ endif()
 if(${_DEBUG})
     message(WARNING "-- Debug build --")
 
-    if(NOT ${TARGET_SYSTEM} STREQUAL WINDOWS)
+    if(${TARGET_SYSTEM} STREQUAL DEBIAN OR ${TARGET_SYSTEM} STREQUAL DEBIAN)
         target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wunused -g)
-    elseif()
-        target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wunused -g)
+    endif()
+
+    if(MSVC)
+        target_compile_options(${PROJECT_NAME} PRIVATE /Wall /W4)
     endif()
 else()
     message(WARNING "-- Release build --")

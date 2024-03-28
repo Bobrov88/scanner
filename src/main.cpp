@@ -55,6 +55,6 @@ int main(int argc, char *argv[])
         console << UNKNOWN;
     }
     console << PRESS_KEY;
-    char c = getchar();
+    char c = (char)getchar();
     return 0;
 }

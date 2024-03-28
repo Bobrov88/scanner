@@ -73,6 +73,7 @@ void PRINT::print_all_hid_devices(const std::vector<UTIL::AVAILABLE_HID> &hids)
             catch (const std::exception &ex)
             {
                 logger << CONVERT::str(hid.serial_number_).c_str() << ": " << READ_ERROR;
+                logger << ex.what();
                 console << EXCEPTION << " "s << LOOK_TO_LOG;
                 table[row][5] = table[row][5] = ERR;
             }
@@ -130,6 +131,7 @@ void PRINT::print_software_version(const std::vector<UTIL::AVAILABLE_HID> &hids)
             catch (const std::exception &ex)
             {
                 logger << CONVERT::str(hid.serial_number_).c_str() << ": " << READ_ERROR;
+                logger << ex.what();
                 console << EXCEPTION << " "s << LOOK_TO_LOG;
                 table[row][3] = table[row][4] = table[row][5] = table[row][6] = table[row][7] = ERR;
             }
@@ -265,7 +267,7 @@ std::string PRINT::ChooseScannerToProceed() // take this function out of MENU na
 
 int PRINT::ChooseToProceed(size_t amount) // take this function out of MENU namespace
 {
-    size_t number;
+    int number;
     while (true)
     {
         std::cout << CHOOSE << ": ";

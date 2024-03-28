@@ -310,7 +310,7 @@ std::string UTIL::get_full_json_response(hid_device *handle)
 {
     std::string result;
     uint8_t ch[64] = {0};
-    for (int i = 1; i <= 4; ++i)
+    for (uint8_t i = 1; i <= 4; ++i)
     {
         SEQ::get_config_command(ch, i);
         hid_write(handle, ch, 64);
@@ -2578,9 +2578,9 @@ std::string UTIL::get_uint8_t_possible_data(const std::string &key, const uint8_
     result += " "s;
     result += key;
     result += ": ";
-    result += from;
+    result += std::to_string(from);
     result += " - ";
-    result += to;
+    result += std::to_string(to);
     return result;
 }
 
@@ -2674,7 +2674,7 @@ int UTIL::write_settings_from_json(const std::vector<std::pair<uint16_t, std::ve
     {
         uint8_t c[64] = {0};
         SEQ::create_subcommand(flag, bits, c);
-        if (-1 == HID_WRITE(device, c, bits.size() + 11))
+        if (-1 == HID_WRITE(device, c, bits.size() + 11u))
         {
             return -1;
         }
@@ -2689,7 +2689,7 @@ int UTIL::write_settings_from_json(const std::vector<std::pair<uint16_t, std::ve
         uint8_t c[64] = {0};
         SEQ::create_subcommand_for_com(flag, bits, c);
 
-        if (-1 == COM_WRITE(s_port, c, bits.size() + 8))
+        if (-1 == COM_WRITE(s_port, c, bits.size() + 8u))
         {
             return -1;
         }
@@ -2766,7 +2766,7 @@ std::vector<UTIL::AVAILABLE_HID> UTIL::get_scanners_list_by_regex(std::vector<UT
     scanner_to_proceed.assign(ints.begin(), ints.end());
     for (const auto &vid : vids)
     {
-        for (size_t i = 0; i < hids.size(); ++i)
+        for (int i = 0; i < hids.size(); ++i)
         {
             if (CONVERT::hex_view(hids[i].vid_) == vid)
             {

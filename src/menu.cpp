@@ -6,12 +6,12 @@ boost::asio::serial_port s_port(io);
 
 int write(char *buf, int length)
 {
-    return boost::asio::write(s_port, boost::asio::buffer(buf, length));
+    return static_cast<int>(boost::asio::write(s_port, boost::asio::buffer(buf, length)));
 }
 
 int read(char *buf, int length)
 {
-    return boost::asio::read(s_port, boost::asio::buffer(buf, length));
+    return static_cast<int>(boost::asio::read(s_port, boost::asio::buffer(buf, length)));
 }
 
 void MENU::PrintStartMenu()
