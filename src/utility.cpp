@@ -2792,7 +2792,8 @@ std::vector<UTIL::AVAILABLE_HID> UTIL::get_scanners_list_by_regex(std::vector<UT
     return hids;
 }
 
-std::string UTIL::get_com_port(const std::vector<AVAILABLE_COM> &not_scanners, const std::vector<AVAILABLE_COM> &all_com)
+#ifdef __WIN__
+std::string UTIL::get_com_port(const std::vector<UTIL::AVAILABLE_COM> &not_scanners, const std::vector<UTIL::AVAILABLE_COM> &all_com)
 {
     auto m = std::mismatch(not_scanners.cbegin(), not_scanners.cend(), all_com.begin(), all_com.end(),
                            [](const auto &lhs, const auto &rhs)
@@ -2809,3 +2810,4 @@ std::string UTIL::get_com_port(const std::vector<AVAILABLE_COM> &not_scanners, c
     else
         return "";
 }
+#endif

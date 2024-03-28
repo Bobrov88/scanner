@@ -385,7 +385,7 @@ void MENU::DownloadFirmware()
 #elif (__DEBIAN__ || __CENTOS__)
             tmp = UTIL::get_available_linux_com_ports();
             if (!tmp.empty())
-                com_to_connect = tmp[0];
+                com_to_connect = tmp[0].port_;
             else
                 com_to_connect == "";
 #endif
@@ -429,7 +429,7 @@ void MENU::DownloadFirmware()
 #elif (__DEBIAN__ || __CENTOS__)
                     tmp = UTIL::get_available_linux_com_ports();
                     if (!tmp.empty())
-                        com_to_connect = tmp[0];
+                        com_to_connect = tmp[0].port_;
                     else
                         com_to_connect == "";
 #endif
@@ -447,7 +447,7 @@ void MENU::DownloadFirmware()
                 {
                     if (state == DownloadState::RECONNECTDEVICE)
                     {
-                        logger << "Need reconnect: " << coms[0].port_;
+                        logger << "Need reconnect: " << com_to_connect;
                         if (s_port.is_open())
                         {
                             s_port.close();
@@ -459,7 +459,7 @@ void MENU::DownloadFirmware()
 #elif (__DEBIAN__ || __CENTOS__)
                         tmp = UTIL::get_available_linux_com_ports();
                         if (!tmp.empty())
-                            com_to_connect = tmp[0];
+                            com_to_connect = tmp[0].port_;
                         else
                             com_to_connect == "";
 #endif
