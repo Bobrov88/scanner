@@ -39,6 +39,7 @@ SOFTWARE.
 #include <string>			// string, to_string
 #include <type_traits>		// enable_if, is_arithmetic, is_same, remove_pointer
 #include <vector>			// vector
+#include <codecvt>
 
 namespace samilton
 {
@@ -535,9 +536,11 @@ namespace samilton
 			{
 				if (table._tableData[j] != nullptr && table._tableData[j]->_rowData[i] != nullptr)
 				{
+					std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
 					for (const auto &k : table._tableData[j]->_rowData[i]->_str)
 					{
-						tmp = std::max(tmp, k.size());
+						std::wstring wide_str = converter.from_bytes(k);		
+						tmp = std::max(tmp, wide_str.size());
 					}
 				}
 			}
