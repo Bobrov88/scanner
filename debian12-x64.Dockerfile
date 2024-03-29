@@ -42,7 +42,6 @@ RUN wget -c https://www.python.org/ftp/python/3.12.0/Python-3.12.0.tar.xz && \
     ./configure --enable-optimizations --prefix=/usr/local --enable-shared LDFLAGS="-Wl,-rpath /usr/local/lib" && \
     make -j4 && make altinstall
 
-
 # copy conan files
 COPY conan/ /root/.conan/
 # copy conan profiles
@@ -62,8 +61,4 @@ VOLUME /home/bobrov/project/scanner /home/project/scanner
 WORKDIR /home/project/scanner
 
 RUN cd /home/project/scanner && mkdir build_debian_x86_64 && \
-    conan install -pr linux_x86_64_build -if build_debian_x86_64 /home/project/scanner/ --build=missing 
-
-#docker run --rm -it --volume=./:/home/project/scanner scanner_x64
-#cmake -Bbuild_debian_x86_64 . -DTARGET_SYSTEM=DEBIAN -D_DEBUG=TRUE -DLANG=ru_RU
-#cmake --build ./build_debian_x86_64
+    conan install -pr linux_x86_64_build -if build_debian_x86_64 /home/project/scanner/ --build=missing

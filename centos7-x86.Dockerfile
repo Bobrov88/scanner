@@ -99,9 +99,4 @@ VOLUME /home/bobrov/project/scanner /home/project/scanner
 WORKDIR /home/project/scanner
 
 RUN cd /home/project/scanner && mkdir build_centos_x86 && \
-    conan install -pr linux_x86_build -if build_centos_x86 /home/project/scanner/ --build=missing 
-
-
-#docker run --rm -it --volume=./:/home/project/scanner scanner
-#cmake -Bbuild_centos_x86 . -DTARGET_SYSTEM=CENTOS -D_DEBUG=TRUE -DLANG=ru_RU
-#cmake --build ./build_centos_x86
+    conan install -pr linux_x86_build -if build_centos_x86 /home/project/scanner/ --build=missing
