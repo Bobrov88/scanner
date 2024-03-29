@@ -539,7 +539,7 @@ namespace samilton
 					std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
 					for (const auto &k : table._tableData[j]->_rowData[i]->_str)
 					{
-						std::wstring wide_str = converter.from_bytes(k);		
+						std::wstring wide_str = converter.from_bytes(k);
 						tmp = std::max(tmp, wide_str.size());
 					}
 				}
@@ -596,7 +596,9 @@ namespace samilton
 
 						if (cellAlignment == Alignment::centre)
 						{
-							const size_t leftSpaceInCell = columnWidth[j] - table._tableData[i]->_rowData[j]->_str[k].size();
+							std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+							std::wstring wide_str = converter.from_bytes(table._tableData[i]->_rowData[j]->_str[k]);
+							const size_t leftSpaceInCell = columnWidth[j] - wide_str.size();
 
 							size_t leftAlignmentIndent, rightAlignmentIndent;
 							if (leftSpaceInCell % 2)
