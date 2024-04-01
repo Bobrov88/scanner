@@ -19,6 +19,7 @@ void MENU::PrintStartMenu()
     console << USAGE;
     console << GET_DESC;
     console << GET_INFO;
+    console << GET_ALL_INFO;
     console << GET_SAVE;
     console << GET_WRITE;
     console << GET_REST_FACT;

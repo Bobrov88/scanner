@@ -5,7 +5,7 @@
 #define USAGE "Параметры меню"s
 #define GET_DESC "\t -h --help           \t\tОписание доступных функций"s
 #define GET_INFO "\t -i --info           \t\tИнформация о USB-устройствах"s
-#define GET_ALL_INFO "\t -a --all_info           \t\tПолучить полную информацию о версии ПО"s
+#define GET_ALL_INFO "\t -a --all_info   \t\tПолучить полную информацию о версии ПО"s
 #define GET_SAVE "\t -s --save           \t\tСохранение настроек в json-файл"s
 #define GET_WRITE "\t -w --write          \t\tЗапись настроек из json-файла"s
 #define GET_REST_FACT "\t -f --restore-factory\t\tВосстановление заводских настроек"s

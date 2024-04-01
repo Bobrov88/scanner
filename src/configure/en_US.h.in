@@ -5,7 +5,7 @@
 #define USAGE "Usage"s
 #define GET_DESC "\t -h --help           \t\tget description of available functions"s
 #define GET_INFO "\t -i --info           \t\tget information about usb-devices"s
-#define GET_ALL_INFO "\t -a --all_info           \t\tget all information about software versions"s
+#define GET_ALL_INFO "\t -a --all_info   \t\tget all information about software versions"s
 #define GET_SAVE "\t -s --save           \t\tsave scanner settings to json"s
 #define GET_WRITE "\t -w --write          \t\twrite setting into scanner from json"s
 #define GET_REST_FACT "\t -f --restore-factory\t\trestore scanner to factory default"s
