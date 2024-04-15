@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CONAN_DISABLE_CHECK_COMPILER "1")
 
 if(NOT ${TARGET_SYSTEM} STREQUAL WINDOWS)
-    set(CMAKE_EXE_LINKER_FLAGS "-static-libstdc++")
+    set(CMAKE_EXE_LINKER_FLAGS "-static-libstdc++ -static-libgcc")
 endif()
 
 set(SOURCES
@@ -148,6 +148,10 @@ target_link_libraries(${OUTPUT_FILE} PRIVATE Boost::thread Boost::system Boost::
 target_link_libraries(${OUTPUT_FILE} PRIVATE ${FWLIB_TO_INCLUDE})
 
 
+# docker build -t scanner_x64 -f ./debian12-x64.Dockerfile .
+# docker build -t scanner -f ./centos7-x86.Dockerfile .
+# docker build -t scanner_debian_11_x64 -f ./debian11-x64.Dockerfile .
+
 # Windows10 x64 build
 # conan install -pr .\conan_profiles\win10\win10_build -if build_win_x86_64 . -s build_type=Debug -s compiler="Visual Studio" -s compiler.runtime=MDd --build=missing
 # cmake -Bbuild_win_x86_64 . -DTARGET_SYSTEM=WINDOWS -D_DEBUG=TRUE -DLANG=ru_RU -G "Visual Studio 16" -A x64
@@ -163,8 +167,14 @@ target_link_libraries(${OUTPUT_FILE} PRIVATE ${FWLIB_TO_INCLUDE})
 # Debian12 x64 build
 # docker run --rm -it --volume=./:/home/project/scanner scanner_x64
 # conan install -pr linux_x86_64_build -if build_debian_x86_64 /home/project/scanner/ --build=missing 
-# cmake -Bbuild_debian_x86_64 . -DTARGET_SYSTEM=DEBIAN -D_DEBUG=TRUE -DLANG=ru_RU
+# cmake -Bbuild_debian_x86_64 . -DTARGET_SYSTEM=DEBIAN -D_DEBUG=FALSE -DLANG=en_US
 # cmake --build ./build_debian_x86_64
+
+# Debian11 x64 build
+# docker run --rm -it --volume=./:/home/project/scanner scanner_debian_11_x64
+# conan install -pr linux_x86_64_build -if build_debian11_x86_64 /home/project/scanner/ --build=missing 
+# cmake -Bbuild_debian11_x86_64 . -DTARGET_SYSTEM=DEBIAN -D_DEBUG=FALSE -DLANG=en_US -Dstatic-libsystemd=true -Dstatic-libudev=true
+# cmake --build ./build_debian11_x86_64
 
 # -DTARGET_SYSTEM=WINDOWS
 # -DTARGET_SYSTEM=DEBIAN

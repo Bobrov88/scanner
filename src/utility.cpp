@@ -383,8 +383,8 @@ std::vector<std::string> UTIL::split_for_read_device_info(const std::string &ver
     std::vector<std::string> datas;
     datas.resize(5);
     datas[0] = vers.substr(vers.find("DeviceName") + 11, std::distance(vers.begin(),
-                                                                 std::find(std::next(vers.begin(), vers.find("DeviceName")), vers.end(), '\n')) -
-                                                       vers.find("DeviceName") - 11);
+                                                                       std::find(std::next(vers.begin(), vers.find("DeviceName")), vers.end(), '\n')) -
+                                                             vers.find("DeviceName") - 11);
     datas[1] = vers.substr(vers.find("HwVer") + 6, std::distance(vers.begin(),
                                                                  std::find(std::next(vers.begin(), vers.find("HwVer")), vers.end(), '\n')) -
                                                        vers.find("HwVer") - 6);
@@ -627,7 +627,11 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
             uint8_t byte = 0;
             {
                 const std::string key = "cmdTrigAck"s;
-                set_bit_if_key_bool_true(byte, 7, key);
+                bool tmp = str.at(key).as_bool();
+                if (tmp)
+                    byte |= 0b00000000;
+                else
+                    byte |= 0b10000000;
             }
             {
                 const std::string key = "muteEnable"s;
@@ -635,7 +639,7 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
                 if (tmp)
                     byte |= 0b00000000;
                 else
-                    byte |= 0b00000001;
+                    byte |= 0b01000000;
             }
             {
                 const std::string key = "decodeLed"s;
@@ -836,9 +840,9 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
                 const std::string key = "activeBuzzerWorkLevel"s;
                 std::string tmp = str.at(key).as_string().c_str();
                 if (CONVERT::low(tmp) == CONVERT::low(variants[0]))
-                    byte |= 0b00000000;
-                else if (CONVERT::low(tmp) == CONVERT::low(variants[1]))
                     byte |= 0b00000001;
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[1]))
+                    byte |= 0b00000000;
                 else
                     incorrect_data += get_string_possible_data(variants, key);
             }
