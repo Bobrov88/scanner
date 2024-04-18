@@ -51,8 +51,6 @@ endif()
 set(modules "${CMAKE_SOURCE_DIR}/cmake/Modules")
 file(MAKE_DIRECTORY ${modules})
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${modules}")
-file(COPY ${CMAKE_BINARY_DIR}/Findspdlog.cmake DESTINATION ${modules})
-file(COPY ${CMAKE_BINARY_DIR}/Findfmt.cmake DESTINATION ${modules})
 file(COPY ${CMAKE_BINARY_DIR}/FindBoost.cmake DESTINATION ${modules})
 file(COPY ${CMAKE_BINARY_DIR}/FindBZip2.cmake DESTINATION ${modules})
 file(COPY ${CMAKE_BINARY_DIR}/FindZLIB.cmake DESTINATION ${modules})
@@ -91,8 +89,8 @@ if(${TARGET_SYSTEM} STREQUAL DEBIAN)
     message(WARNING "-- Debian --")
     find_library(FWLIB_TO_INCLUDE appdownload.a src/lib_x64)
     target_compile_definitions(${OUTPUT_FILE} PUBLIC __DEBIAN__)
-elseif(${TARGET_SYSTEM} STREQUAL CENTOS)
-    message(WARNING "-- Centos --")
+elseif(${TARGET_SYSTEM} STREQUAL CENTOS OR ${TARGET_SYSTEM} STREQUAL DEBIANi386)
+    message(WARNING "-- Centos/Debiani386 --")
     find_library(FWLIB_TO_INCLUDE appdownload.a src/lib_x86)
     target_compile_definitions(${OUTPUT_FILE} PUBLIC __CENTOS__)
 elseif(${TARGET_SYSTEM} STREQUAL WINDOWS)
@@ -108,7 +106,7 @@ endif()
 if(${_DEBUG})
     message(WARNING "-- Debug build --")
 
-    if(${TARGET_SYSTEM} STREQUAL DEBIAN OR ${TARGET_SYSTEM} STREQUAL DEBIAN)
+    if(${TARGET_SYSTEM} STREQUAL DEBIAN OR ${TARGET_SYSTEM} STREQUAL CENTOS)
         target_compile_options(${OUTPUT_FILE} PRIVATE -Wall -Wextra -Wunused -g)
     endif()
 
@@ -180,7 +178,7 @@ target_link_libraries(${OUTPUT_FILE} PRIVATE ${FWLIB_TO_INCLUDE})
 # docker build --no-cache -t scanner_debian11_i386 -f ./debian11-i386.Dockerfile .
 # docker run --rm -it --volume=./:/home/project/scanner scanner_debian11_x64
 # conan install -pr linux_x86_build -if build_debian11_x86 /home/project/scanner/ --build=missing 
-# cmake -Bbuild_debian11_x86 . -DTARGET_SYSTEM=DEBIAN -D_DEBUG=FALSE -DLANG=en_US -Dstatic-libsystemd=true -Dstatic-libudev=true
+# cmake -Bbuild_debian11_x86 . -DTARGET_SYSTEM=DEBIANi386 -D_DEBUG=FALSE -DLANG=en_US -Dstatic-libsystemd=true -Dstatic-libudev=true
 # cmake --build ./build_debian11_x86
 
 # -DTARGET_SYSTEM=WINDOWS
