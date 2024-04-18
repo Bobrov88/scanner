@@ -20,7 +20,7 @@ os:
         platform: ANY
         version: ["5.0", "6.0", "7.0", "8.0"]
     Linux:
-        distro: [None, CentOS7, RHEL6, RHEL7, Ubuntu18.04, Ubuntu20.04, Ubuntu13.04, Debian12]
+        distro: [None, CentOS7, RHEL6, RHEL7, Ubuntu18.04, Ubuntu20.04, Ubuntu13.04, Debian12, Debian11]
     iOS:
         version: &ios_version
                  ["7.0", "7.1", "8.0", "8.1", "8.2", "8.3", "9.0", "9.1", "9.2", "9.3", "10.0", "10.1", "10.2", "10.3",

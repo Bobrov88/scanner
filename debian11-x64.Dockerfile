@@ -53,7 +53,7 @@ RUN CMAKE_VERSION=3.20.0 && \
 # copy conan files
 COPY conan/ /root/.conan/
 # copy conan profiles
-COPY conan_profiles/linux/debian12/ /root/.conan/profiles
+COPY conan_profiles/linux/debian11/ /root/.conan/profiles
 # private.pem
 COPY private.pem /opt
 
