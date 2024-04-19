@@ -1,8 +1,8 @@
-FROM i386/debian:11
+FROM i386/debian:bullseye-slim
 
 RUN apt-get update -y && \
     apt-get upgrade -y && \
-    apt-get install -y && \
+    apt-get install -y \
         build-essential \
         git \
         libhidapi-dev \

@@ -647,7 +647,10 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
             }
             {
                 const std::string key = "continuousSwitch"s;
-                set_bit_if_key_bool_true(byte, 4, key);
+                if (tmp)
+                    byte |= 0b00000000;
+                else
+                    byte |= 0b00010000;
             }
             {
                 std::vector<std::string> variants = {"1.7KHz"s, "2.0KHz"s, "2.7KHz"s, "3.7KHz"s};
@@ -687,7 +690,11 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
             }
             {
                 const std::string key = "setCodeEnable"s;
-                set_bit_if_key_bool_true(byte, 1, key);
+                bool tmp = str.at(key).as_bool();
+                if (tmp)
+                    byte |= 0b00000000;
+                else
+                    byte |= 0b00000010;
             }
             {
                 const std::string key = "printSetCode"s;
@@ -787,7 +794,11 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
                 set_bit_if_key_bool_true(byte, 3, key);
             }
             {
-                // Reserved 2-1
+                const std::string key = "keypadAutoCheck"s;
+                set_bit_if_key_bool_true(byte, 2, key);
+            }
+            {
+                // Reserved 1
             }
             {
                 const std::string key1 = "keyboardLead(Ctrl+Shift+R)"s;
@@ -1004,8 +1015,8 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
                 // Reserved 7-4
             }
             {
-                //    const std::string key = "motorEnable"s;
-                //    set_bit_if_key_bool_true(byte, 3, key);
+                const std::string key = "motorEnable"s;
+                set_bit_if_key_bool_true(byte, 3, key);
             }
             {
                 std::vector<std::string> variants = {"Bracket"s, "Handheld"s};
@@ -1126,8 +1137,8 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
                 }
                 {
                     const std::string key = "ledOnTime"s;
-                    const uint8_t tmp = static_cast<uint8_t>(str.at(key).to_number<int>() / 100);
-                    if (tmp < 0 || tmp > 255)
+                    const uint8_t tmp = static_cast<uint8_t>(str.at(key).to_number<int>() / 10);
+                    if (tmp < 0 || tmp > 127)
                     {
                         incorrect_data += get_uint8_t_possible_data(key, 0, 1270);
                     }
@@ -1413,7 +1424,11 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
             }
             {
                 const std::string key = "code128GS1AIBracket"s;
-                set_bit_if_key_bool_true(byte, 6, key);
+                bool tmp = str.at(key).as_bool();
+                if (tmp)
+                    byte |= 0b00000000;
+                else
+                    byte |= 0b01000000;
             }
             {
                 // Reserved 7
@@ -1583,7 +1598,11 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
             }
             {
                 const std::string key = "QRGS1AIRBracketOut"s;
-                set_bit_if_key_bool_true(byte, 6, key);
+                bool tmp = str.at(key).as_bool();
+                if (tmp)
+                    byte |= 0b00000000;
+                else
+                    byte |= 0b01000000;
             }
             {
                 // Reserved 7
@@ -1819,7 +1838,11 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
             }
             {
                 const std::string key = "GS1DatabarAIBracket"s;
-                set_bit_if_key_bool_true(byte, 7, key);
+                bool tmp = str.at(key).as_bool();
+                if (tmp)
+                    byte |= 0b00000000;
+                else
+                    byte |= 0b10000000;
             }
             bytes.push_back(byte);
         }
@@ -1922,7 +1945,18 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
             // FLAG 0x0056
             uint8_t byte = 0;
             {
-                // Reserved 7-1
+                // Reserved 7
+            }
+            {
+                const std::string key = "DMAIBracketOut"s;
+                bool tmp = str.at(key).as_bool();
+                if (tmp)
+                    byte |= 0b00000000;
+                else
+                    byte |= 0b01000000;
+            }
+            {
+                // Reserved 5-1
             }
             {
                 const std::string key = "HanXinEnable"s;
@@ -2494,11 +2528,7 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
             }
             {
                 const std::string key = "strExchangeEnable"s;
-                bool tmp = str.at(key).as_bool();
-                if (tmp)
-                    byte |= 0b00000000;
-                else
-                    byte |= 0b00000001;
+                set_bit_if_key_bool_true(byte, 0, key);
             }
             bytes.push_back(byte);
         }
