@@ -801,10 +801,10 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
                 // Reserved 1
             }
             {
-                const std::string key1 = "keyboardLead(Ctrl+Shift+R)"s;
-                set_bit_if_key_bool_true(byte, 0, key1);
-                // const std::string key2 = "keyboardLead"s; // different names in other version
-                // set_bit_if_key_bool_true(byte, 0, key2);
+                //const std::string key1 = "keyboardLead(Ctrl+Shift+R)"s;
+                //set_bit_if_key_bool_true(byte, 0, key1);
+                const std::string key2 = "keyboardLead"s; // different names in other version
+                set_bit_if_key_bool_true(byte, 0, key2);
             }
             bytes.push_back(byte);
         }
@@ -1237,11 +1237,11 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
                 const std::string key = "decodeConfig"s;
                 std::string tmp = str.at(key).as_string().c_str();
                 if (CONVERT::low(tmp) == CONVERT::low(variants[0]))
-                    byte |= 0b00000000;
-                else if (CONVERT::low(tmp) == CONVERT::low(variants[1]))
-                    byte |= 0b00000010;
-                else if (CONVERT::low(tmp) == CONVERT::low(variants[2]))
                     byte |= 0b00000100;
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[1]))
+                    byte |= 0b00000000;
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[2]))
+                    byte |= 0b00000010;
                 else
                     incorrect_data += get_string_possible_data(variants, key);
             }
@@ -1919,10 +1919,10 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
                 // Reserved 5-2
             }
             {
-                // const std::string key1 = "DMAIBracketOut"s;
-                // set_bit_if_key_bool_true(byte, 6, key1);
-                const std::string key2 = "DMBracketOut"s;
-                set_bit_if_key_bool_true(byte, 6, key2); // different names in other version
+                const std::string key1 = "DMAIBracketOut"s;
+                set_bit_if_key_bool_true(byte, 6, key1);
+                //const std::string key2 = "DMBracketOut"s;
+                //set_bit_if_key_bool_true(byte, 6, key2); // different names in other version
             }
             {
                 // Reserved 7

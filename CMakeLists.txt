@@ -154,7 +154,6 @@ target_link_libraries(${OUTPUT_FILE} PRIVATE ${FWLIB_TO_INCLUDE})
 # conan install -pr .\conan_profiles\win10\win10_build -if build_win_x86_64 . -s build_type=Debug -s compiler="Visual Studio" -s compiler.runtime=MDd --build=missing
 # cmake -Bbuild_win_x86_64 . -DTARGET_SYSTEM=WINDOWS -D_DEBUG=TRUE -DLANG=ru_RU -G "Visual Studio 16" -A x64
 # cmake --build ./build_win_x86_64
-# Debian12 x64 build
 
 # Centos7 x32 build
 # docker run --rm -it --volume=./:/home/project/scanner scanner
