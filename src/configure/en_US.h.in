@@ -11,11 +11,12 @@
 #define GET_REST_FACT "\t -f --restore-factory\t\trestore scanner to factory default"s
 #define GET_REST_CUST "\t -c --restore-custom \t\trestore scanner to user default"s
 #define GET_DWNLD "\t -d --download       \t\tupdate scanner firmware\n"
-#define COM2HID "Note:         Scanners in COM-mode (if exist) \n              will be automatically switched to HID - mode "s
+#define COM2HID "Note:         Scanners in COM-mode (if exist) \n              will be automatically switched to HID-mode "s
 #define WAIT4SCAN "Search for available scanners among USB devices..."s
 #define PASS_FAIL " passing failed"s
 #define SAVE_OK "All scanners settings successfully saved into files"s
 #define SAVE_FAIL "Not all scanners settings saved!"s
+#define SAVING_IN_PROCESS "Saving to file..."s
 #define WRITE_FAIL "Settings saving failed"s
 #define WRITE_CUS_FAIL "Settings saving as custom failed"s
 #define _SUCCESS_ "SUCCESS"s
@@ -47,7 +48,7 @@
 #define ERR "ERROR"s
 #define NO_FW "Firmware files not found"s
 #define CHOOSE_SCANNER "Enter numbers with a space, e.g. 1 4 5 \nor enter VIDs with a space, e.g. 0x34eb\nor enter 0 to save ALL scanners settings"s
-#define CHOOSE "Enter a number"s
+#define CHOOSE "Enter a number of file"s
 #define INCORR_STRING "incorrect value, string length must be less than"s
 #define SYM "symbols"s
 #define INCORR_NUM "incorrect value, must be between 0 and 255"s

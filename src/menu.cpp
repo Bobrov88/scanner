@@ -29,7 +29,7 @@ void MENU::PrintStartMenu()
 
 void MENU::PrintAttentionComToHID()
 {
-    console << COM2HID;
+    //  console << COM2HID;
     console << WAIT4SCAN;
 }
 
@@ -43,7 +43,6 @@ void MENU::PrintAvailableDevices()
 #elif (__DEBIAN__ || __CENTOS__)
     coms = UTIL::get_available_linux_com_ports();
 #endif
-    bool switched = false;
     for (const auto &com : coms)
     {
         if (!HID::testing_to_pass_HID_from_COM(com.port_))
@@ -51,11 +50,8 @@ void MENU::PrintAvailableDevices()
             logger << com.port_ << " " << PASS_FAIL;
             continue;
         }
-        switched = true;
-    }
-    if (switched)
-    {
         std::this_thread::sleep_for(3000ms);
+        break;
     }
     std::vector<UTIL::AVAILABLE_HID> hids = UTIL::get_available_hid_devices();
     PRINT::print_all_hid_devices(hids);
@@ -71,7 +67,6 @@ void MENU::PrintSoftwareVersion()
 #elif (__DEBIAN__ || __CENTOS__)
     coms = UTIL::get_available_linux_com_ports();
 #endif
-    bool switched = false;
     for (const auto &com : coms)
     {
         if (!HID::testing_to_pass_HID_from_COM(com.port_))
@@ -79,11 +74,8 @@ void MENU::PrintSoftwareVersion()
             logger << com.port_ << " " << PASS_FAIL;
             continue;
         }
-        switched = true;
-    }
-    if (switched)
-    {
         std::this_thread::sleep_for(3000ms);
+        break;
     }
     std::vector<UTIL::AVAILABLE_HID> hids = UTIL::get_available_hid_devices();
     PRINT::print_software_version(hids);
@@ -99,7 +91,6 @@ void MENU::SaveSettings()
 #elif (__DEBIAN__ || __CENTOS__)
     coms = UTIL::get_available_linux_com_ports();
 #endif
-    bool switched = false;
     for (const auto &com : coms)
     {
         if (!HID::testing_to_pass_HID_from_COM(com.port_))
@@ -107,25 +98,21 @@ void MENU::SaveSettings()
             logger << com.port_ << " " << PASS_FAIL;
             continue;
         }
-        switched = true;
-    }
-    if (switched)
-    {
         std::this_thread::sleep_for(3000ms);
+        break;
     }
-
     auto hids = UTIL::get_available_hid_devices();
     PRINT::print_all_hid_devices(hids);
 
     if (hids.empty())
         return;
 
-    std::string scanner_numbers = PRINT::ChooseScannerToProceed();
-    hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
-
+    //   std::string scanner_numbers = PRINT::ChooseScannerToProceed();
+    //   hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
+    console << SAVING_IN_PROCESS;
     if (UTIL::save_settings_to_files(hids))
     {
-        console << SAVE_OK;
+        //   console << SAVE_OK;
         logger << SAVE_OK;
     }
     else
@@ -145,7 +132,6 @@ void MENU::WriteFromJson()
 #elif (__DEBIAN__ || __CENTOS__)
     coms = UTIL::get_available_linux_com_ports();
 #endif
-    bool switched = false;
     for (const auto &com : coms)
     {
         if (!HID::testing_to_pass_HID_from_COM(com.port_))
@@ -153,11 +139,8 @@ void MENU::WriteFromJson()
             logger << com.port_ << " " << PASS_FAIL;
             continue;
         }
-        switched = true;
-    }
-    if (switched)
-    {
         std::this_thread::sleep_for(3000ms);
+        break;
     }
 
     auto hids = UTIL::get_available_hid_devices();
@@ -166,8 +149,8 @@ void MENU::WriteFromJson()
     if (hids.empty())
         return;
 
-    std::string scanner_numbers = PRINT::ChooseScannerToProceed();
-    hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
+    // std::string scanner_numbers = PRINT::ChooseScannerToProceed();
+    //    hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
 
     auto jsons = UTIL::get_json_file_list();
     PRINT::print_all_json_files(jsons);
@@ -220,7 +203,6 @@ void MENU::RestoreFactorySettings()
 #elif (__DEBIAN__ || __CENTOS__)
     coms = UTIL::get_available_linux_com_ports();
 #endif
-    bool switched = false;
     for (const auto &com : coms)
     {
         if (!HID::testing_to_pass_HID_from_COM(com.port_))
@@ -228,21 +210,17 @@ void MENU::RestoreFactorySettings()
             logger << com.port_ << " " << PASS_FAIL;
             continue;
         }
-        switched = true;
-    }
-    if (switched)
-    {
         std::this_thread::sleep_for(3000ms);
+        break;
     }
-
     auto hids = UTIL::get_available_hid_devices();
     PRINT::print_all_hid_devices(hids);
 
     if (hids.empty())
         return;
 
-    std::string scanner_numbers = PRINT::ChooseScannerToProceed();
-    hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
+    //  std::string scanner_numbers = PRINT::ChooseScannerToProceed();
+    //   hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
 
     for (const auto &hid : hids)
     {
@@ -271,7 +249,6 @@ void MENU::RestoreCustomSettings()
 #elif (__DEBIAN__ || __CENTOS__)
     coms = UTIL::get_available_linux_com_ports();
 #endif
-    bool switched = false;
     for (const auto &com : coms)
     {
         if (!HID::testing_to_pass_HID_from_COM(com.port_))
@@ -279,11 +256,8 @@ void MENU::RestoreCustomSettings()
             logger << com.port_ << " " << PASS_FAIL;
             continue;
         }
-        switched = true;
-    }
-    if (switched)
-    {
         std::this_thread::sleep_for(3000ms);
+        break;
     }
 
     auto hids = UTIL::get_available_hid_devices();
@@ -292,8 +266,8 @@ void MENU::RestoreCustomSettings()
     if (hids.empty())
         return;
 
-    std::string scanner_numbers = PRINT::ChooseScannerToProceed();
-    hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
+    //   std::string scanner_numbers = PRINT::ChooseScannerToProceed();
+    //   hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
 
     for (const auto &hid : hids)
     {
@@ -321,7 +295,6 @@ void MENU::DownloadFirmware()
 #elif (__DEBIAN__ || __CENTOS__)
     coms = UTIL::get_available_linux_com_ports();
 #endif
-    bool switched = false;
     for (const auto &com : coms)
     {
         if (!HID::testing_to_pass_HID_from_COM(com.port_))
@@ -329,11 +302,8 @@ void MENU::DownloadFirmware()
             logger << com.port_ << " " << PASS_FAIL;
             continue;
         }
-        switched = true;
-    }
-    if (switched)
-    {
         std::this_thread::sleep_for(3000ms);
+        break;
     }
 
 #ifdef __WIN__
@@ -346,13 +316,15 @@ void MENU::DownloadFirmware()
     if (hids.empty())
         return;
 
-    std::string scanner_numbers = PRINT::ChooseScannerToProceed();
-    hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
+    //    std::string scanner_numbers = PRINT::ChooseScannerToProceed();
+    //    hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
 
     PRINT::download_attention();
 
     auto firmware_files = UTIL::get_firmware_list();
     PRINT::print_all_firmware_files(firmware_files);
+    if (firmware_files.empty())
+        return;
     int number = PRINT::ChooseToProceed(firmware_files.size());
     if (firmware_files[number].second != 0)
     {

@@ -192,7 +192,7 @@ std::vector<UTIL::AVAILABLE_HID> UTIL::list_all_hid()
 {
     std::vector<UTIL::AVAILABLE_HID> devices;
     struct hid_device_info *cur_dev;
-    cur_dev = hid_enumerate(0x0, 0x0);
+    cur_dev = hid_enumerate(0x34eb, 0x0);
     // todo in separate function
     while (cur_dev)
     {
@@ -647,6 +647,7 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
             }
             {
                 const std::string key = "continuousSwitch"s;
+                bool tmp = str.at(key).as_bool();
                 if (tmp)
                     byte |= 0b00000000;
                 else

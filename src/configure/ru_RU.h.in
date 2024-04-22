@@ -16,6 +16,7 @@
 #define PASS_FAIL "перевод невозможен"s
 #define SAVE_OK "Настройки всех сканеров были успешно сохранены в json-файлы"s
 #define SAVE_FAIL "Сохранены настройки не со всех сканеров!"s
+#define SAVING_IN_PROCESS "Идёт запись в файл..."s
 #define WRITE_FAIL "Сохранение не удалось"s
 #define WRITE_CUS_FAIL "Сохранение настроек как пользовательских не удалось"s
 #define _SUCCESS_ "Успех"s
@@ -47,7 +48,7 @@
 #define ERR "Ошибка"s
 #define NO_FW "Файлы прошивки не найдены"s
 #define CHOOSE_SCANNER "Введите номера через пробел, напр.: 1 4 5 \nлибо введите VID через пробел, напр.: 0x34eb\nлибо введите 0 для выбора всех сканеров"s
-#define CHOOSE "Введите номер"s
+#define CHOOSE "Введите номер файла"s
 #define INCORR_STRING "некорректное значение, строка должна быть не более"s
 #define SYM "символов"s
 #define INCORR_NUM "значение должно быть от 0 до 255"s
