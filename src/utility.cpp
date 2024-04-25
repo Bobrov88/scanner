@@ -1031,8 +1031,15 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
                     incorrect_data += get_string_possible_data(variants, key);
             }
             {
-                const std::string key = "decodeSucessBuzzer"s;
-                set_bit_if_key_bool_true(byte, 1, key);
+                std::vector<std::string> variants = {"offLine"s, "onLine"s};
+                const std::string key = "invoiceMode"s;
+                std::string tmp = str.at(key).as_string().c_str();
+                if (CONVERT::low(tmp) == CONVERT::low(variants[0]))
+                    byte |= 0b00000000;
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[1]))
+                    byte |= 0b00000010;
+                else
+                    incorrect_data += get_string_possible_data(variants, key);
             }
             {
                 // Reserved 0
