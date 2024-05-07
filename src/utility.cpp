@@ -1955,14 +1955,14 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
             {
                 // Reserved 7
             }
-            {
-                const std::string key = "DMAIBracketOut"s;
-                bool tmp = str.at(key).as_bool();
-                if (tmp)
-                    byte |= 0b00000000;
-                else
-                    byte |= 0b01000000;
-            }
+            // {   Chinese ambiguous correction, it's better not to run this code
+            //     const std::string key = "DMAIBracketOut"s;
+            //     bool tmp = str.at(key).as_bool();
+            //     if (tmp)
+            //         byte |= 0b00000000;
+            //     else
+            //         byte |= 0b01000000;
+            // }
             {
                 // Reserved 5-1
             }
