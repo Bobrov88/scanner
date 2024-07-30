@@ -1,7 +1,6 @@
 #pragma once
 #define EXCEPTION "Exception"s
 #define UNKNOWN "Unknown parameter"s
-#define PRESS_KEY "Press any key to exit..."s
 #define USAGE "Usage"s
 #define GET_DESC "\t -h --help           \t\tget description of available functions"s
 #define GET_INFO "\t -i --info           \t\tget information about usb-devices"s

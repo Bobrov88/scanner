@@ -6,7 +6,7 @@ BOOST_LOG_GLOBAL_LOGGER_INIT(my_logger, lg_type)
 
     typedef sinks::synchronous_sink<sinks::text_file_backend> file_sink;
     boost::shared_ptr<file_sink> f_sink(new file_sink(
-        keywords::file_name = "scan_log.log",
+        keywords::file_name = "scanner_utility.log",
         keywords::open_mode = std::ios_base::app,
         keywords::auto_flush = true,
         keywords::max_size = 10 * 1024 * 1024));

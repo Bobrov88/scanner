@@ -1,7 +1,6 @@
 #pragma once
 #define EXCEPTION "Исключение"s
 #define UNKNOWN "Неизвестный параметр"s
-#define PRESS_KEY "Нажмите любую клавишу для выхода..."s
 #define USAGE "Параметры меню"s
 #define GET_DESC "\t -h --help           \t\tОписание доступных функций"s
 #define GET_INFO "\t -i --info           \t\tИнформация о USB-устройствах"s

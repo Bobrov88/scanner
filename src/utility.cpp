@@ -212,6 +212,7 @@ std::vector<UTIL::AVAILABLE_HID> UTIL::list_all_hid()
         cur_dev = cur_dev->next;
     }
     hid_free_enumeration(cur_dev);
+    logger << "Found " << devices.size() << " devices";
     return devices;
 }
 
@@ -802,8 +803,8 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
                 // Reserved 1
             }
             {
-                //const std::string key1 = "keyboardLead(Ctrl+Shift+R)"s;
-                //set_bit_if_key_bool_true(byte, 0, key1);
+                // const std::string key1 = "keyboardLead(Ctrl+Shift+R)"s;
+                // set_bit_if_key_bool_true(byte, 0, key1);
                 const std::string key2 = "keyboardLead"s; // different names in other version
                 set_bit_if_key_bool_true(byte, 0, key2);
             }
@@ -860,43 +861,43 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
             }
             bytes.push_back(byte);
         }
-        /*{
-            FLAG 0x000D
-           uint8_t byte = 0;
-           {
-                const std::string key = "invoiceModeEnable"s;
-                set_bit_if_key_bool_true(byte, 7, key);
-           }
-            {
-                const std::string key = "virtualKeyboard"s;
-                set_bit_if_key_bool_true(byte, 6, key);
-           }
-           {
-                Reserved 5
-           }
-           {
-               const std::string key = "codeTypeAutoCheckUtf8"s;
-               set_bit_if_key_bool_true(byte, 4, key);
-           }
-           {
-                std::vector<std::string> variants = {"UART-TTL"s, "keyboard"s, "virtualCom"s, "pos"s, "composite"s};
-                const std::string key = "outMode"s;
-                std::string tmp = str.at(key).as_string().c_str();
-                 if (CONVERT::low(tmp) == CONVERT::low(variants[0]))
-                     byte |= 0b00000000;
-                 else if (CONVERT::low(tmp) == CONVERT::low(variants[1]))
-                     byte |= 0b00000001;
-                 else if (CONVERT::low(tmp) == CONVERT::low(variants[2]))
-                     byte |= 0b00000011;
-                 else if (CONVERT::low(tmp) == CONVERT::low(variants[3]))
-                     byte |= 0b00000100;
-                 else if (CONVERT::low(tmp) == CONVERT::low(variants[4]))
-                     byte |= 0b00000101;
-                 else
-                     incorrect_data += get_string_possible_data(variants, key);
-           }
-                       bytes.push_back(byte);
-        }*/
+        // {
+        //     FLAG 0x000D
+        //     uint8_t byte = 0;
+        //     {
+        //         const std::string key = "invoiceModeEnable"s;
+        //         set_bit_if_key_bool_true(byte, 7, key);
+        //     }
+        //     {
+        //         const std::string key = "virtualKeyboard"s;
+        //         set_bit_if_key_bool_true(byte, 6, key);
+        //     }
+        //     {
+        //         Reserved 5
+        //     }
+        //     {
+        //         const std::string key = "codeTypeAutoCheckUtf8"s;
+        //         set_bit_if_key_bool_true(byte, 4, key);
+        //     }
+        //     {
+        //         std::vector<std::string> variants = {"UART-TTL"s, "keyboard"s, "virtualCom"s, "pos"s, "composite"s};
+        //         const std::string key = "outMode"s;
+        //         std::string tmp = str.at(key).as_string().c_str();
+        //         if (CONVERT::low(tmp) == CONVERT::low(variants[0]))
+        //             byte |= 0b00000000;
+        //         else if (CONVERT::low(tmp) == CONVERT::low(variants[1]))
+        //             byte |= 0b00000001;
+        //         else if (CONVERT::low(tmp) == CONVERT::low(variants[2]))
+        //             byte |= 0b00000011;
+        //         else if (CONVERT::low(tmp) == CONVERT::low(variants[3]))
+        //             byte |= 0b00000100;
+        //         else if (CONVERT::low(tmp) == CONVERT::low(variants[4]))
+        //             byte |= 0b00000101;
+        //         else
+        //             incorrect_data += get_string_possible_data(variants, key);
+        //     }
+        //     bytes.push_back(byte);
+        // }
         // Writing this set of flags makes fail
         // --------from 0x0009 to 0x000D--------------------- //
         set_of_bytes.push_back({0x0009, std::move(bytes)});
@@ -1929,8 +1930,8 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
             {
                 const std::string key1 = "DMAIBracketOut"s;
                 set_bit_if_key_bool_true(byte, 6, key1);
-                //const std::string key2 = "DMBracketOut"s;
-                //set_bit_if_key_bool_true(byte, 6, key2); // different names in other version
+                // const std::string key2 = "DMBracketOut"s;
+                // set_bit_if_key_bool_true(byte, 6, key2); // different names in other version
             }
             {
                 // Reserved 7
