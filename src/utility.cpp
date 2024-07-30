@@ -856,13 +856,13 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
             }
             bytes.push_back(byte);
         }
-        // {
+        {
         //     FLAG 0x000D
-        //     uint8_t byte = 0;
-        //     {
-        //         const std::string key = "invoiceModeEnable"s;
-        //         set_bit_if_key_bool_true(byte, 7, key);
-        //     }
+             uint8_t byte = 0;
+             {
+                 const std::string key = "invoiceModeEnable"s;
+                 set_bit_if_key_bool_true(byte, 7, key);
+             }
         //     {
         //         const std::string key = "virtualKeyboard"s;
         //         set_bit_if_key_bool_true(byte, 6, key);
@@ -874,25 +874,25 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
         //         const std::string key = "codeTypeAutoCheckUtf8"s;
         //         set_bit_if_key_bool_true(byte, 4, key);
         //     }
-        //     {
-        //         std::vector<std::string> variants = {"UART-TTL"s, "keyboard"s, "virtualCom"s, "pos"s, "composite"s};
-        //         const std::string key = "outMode"s;
-        //         std::string tmp = str.at(key).as_string().c_str();
-        //         if (CONVERT::low(tmp) == CONVERT::low(variants[0]))
-        //             byte |= 0b00000000;
-        //         else if (CONVERT::low(tmp) == CONVERT::low(variants[1]))
-        //             byte |= 0b00000001;
-        //         else if (CONVERT::low(tmp) == CONVERT::low(variants[2]))
-        //             byte |= 0b00000011;
-        //         else if (CONVERT::low(tmp) == CONVERT::low(variants[3]))
-        //             byte |= 0b00000100;
-        //         else if (CONVERT::low(tmp) == CONVERT::low(variants[4]))
-        //             byte |= 0b00000101;
-        //         else
-        //             incorrect_data += get_string_possible_data(variants, key);
-        //     }
-        //     bytes.push_back(byte);
-        // }
+            {
+                std::vector<std::string> variants = {"UART-TTL"s, "keyboard"s, "virtualCom"s, "pos"s, "composite"s};
+                const std::string key = "outMode"s;
+                std::string tmp = str.at(key).as_string().c_str();
+                if (CONVERT::low(tmp) == CONVERT::low(variants[0]))
+                    byte |= 0b00000000;
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[1]))
+                    byte |= 0b00000001;
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[2]))
+                    byte |= 0b00000011;
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[3]))
+                    byte |= 0b00000100;
+                else if (CONVERT::low(tmp) == CONVERT::low(variants[4]))
+                    byte |= 0b00000101;
+                else
+                    incorrect_data += get_string_possible_data(variants, key);
+            }
+            bytes.push_back(byte);
+        }
         // Writing this set of flags makes fail
         // --------from 0x0009 to 0x000D--------------------- //
         set_of_bytes.push_back({0x0009, std::move(bytes)});
