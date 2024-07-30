@@ -2,7 +2,7 @@
 
 int HID::save_to_internal_flash(handler &device)
 {
-    logger << "save_to_internal_flash";
+    logger << SAVING_TO_INTERNAL_FLASH;
     uint8_t c1[64] = {0};
     SEQ::save_to_internal_flash_command(c1);
     if (-1 == UTIL::HID_WRITE(device, c1, 64))
@@ -20,7 +20,7 @@ int HID::save_to_internal_flash(handler &device)
 
 int HID::restore_to_custom_settings(handler &device)
 {
-    logger << "restore_to_custom_settings";
+    logger << RESTORE_CUSTOM_SETTINGS;
     uint8_t c[64] = {0};
     SEQ::restore_to_custom_settings(c);
     if (-1 == UTIL::HID_WRITE(device, c, 64))
@@ -32,73 +32,20 @@ int HID::restore_to_custom_settings(handler &device)
 
 int HID::restore_to_factory_settings(handler &device)
 {
-    logger << "restore_to_factory_settings";
+    logger << RESTORE_FACTORY_SETTINGS;
     uint8_t c[64] = {0};
     SEQ::restore_to_factory_settings_command(c);
 
     if (-1 == UTIL::HID_WRITE(device, c, 64))
     {
-        // logger(CONVERT::str(hid_error(device.ptr)), device.serial_number);
         return -1;
     };
     return 0;
-
-    // if (write_result == -1)
-    // {
-    //     std::cout << "Save to internal flash failed. Reason: ";
-    //     std::cout << CONVERT::str(hid_error(device.ptr));
-    //     return -1;
-    // }
-    // if (write_result < 64)
-    // {
-    //     std::cout << "The device received fewer bytes than it sent.";
-    //     std::cout << CONVERT::str(hid_error(device.ptr));
-    //     return 1;
-    // }
-
-    // uint8_t r[64] = {0};
-    // int read_result = hid_read_timeout(device.ptr, r, 64, 100);
-    // if (read_result == -1)
-    // {
-    //     std::cout << "Reading result of saving to internal flash failed. Reason: ";
-    //     std::cout << CONVERT::str(hid_error(device.ptr));
-    //     return -1;
-    // }
-    // if (read_result == 0)
-    // {
-    //     std::cout << "No available packets to read. Reason: ";
-    //     std::cout << CONVERT::str(hid_error(device.ptr));
-    //     return 0;
-    // }
-    // if (read_result < 64)
-    // {
-    //     std::cout << "Response is not complete. Reason: ";
-    //     std::cout << CONVERT::str(hid_error(device.ptr));
-    //     return 2;
-    // }
-    // // todo
-    // // add check_crc
-    // if (r[5] == 0x02 &&
-    //     r[6] == 0x00 &&
-    //     r[7] == 0x00 &&
-    //     r[8] == 0x01 &&
-    //     r[9] == 0x00 &&
-    //     r[10] == 0x33 &&
-    //     r[11] == 0x31)
-    // {
-    //     std::cout << "Save to internal flash: Success";
-    //     return 0;
-    // }
-    // else
-    // {
-    //     std::cout << "Unknown error";
-    //     return 3;
-    // }
 }
 
 bool HID::testing_connect_for_erasing_duplicates(handler &device)
 {
-    logger << "testing_connect_for_erasing_duplicates";
+    logger << ERASING_DUPLICATES;
     uint8_t c[64] = {0};
     SEQ::testing_connect_for_erasing_duplicates_command(c);
     if (-1 == UTIL::HID_WRITE(device, c, 64))
@@ -110,7 +57,7 @@ bool HID::testing_connect_for_erasing_duplicates(handler &device)
 
 bool HID::testing_to_pass_HID_from_COM(const std::string &com)
 {
-    logger << "testing_to_pass_HID_from_COM: " << com;
+    logger << SWITCH_COM_2_HID << com;
     try
     {
         boost::asio::io_service io;
@@ -178,19 +125,19 @@ bool HID::testing_to_pass_HID_from_COM(const std::string &com)
         logger << ec.value()
                << " "
                << ec.category().name() << " " << ec.message();
-               console << EXCEPTION << " "s << LOOK_TO_LOG;
+        console << EXCEPTION << " "s << LOOK_TO_LOG;
     }
     catch (const std::exception &ex)
     {
-        console << EXCEPTION <<": "<< ex.what();
-        logger << EXCEPTION <<": "<< ex.what();
+        console << EXCEPTION << ": " << ex.what();
+        logger << EXCEPTION << ": " << ex.what();
     }
     return false;
-    // add error ec
 }
 
-bool HID::testing_to_pass_COM_from_HID(hid_device* handle) {
-    logger << "testing_to_pass_COM_from_HID";
+bool HID::testing_to_pass_COM_from_HID(hid_device *handle)
+{
+    logger << SWITCH_HID_2_COM;
     uint8_t c[64] = {0};
     SEQ::testing_to_pass_COM_from_HID_command(c);
     if (-1 == hid_write(handle, c, 64))

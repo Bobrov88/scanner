@@ -24,6 +24,6 @@ namespace PRINT
     void print_all_firmware_files(std::vector<std::pair<std::string, int>> &firmware_list);
     void print_software_version(const std::vector<UTIL::AVAILABLE_HID> &hids);
     void download_attention();
-    std::string ChooseScannerToProceed();
+    //std::string ChooseScannerToProceed();
     int ChooseToProceed(size_t amount);
 }

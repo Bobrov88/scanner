@@ -29,13 +29,12 @@ void MENU::PrintStartMenu()
 
 void MENU::PrintAttentionComToHID()
 {
-    //  console << COM2HID;
     console << WAIT4SCAN;
 }
 
 void MENU::PrintAvailableDevices()
 {
-    logger << "PrintAvailableDevices";
+    logger << PRINT_DEVICES;
     MENU::PrintAttentionComToHID();
     std::vector<UTIL::AVAILABLE_COM> coms;
 #ifdef __WIN__
@@ -59,7 +58,7 @@ void MENU::PrintAvailableDevices()
 
 void MENU::PrintSoftwareVersion()
 {
-    logger << "PrintSoftwareVersion";
+    logger << PRINT_SOFTWARE;
     MENU::PrintAttentionComToHID();
     std::vector<UTIL::AVAILABLE_COM> coms;
 #ifdef __WIN__
@@ -83,7 +82,7 @@ void MENU::PrintSoftwareVersion()
 
 void MENU::SaveSettings()
 {
-    logger << "SaveSettings";
+    logger << SAVE_SETTINGS;
     MENU::PrintAttentionComToHID();
     std::vector<UTIL::AVAILABLE_COM> coms;
 #ifdef __WIN__
@@ -107,12 +106,10 @@ void MENU::SaveSettings()
     if (hids.empty())
         return;
 
-    //   std::string scanner_numbers = PRINT::ChooseScannerToProceed();
-    //   hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
     console << SAVING_IN_PROCESS;
     if (UTIL::save_settings_to_files(hids))
     {
-        //   console << SAVE_OK;
+        console << SAVE_OK;
         logger << SAVE_OK;
     }
     else
@@ -124,7 +121,7 @@ void MENU::SaveSettings()
 
 void MENU::WriteFromJson()
 {
-    logger << "WriteFromJson";
+    logger << WRITE_FROM_JSON;
     MENU::PrintAttentionComToHID();
     std::vector<UTIL::AVAILABLE_COM> coms;
 #ifdef __WIN__
@@ -148,9 +145,6 @@ void MENU::WriteFromJson()
 
     if (hids.empty())
         return;
-
-    // std::string scanner_numbers = PRINT::ChooseScannerToProceed();
-    //    hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
 
     auto jsons = UTIL::get_json_file_list();
     PRINT::print_all_json_files(jsons);
@@ -195,7 +189,7 @@ void MENU::WriteFromJson()
 
 void MENU::RestoreFactorySettings()
 {
-    logger << "RestoreFactorySettings";
+    logger << HARD_RESET;
     MENU::PrintAttentionComToHID();
     std::vector<UTIL::AVAILABLE_COM> coms;
 #ifdef __WIN__
@@ -218,9 +212,6 @@ void MENU::RestoreFactorySettings()
 
     if (hids.empty())
         return;
-
-    //  std::string scanner_numbers = PRINT::ChooseScannerToProceed();
-    //   hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
 
     for (const auto &hid : hids)
     {
@@ -241,7 +232,7 @@ void MENU::RestoreFactorySettings()
 
 void MENU::RestoreCustomSettings()
 {
-    logger << "RestoreCustomSettings";
+    logger << SOFT_RESET;
     MENU::PrintAttentionComToHID();
     std::vector<UTIL::AVAILABLE_COM> coms;
 #ifdef __WIN__
@@ -266,9 +257,6 @@ void MENU::RestoreCustomSettings()
     if (hids.empty())
         return;
 
-    //   std::string scanner_numbers = PRINT::ChooseScannerToProceed();
-    //   hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
-
     for (const auto &hid : hids)
     {
         handler device{hid_open_path(hid.path_), hid.path_, CONVERT::str(hid.serial_number_)};
@@ -288,7 +276,7 @@ void MENU::RestoreCustomSettings()
 
 void MENU::DownloadFirmware()
 {
-    logger << "DownloadFirmware";
+    logger << DOWNLOAD_FIRMWARE;
     std::vector<UTIL::AVAILABLE_COM> coms;
 #ifdef __WIN__
     coms = UTIL::get_available_windows_com_ports();
@@ -315,9 +303,6 @@ void MENU::DownloadFirmware()
 
     if (hids.empty())
         return;
-
-    //    std::string scanner_numbers = PRINT::ChooseScannerToProceed();
-    //    hids = UTIL::get_scanners_list_by_regex(hids, scanner_numbers);
 
     PRINT::download_attention();
 
@@ -420,7 +405,7 @@ void MENU::DownloadFirmware()
                 {
                     if (state == DownloadState::RECONNECTDEVICE)
                     {
-                        logger << "Need reconnect: " << com_to_connect;
+                        logger << PORT_RECONNECT << com_to_connect;
                         if (s_port.is_open())
                         {
                             s_port.close();
@@ -469,7 +454,7 @@ void MENU::DownloadFirmware()
                 }
                 std::this_thread::sleep_for(500ms);
             } while (persent < 100);
-            logger << "Last downloading status: " << state;
+            logger << LAST_STATE << state;
         }
         catch (boost::system::system_error &e)
         {

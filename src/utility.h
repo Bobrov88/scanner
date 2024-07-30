@@ -22,7 +22,6 @@
 #include "handler.h"
 #include "fwdlinterface.h"
 #include "converters.h"
-#include "reconnect.h"
 #include "commands_sequencies.h"
 
 namespace fs = std::filesystem;
@@ -35,11 +34,6 @@ namespace UTIL
     struct AVAILABLE_COM
     {
         std::string port_ = "";
-        // std::string product_ = "";
-        // std::string model_ = "";
-        // std::string serial_number_ = "";
-        // std::string firmware_ = "";
-        // todo from JSON straight to here
         AVAILABLE_COM(std::string port) : port_(port) {}
     };
 
@@ -87,7 +81,7 @@ namespace UTIL
 #endif
     std::vector<AVAILABLE_COM> get_available_linux_com_ports();
     std::vector<AVAILABLE_HID> get_available_hid_devices();
-    std::vector<AVAILABLE_HID> get_scanners_list_by_regex(std::vector<AVAILABLE_HID> &hids, const std::string &scanner_numbers);
+   // std::vector<AVAILABLE_HID> get_scanners_list_by_regex(std::vector<AVAILABLE_HID> &hids, const std::string &scanner_numbers);
     std::string get_string_from_source(std::ifstream &file);
     std::vector<std::pair<std::string, std::string>> get_json_file_list();
     std::vector<std::pair<std::string, int>> get_firmware_list();
@@ -99,7 +93,6 @@ namespace UTIL
     std::string get_bool_possible_data(const std::string &key);
     std::string get_uint8_t_possible_data(const std::string &key, const uint8_t from, const int to);
 
-    // void remove_com_devices_if_not_scanner(std::vector<AVAILABLE_COM> &coms);
     void remove_dublicates_of_hid_devices(std::vector<AVAILABLE_HID> &hids);
 
     int write_settings_from_json(const std::vector<std::pair<uint16_t, std::vector<uint8_t>>> &settings, handler &device);

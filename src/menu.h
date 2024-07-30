@@ -12,7 +12,6 @@
 #include "utility.h"
 #include "print.h"
 #include "commands.h"
-#include "reconnect.h"
 #ifdef __WIN__
 #include "windows.h"
 #endif
@@ -32,5 +31,4 @@ namespace MENU
     void RestoreFactorySettings();
     void RestoreCustomSettings();
     void DownloadFirmware();
-    // void ReadUsbIdentifiers(std::string dev_path);
 }

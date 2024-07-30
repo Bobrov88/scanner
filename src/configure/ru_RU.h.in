@@ -13,8 +13,8 @@
 #define COM2HID "Примечание:         Сканеры в COM-режиме (если таковые имеются) \n                    будут автоматически переведены в HID-режим"s
 #define WAIT4SCAN "Поиск доступных сканеров среди USB-устройств..."s
 #define PASS_FAIL "перевод невозможен"s
-#define SAVE_OK "Настройки всех сканеров были успешно сохранены в json-файлы"s
-#define SAVE_FAIL "Сохранены настройки не со всех сканеров!"s
+#define SAVE_OK "Настройки сканера были успешно сохранены в json-файл"s
+#define SAVE_FAIL "Сохранены не все настройки!"s
 #define SAVING_IN_PROCESS "Идёт запись в файл..."s
 #define WRITE_FAIL "Сохранение не удалось"s
 #define WRITE_CUS_FAIL "Сохранение настроек как пользовательских не удалось"s
@@ -63,3 +63,24 @@
 #define FLAGS_FILLED_ERR "Пожалуйста, проверьте чтоб ключи имели допустимые названия и значения"s
 #define LOOK_TO_LOG "Для получения детальной информации обратитесь к логам"s
 #define FW_DOWNLOAD_ATTENTION "Внимание!\nВо время процедуры обновления ПО\nкрайне не рекомендуется выключать компьютер,\nа также оказывать прочее воздействие\nна подключённое оборудование!"s
+#define SAVING_TO_INTERNAL_FLASH "Сохранение во внутреннюю память сканера"
+#define RESTORE_CUSTOM_SETTINGS "Восстановление пользовательских настроек"
+#define RESTORE_FACTORY_SETTINGS "Восстановление заводских настроек"
+#define ERASING_DUPLICATES "Попытка соединения со сканером с учётом его двойного определения системой"
+#define SWITCH_COM_2_HID "Переключение из режима COM в HID-POS "
+#define SWITCH_HID_2_COM "Переключение из режима HID-POS в COM"
+#define PRINT_DEVICES "Печать доступных устройств"
+#define PRINT_SOFTWARE "Печать версии ПО"
+#define SAVE_SETTINGS "Сохранение настроек в файл json"
+#define SAVE_FROM "Сохранение настроек из "
+#define WRITE_FROM_JSON "Запись настроек из json файла"
+#define HARD_RESET "Сброк устройства!"
+#define SOFT_RESET "Откат настроек"
+#define DOWNLOAD_FIRMWARE "Загрузка новой прошивки"
+#define PORT_RECONNECT "Происходит переподключение к порту: "
+#define LAST_STATE "Последний статус загрузки: "
+#define SUCC_READ "Успешно прочитано с "
+#define ATT " попытки"
+#define READ_FAILED ": ошибка чтения -> "
+#define FOUND "Найдено устройств: "
+#define CONNECT "Соединение: "

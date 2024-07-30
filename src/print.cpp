@@ -164,10 +164,6 @@ void PRINT::print_all_com_linux_devices(const std::vector<UTIL::AVAILABLE_COM> &
         {
             table[row][0] = row;
             table[row][1] = com.port_;
-            // table[row][2] = com.product_;
-            // table[row][3] = com.model_;
-            // table[row][4] = com.serial_number_;
-            // table[row][5] = com.firmware_;
             ++row;
         }
     }
@@ -237,33 +233,33 @@ void PRINT::download_attention()
     console << table;
 }
 
-std::string PRINT::ChooseScannerToProceed() // take this function out of MENU namespace
-{
-    console << CHOOSE_SCANNER;
+// std::string PRINT::ChooseScannerToProceed() // take this function out of MENU namespace
+// {
+//     console << CHOOSE_SCANNER;
 
-    std::string result_string;
-    do
-    {
-        result_string.clear();
+//     std::string result_string;
+//     do
+//     {
+//         result_string.clear();
 
-        std::cout << "----------->: ";
-        std::flush(std::cout);
+//         std::cout << "----------->: ";
+//         std::flush(std::cout);
 
-        std::string input, token;
-        std::getline(std::cin, input);
+//         std::string input, token;
+//         std::getline(std::cin, input);
 
-        std::istringstream iss(input);
+//         std::istringstream iss(input);
 
-        while (iss >> token)
-        {
-            result_string += token;
-            result_string += ' ';
-        }
+//         while (iss >> token)
+//         {
+//             result_string += token;
+//             result_string += ' ';
+//         }
 
-    } while (result_string.empty());
+//     } while (result_string.empty());
 
-    return result_string;
-}
+//     return result_string;
+// }
 
 int PRINT::ChooseToProceed(size_t amount) // take this function out of MENU namespace
 {

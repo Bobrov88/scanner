@@ -13,8 +13,8 @@
 #define COM2HID "Note:         Scanners in COM-mode (if exist) \n              will be automatically switched to HID-mode "s
 #define WAIT4SCAN "Search for available scanners among USB devices..."s
 #define PASS_FAIL " passing failed"s
-#define SAVE_OK "All scanners settings successfully saved into files"s
-#define SAVE_FAIL "Not all scanners settings saved!"s
+#define SAVE_OK "Scanner settings successfully saved into json file"s
+#define SAVE_FAIL "Not all settings saved!"s
 #define SAVING_IN_PROCESS "Saving to file..."s
 #define WRITE_FAIL "Settings saving failed"s
 #define WRITE_CUS_FAIL "Settings saving as custom failed"s
@@ -63,3 +63,24 @@
 #define FLAGS_FILLED_ERR "Please, check that the keys have valid names and values"s
 #define LOOK_TO_LOG "For detailed information look into log"
 #define FW_DOWNLOAD_ATTENTION "Warning! During the software update procedure\nit is highly recommended not to turn off the computer\nor otherwise affect the connected equipment!"s
+#define SAVING_TO_INTERNAL_FLASH "Saving to scanner internal flash"
+#define RESTORE_CUSTOM_SETTINGS "Restoring custom settings"
+#define RESTORE_FACTORY_SETTINGS "Restoring factory settings"
+#define ERASING_DUPLICATES "Trying to connect excluding duplicate entries"
+#define SWITCH_COM_2_HID "Switching from com to hid-pos "
+#define SWITCH_HID_2_COM "Switching from HID-POS to com"
+#define PRINT_DEVICES "Printing available devices"
+#define PRINT_SOFTWARE "Printing software version"
+#define SAVE_SETTINGS "Saving settings to json file"
+#define SAVE_FROM "Saving settings from "
+#define WRITE_FROM_JSON "Writing settings from json file"
+#define HARD_RESET "HARD_RESET!"
+#define SOFT_RESET "SOFT_RESET"
+#define DOWNLOAD_FIRMWARE "Downloading firmware"
+#define PORT_RECONNECT "Port reconnect processing: "
+#define LAST_STATE "Last download state: "
+#define SUCC_READ "Successfully read with "
+#define ATT " attempt"
+#define READ_FAILED ": read failed -> "
+#define FOUND "Found devices: "
+#define CONNECT "Connecting: "

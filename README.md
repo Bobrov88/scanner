@@ -10,3 +10,6 @@ usbipd list // list of hid-devices
 usbipd bind --busid 1-10   // 1-10 busid for sharind device
 
 scp -P 5022 bobrov@ubuntu.farafonov.pro:~/project/scanner/build/bin/scanner /home/
+
+dpkg-reconfigure console-setup
+Choose UTF-8 > Latin, Cyrillic/Non Cyrillic > Terminus Bold > 8x14 > OK

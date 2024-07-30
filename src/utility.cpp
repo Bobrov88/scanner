@@ -77,7 +77,6 @@ std::vector<UTIL::AVAILABLE_COM> UTIL::get_available_linux_com_ports()
             }
             std::sort(com_ports.begin(), com_ports.end(), [](const auto &first, const auto &second)
                       { return first.port_ < second.port_; });
-            //     remove_com_devices_if_not_scanner(com_ports);
         }
     }
     catch (const fs::filesystem_error &ex)
@@ -193,7 +192,6 @@ std::vector<UTIL::AVAILABLE_HID> UTIL::list_all_hid()
     std::vector<UTIL::AVAILABLE_HID> devices;
     struct hid_device_info *cur_dev;
     cur_dev = hid_enumerate(0x34eb, 0x0);
-    // todo in separate function
     while (cur_dev)
     {
         if (cur_dev->vendor_id != 0 && cur_dev->product_id != 0)
@@ -212,7 +210,7 @@ std::vector<UTIL::AVAILABLE_HID> UTIL::list_all_hid()
         cur_dev = cur_dev->next;
     }
     hid_free_enumeration(cur_dev);
-    logger << "Found " << devices.size() << " devices";
+    logger << FOUND << devices.size();
     return devices;
 }
 
@@ -228,9 +226,6 @@ std::vector<UTIL::AVAILABLE_HID> UTIL::get_available_hid_devices()
 
 void UTIL::remove_dublicates_of_hid_devices(std::vector<AVAILABLE_HID> &hids)
 {
-    // todo maybe not connected with first try
-    // I delete all being connected with failure
-    // todo define passing value type hid_device or handler
     std::vector<AVAILABLE_HID> unique_hids;
     unique_hids.reserve(hids.size());
     for (auto &hid : hids)
@@ -287,7 +282,6 @@ std::string UTIL::get_json_responce_for_com_detection(boost::asio::serial_port &
     std::this_thread::sleep_for(300ms);
     std::vector<uint8_t> v;
     uint8_t u;
-    // todo clear buffer before new record
     bool miss_open_bracket = true;
     do
     {
@@ -302,7 +296,6 @@ std::string UTIL::get_json_responce_for_com_detection(boost::asio::serial_port &
         v.push_back(u);
     } while (static_cast<char>(u) != '}');
 
-    // s_port.close();
     std::string str = CONVERT::convert_from_bytes_to_string(v);
     return str;
 }
@@ -406,9 +399,9 @@ int UTIL::HID_WRITE(handler &device, uint8_t *c, int size)
     try
     {
 #ifdef __WIN__
-        logger << "Trying connect " << device.serial_number << " " << get_trimmed_long_HID_path(device.path);
+        logger << CONNECT << device.serial_number << " " << get_trimmed_long_HID_path(device.path);
 #elif __DEBIAN__ || __CENTOS__
-        logger << "Trying connect " << device.serial_number << " " << device.path;
+        logger << CONNECT << device.serial_number << " " << device.path;
 #endif
         int attempt = 10; // define as a system var
         while (attempt != 0)
@@ -435,14 +428,15 @@ int UTIL::HID_WRITE(handler &device, uint8_t *c, int size)
                      r[7] == 0x00 &&
                      r[8] == 0x01)
             {
-                logger << "Successful read with " << (10 - attempt) << " attempt";
+                logger << SUCC_READ << (10 - attempt) << ATT;
                 return 0;
             }
-            logger << device.serial_number << ": read failed -> " << CONVERT::to_hex(r, 64);
+            logger << device.serial_number << READ_FAILED << CONVERT::to_hex(r, 64);
         }
     }
     catch (std::exception &ex)
     {
+        logger << ex.what();
         console << ex.what();
     }
     return -1; // todo error
@@ -524,6 +518,7 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
             }
             catch (const std::out_of_range &ex)
             {
+                incorrect_data += NOT_KEY + ": "s + key + "\n";
                 byte = 0;
             }
         };
@@ -2746,9 +2741,9 @@ bool UTIL::save_settings_to_files(const std::vector<UTIL::AVAILABLE_HID> &hids)
     std::for_each(hids.begin(), hids.end(), [&ret](const auto &hid)
                   {
 #ifdef __WIN__
-                    logger << "Saving settings from "<<hid.serial_number_<<" "<<UTIL::get_trimmed_long_HID_path(hid.path_);
+                    logger << SAVE_FROM <<hid.serial_number_<<" "<<UTIL::get_trimmed_long_HID_path(hid.path_);
 #elif __DEBIAN__ || __CENTOS__
-                    logger << "Saving settings from "<<hid.serial_number_<<" "<<hid.path_;
+                    logger << SAVE_FROM <<hid.serial_number_<<" "<<hid.path_;
 #endif
                     hid_device *handle = hid_open_path(hid.path_);
                     std::string json = UTIL::get_full_json_response(handle);
@@ -2777,63 +2772,63 @@ std::string UTIL::get_string_from_source(std::ifstream &file)
     return oss.str();
 }
 
-std::vector<UTIL::AVAILABLE_HID> UTIL::get_scanners_list_by_regex(std::vector<UTIL::AVAILABLE_HID> &hids, const std::string &scanner_numbers)
-{
-    if (!scanner_numbers.empty())
-        if (scanner_numbers[0] == '0')
-            return hids;
+// std::vector<UTIL::AVAILABLE_HID> UTIL::get_scanners_list_by_regex(std::vector<UTIL::AVAILABLE_HID> &hids, const std::string &scanner_numbers)
+// {
+//     if (!scanner_numbers.empty())
+//         if (scanner_numbers[0] == '0')
+//             return hids;
 
-    std::vector<int> scanner_to_proceed;
-    std::vector<int> ints;
-    std::vector<std::string> vids;
-    const std::regex int_number{"[1-9]+"};
-    const std::regex vid_number{"[0x]{1}[A-Fa-f0-9]{4}"};
-    while (true)
-    {
-        for (std::sregex_iterator rBegin{scanner_numbers.begin(), scanner_numbers.end(), int_number}, rEnd;
-             rBegin != rEnd;
-             ++rBegin)
-        {
-            ints.push_back(std::stoi(rBegin->str()) - 1);
-        }
+//     std::vector<int> scanner_to_proceed;
+//     std::vector<int> ints;
+//     std::vector<std::string> vids;
+//     const std::regex int_number{"[1-9]+"};
+//     const std::regex vid_number{"[0x]{1}[A-Fa-f0-9]{4}"};
+//     while (true)
+//     {
+//         for (std::sregex_iterator rBegin{scanner_numbers.begin(), scanner_numbers.end(), int_number}, rEnd;
+//              rBegin != rEnd;
+//              ++rBegin)
+//         {
+//             ints.push_back(std::stoi(rBegin->str()) - 1);
+//         }
 
-        for (std::sregex_iterator rBegin{scanner_numbers.begin(), scanner_numbers.end(), vid_number}, rEnd;
-             rBegin != rEnd;
-             ++rBegin)
-            vids.push_back(rBegin->str());
+//         for (std::sregex_iterator rBegin{scanner_numbers.begin(), scanner_numbers.end(), vid_number}, rEnd;
+//              rBegin != rEnd;
+//              ++rBegin)
+//             vids.push_back(rBegin->str());
 
-        if (!vids.empty() ||
-            !ints.empty())
-            break;
-    }
-    scanner_to_proceed.assign(ints.begin(), ints.end());
-    for (const auto &vid : vids)
-    {
-        for (int i = 0; i < hids.size(); ++i)
-        {
-            if (CONVERT::hex_view(hids[i].vid_) == vid)
-            {
-                scanner_to_proceed.push_back(i);
-            }
-        }
-    }
-    std::sort(scanner_to_proceed.begin(), scanner_to_proceed.end());
-    auto u = std::unique(scanner_to_proceed.begin(), scanner_to_proceed.end());
-    scanner_to_proceed.erase(u, scanner_to_proceed.end());
+//         if (!vids.empty() ||
+//             !ints.empty())
+//             break;
+//     }
+//     scanner_to_proceed.assign(ints.begin(), ints.end());
+//     for (const auto &vid : vids)
+//     {
+//         for (int i = 0; i < hids.size(); ++i)
+//         {
+//             if (CONVERT::hex_view(hids[i].vid_) == vid)
+//             {
+//                 scanner_to_proceed.push_back(i);
+//             }
+//         }
+//     }
+//     std::sort(scanner_to_proceed.begin(), scanner_to_proceed.end());
+//     auto u = std::unique(scanner_to_proceed.begin(), scanner_to_proceed.end());
+//     scanner_to_proceed.erase(u, scanner_to_proceed.end());
 
-    std::vector<UTIL::AVAILABLE_HID> tmp;
-    for (const auto i : scanner_to_proceed)
-    {
-        tmp.push_back(std::move(hids[i]));
-    }
+//     std::vector<UTIL::AVAILABLE_HID> tmp;
+//     for (const auto i : scanner_to_proceed)
+//     {
+//         tmp.push_back(std::move(hids[i]));
+//     }
 
-    if (!tmp.empty())
-    {
-        hids.clear();
-        hids.assign(tmp.begin(), tmp.end());
-    }
-    return hids;
-}
+//     if (!tmp.empty())
+//     {
+//         hids.clear();
+//         hids.assign(tmp.begin(), tmp.end());
+//     }
+//     return hids;
+// }
 
 #ifdef __WIN__
 std::string UTIL::get_com_port(const std::vector<UTIL::AVAILABLE_COM> &not_scanners, const std::vector<UTIL::AVAILABLE_COM> &all_com)
