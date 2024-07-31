@@ -1923,8 +1923,12 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
                 // Reserved 5-2
             }
             {
-                const std::string key1 = "DMAIBracketOut"s;
-                set_bit_if_key_bool_true(byte, 6, key1);
+                const std::string key = "DMAIBracketOut"s;
+                bool tmp = str.at(key).as_bool();
+                if (tmp)
+                    byte |= 0b00000000;
+                else
+                    byte |= 0b01000000;
                 // const std::string key2 = "DMBracketOut"s;
                 // set_bit_if_key_bool_true(byte, 6, key2); // different names in other version
             }
@@ -1949,18 +1953,7 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
             // FLAG 0x0056
             uint8_t byte = 0;
             {
-                // Reserved 7
-            }
-            {
-                const std::string key = "DMAIBracketOut"s;
-                bool tmp = str.at(key).as_bool();
-                if (tmp)
-                    byte |= 0b00000000;
-                else
-                    byte |= 0b01000000;
-            }
-            {
-                // Reserved 5-1
+                // Reserved 7-1
             }
             {
                 const std::string key = "HanXinEnable"s;
