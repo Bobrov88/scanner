@@ -404,6 +404,7 @@ int UTIL::HID_WRITE(handler &device, uint8_t *c, int size)
         logger << CONNECT << device.serial_number << " " << device.path;
 #endif
         int attempt = 10; // define as a system var
+        uint8_t r[64] = {0};
         while (attempt != 0)
         {
             if (!device.ptr)
@@ -416,8 +417,6 @@ int UTIL::HID_WRITE(handler &device, uint8_t *c, int size)
             {
                 continue;
             }
-
-            uint8_t r[64] = {0};
             int a = hid_read_timeout(device.ptr, r, 64, 100);
             if (a == -1 || r[0] == 0)
             {
@@ -431,8 +430,8 @@ int UTIL::HID_WRITE(handler &device, uint8_t *c, int size)
                 logger << SUCC_READ << (10 - attempt) << ATT;
                 return 0;
             }
-            logger << device.serial_number << READ_FAILED << CONVERT::to_hex(r, 64);
         }
+        logger << device.serial_number << READ_FAILED << CONVERT::to_hex(r, 64);
     }
     catch (std::exception &ex)
     {
