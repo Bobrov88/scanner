@@ -153,7 +153,7 @@ void SEQ::testing_to_pass_HIDPOS_from_COM_command(uint8_t *c)
     c[3] = 0x01;
     c[4] = 0x00;
     c[5] = 0x15;
-    c[6] = 0x01;
+    c[6] = 0x00;
     uint16_t crc = crc_16(&c[2], 5);
     c[7] = crc >> 8;
     c[8] = crc & 0x00ff;
