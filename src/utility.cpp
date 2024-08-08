@@ -404,6 +404,7 @@ int UTIL::HID_WRITE(handler &device, uint8_t *c, int size)
         logger << CONNECT << device.serial_number << " " << device.path;
 #endif
         int attempt = 10; // define as a system var
+        uint8_t r[64] = {0};
         while (attempt != 0)
         {
             if (!device.ptr)
@@ -417,7 +418,6 @@ int UTIL::HID_WRITE(handler &device, uint8_t *c, int size)
                 continue;
             }
 
-            uint8_t r[64] = {0};
             int a = hid_read_timeout(device.ptr, r, 64, 100);
             if (a == -1 || r[0] == 0)
             {
@@ -431,8 +431,8 @@ int UTIL::HID_WRITE(handler &device, uint8_t *c, int size)
                 logger << SUCC_READ << (10 - attempt) << ATT;
                 return 0;
             }
-            logger << device.serial_number << READ_FAILED << CONVERT::to_hex(r, 64);
         }
+        logger << device.serial_number << READ_FAILED << CONVERT::to_hex(r, 64);
     }
     catch (std::exception &ex)
     {
@@ -857,23 +857,23 @@ std::vector<std::pair<uint16_t, std::vector<uint8_t>>> UTIL::convert_json_to_bit
             bytes.push_back(byte);
         }
         {
-        //     FLAG 0x000D
-             uint8_t byte = 0;
-             {
-                 const std::string key = "invoiceModeEnable"s;
-                 set_bit_if_key_bool_true(byte, 7, key);
-             }
-        //     {
-        //         const std::string key = "virtualKeyboard"s;
-        //         set_bit_if_key_bool_true(byte, 6, key);
-        //     }
-        //     {
-        //         Reserved 5
-        //     }
-        //     {
-        //         const std::string key = "codeTypeAutoCheckUtf8"s;
-        //         set_bit_if_key_bool_true(byte, 4, key);
-        //     }
+            //     FLAG 0x000D
+            uint8_t byte = 0;
+            {
+                const std::string key = "invoiceModeEnable"s;
+                set_bit_if_key_bool_true(byte, 7, key);
+            }
+            //     {
+            //         const std::string key = "virtualKeyboard"s;
+            //         set_bit_if_key_bool_true(byte, 6, key);
+            //     }
+            //     {
+            //         Reserved 5
+            //     }
+            //     {
+            //         const std::string key = "codeTypeAutoCheckUtf8"s;
+            //         set_bit_if_key_bool_true(byte, 4, key);
+            //     }
             {
                 std::vector<std::string> variants = {"UART-TTL"s, "keyboard"s, "virtualCom"s, "pos"s, "composite"s};
                 const std::string key = "outMode"s;

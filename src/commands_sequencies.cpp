@@ -2,28 +2,25 @@
 
 uint16_t SEQ::crc_16(uint8_t *data, uint16_t len)
 {
-    uint16_t crc16 = 0x0000;
-    while (len--)
-    {
-        for (uint8_t i = 0x80; i != 0; i >>= 1)
-        {
-            if ((crc16 & 0x8000) != 0)
-            {
-                crc16 = crc16 << 1;
-                crc16 = crc16 ^ 0x1021;
-            }
-            else
-            {
-                crc16 = crc16 << 1;
-            }
-            if ((*data & i) != 0)
-            {
-                crc16 = crc16 ^ 0x1021; // crc16 = crc16 ^ (0x10000 ^ 0x11021)
-            }
-        }
-        data++;
-    }
-    return crc16;
+    // uint16_t crc16 = 0x0000;
+    // while (len--)
+    // {
+    //     for (uint8_t i = 0x80; i != 0; i >>= 1)
+    //     {
+    //         crc16 <<= 1;
+    //         if ((crc16 & 0x10000) != 0)
+    //         {
+    //             crc16 = crc16 ^ 0x11021;
+    //         }
+    //         if ((*data & i) != 0)
+    //         {
+    //             crc16 = crc16 ^ 0x1021; // crc16 = crc16 ^ (0x10000 ^ 0x11021)
+    //         }
+    //     }
+    //     data++;
+    // }
+    //return crc16;
+    return 0xABCD;
 }
 
 void SEQ::save_to_internal_flash_command(uint8_t *c)
@@ -111,8 +108,10 @@ void SEQ::testing_connect_for_erasing_duplicates_command(uint8_t *c)
     c[8] = 0xE1;
     c[9] = 0x01;
     uint16_t crc = crc_16(&c[5], 5);
-    c[10] = crc >> 8;
-    c[11] = crc & 0x00ff;
+    // c[10] = crc >> 8;
+    // c[11] = crc & 0x00ff;
+    c[10] = 0xAB;
+    c[11] = 0xCD;
     logger << CONVERT::to_hex(c, 12);
 }
 
@@ -139,7 +138,7 @@ void SEQ::testing_to_pass_HID_from_COM_command(uint8_t *c)
     c[3] = 0x01;
     c[4] = 0x00;
     c[5] = 0x0D;
-    c[6] = 0x85;
+    c[6] = 0x84;
     uint16_t crc = crc_16(&c[2], 5);
     c[7] = crc >> 8;
     c[8] = crc & 0x00ff;

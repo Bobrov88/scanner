@@ -82,5 +82,5 @@
 #define SUCC_READ "Успешно прочитано с "
 #define ATT " попытки"
 #define READ_FAILED ": ошибка чтения -> "
-#define FOUND "Найдено устройств: "
+#define FOUND "Найдено HID устройств c VID 0x34EB: "
 #define CONNECT "Соединение: "

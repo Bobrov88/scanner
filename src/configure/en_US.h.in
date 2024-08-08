@@ -82,5 +82,5 @@
 #define SUCC_READ "Successfully read with "
 #define ATT " attempt"
 #define READ_FAILED ": read failed -> "
-#define FOUND "Found devices: "
+#define FOUND "Found devices with VID 0x34EB: "
 #define CONNECT "Connecting: "
