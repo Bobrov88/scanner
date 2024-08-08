@@ -1,5 +1,5 @@
 #pragma once
-#define EXCEPTION "Исключение"s
+#define EXCEPTION "Исключение!"s
 #define UNKNOWN "Неизвестный параметр"s
 #define USAGE "Параметры меню"s
 #define GET_DESC "\t -h --help           \t\tОписание доступных функций"s

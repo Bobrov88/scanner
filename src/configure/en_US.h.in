@@ -1,5 +1,5 @@
 #pragma once
-#define EXCEPTION "Exception"s
+#define EXCEPTION "Exception!"s
 #define UNKNOWN "Unknown parameter"s
 #define USAGE "Usage"s
 #define GET_DESC "\t -h --help           \t\tget description of available functions"s

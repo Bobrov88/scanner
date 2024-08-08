@@ -65,7 +65,8 @@ bool HID::testing_to_pass_HID_from_COM(const std::string &com)
         s_port.open(com);
         s_port.set_option(boost::asio::serial_port_base::baud_rate(115200));
         uint8_t c[9] = {0};
-        SEQ::testing_to_pass_HID_from_COM_command(c);
+        // SEQ::testing_to_pass_HID_from_COM_command(c);
+        SEQ::testing_to_pass_HIDPOS_from_COM_command(c);
         boost::asio::write(s_port, boost::asio::buffer(c, 9));
         std::this_thread::sleep_for(300ms);
         char resp[1] = {0};

@@ -49,6 +49,7 @@ void MENU::PrintAvailableDevices()
             logger << com.port_ << " " << PASS_FAIL;
             continue;
         }
+        logger << OK;
         std::this_thread::sleep_for(3000ms);
         break;
     }
@@ -73,6 +74,7 @@ void MENU::PrintSoftwareVersion()
             logger << com.port_ << " " << PASS_FAIL;
             continue;
         }
+        logger << OK;
         std::this_thread::sleep_for(3000ms);
         break;
     }
@@ -97,6 +99,7 @@ void MENU::SaveSettings()
             logger << com.port_ << " " << PASS_FAIL;
             continue;
         }
+        logger << OK;
         std::this_thread::sleep_for(3000ms);
         break;
     }
@@ -136,6 +139,7 @@ void MENU::WriteFromJson()
             logger << com.port_ << " " << PASS_FAIL;
             continue;
         }
+        logger << OK;
         std::this_thread::sleep_for(3000ms);
         break;
     }
@@ -204,6 +208,7 @@ void MENU::RestoreFactorySettings()
             logger << com.port_ << " " << PASS_FAIL;
             continue;
         }
+        logger << OK;
         std::this_thread::sleep_for(3000ms);
         break;
     }
@@ -247,6 +252,7 @@ void MENU::RestoreCustomSettings()
             logger << com.port_ << " " << PASS_FAIL;
             continue;
         }
+        logger << OK;
         std::this_thread::sleep_for(3000ms);
         break;
     }
@@ -290,6 +296,7 @@ void MENU::DownloadFirmware()
             logger << com.port_ << " " << PASS_FAIL;
             continue;
         }
+        logger << OK;
         std::this_thread::sleep_for(3000ms);
         break;
     }
