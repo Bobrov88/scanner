@@ -333,7 +333,9 @@ std::string UTIL::get_firmware_device_name_model(hid_device *handle)
             break;
         }
     }
-    return read_json_settings(handle);
+    std::string result = read_json_settings(handle);
+    logger << result;
+    return result; 
 }
 
 std::string UTIL::get_read_device_info(hid_device *handle)
@@ -355,7 +357,9 @@ std::string UTIL::get_read_device_info(hid_device *handle)
             break;
         }
     }
-    return read_json_settings(handle); // using json-reading for readDeviceInfo
+    std::string result = read_json_settings(handle);
+    logger << result;
+    return result; // using json-reading for readDeviceInfo
 }
 
 std::string UTIL::read_json_settings(hid_device *handle)
