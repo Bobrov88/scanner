@@ -263,6 +263,9 @@ std::vector<uint8_t> UTIL::read_json_piece(hid_device *handle)
         }
     }
     size_t size_of_json_piece = static_cast<size_t>(response[1]);
+    if (size_of_json_piece == 0)
+        return {};
+    logger << CONVERT::to_hex(response, 64);
     std::vector<uint8_t> json_bytes;
     json_bytes.reserve(size_of_json_piece);
     for (size_t i = 0; i < size_of_json_piece; ++i)
@@ -335,7 +338,7 @@ std::string UTIL::get_firmware_device_name_model(hid_device *handle)
     }
     std::string result = read_json_settings(handle);
     logger << result;
-    return result; 
+    return result;
 }
 
 std::string UTIL::get_read_device_info(hid_device *handle)
@@ -368,10 +371,9 @@ std::string UTIL::read_json_settings(hid_device *handle)
     while (true)
     {
         std::vector<uint8_t> tmp = read_json_piece(handle);
-
-        if (tmp.empty())
-            break;
         result.insert(result.end(), tmp.begin(), tmp.end());
+        if (tmp[tmp.size() - 1] == 0)
+            break;
     }
     return CONVERT::convert_from_bytes_to_string(result);
 }
@@ -379,22 +381,18 @@ std::string UTIL::read_json_settings(hid_device *handle)
 std::vector<std::string> UTIL::split_for_read_device_info(const std::string &vers)
 {
     std::vector<std::string> datas;
-    datas.resize(5);
-    datas[0] = vers.substr(vers.find("DeviceName") + 11, std::distance(vers.begin(),
-                                                                       std::find(std::next(vers.begin(), vers.find("DeviceName")), vers.end(), '\n')) -
-                                                             vers.find("DeviceName") - 11);
-    datas[1] = vers.substr(vers.find("HwVer") + 6, std::distance(vers.begin(),
-                                                                 std::find(std::next(vers.begin(), vers.find("HwVer")), vers.end(), '\n')) -
-                                                       vers.find("HwVer") - 6);
-    datas[2] = vers.substr(vers.find("BootVer") + 8, std::distance(vers.begin(),
-                                                                   std::find(std::next(vers.begin(), vers.find("BootVer")), vers.end(), '\n')) -
-                                                         vers.find("BootVer") - 8);
-    datas[3] = vers.substr(vers.find("FwVer") + 6, std::distance(vers.begin(),
-                                                                 std::find(std::next(vers.begin(), vers.find("FwVer")), vers.end(), '\n')) -
-                                                       vers.find("FwVer") - 6);
-    datas[4] = vers.substr(vers.find("LibVer") + 7, std::distance(vers.begin(),
-                                                                  std::find(std::next(vers.begin(), vers.find("LibVer")), vers.end(), '\n')) -
-                                                        vers.find("LibVer") - 7);
+    datas.resize(4);
+    std::string data;
+    size_t it1 = 0;
+    size_t it2 = 0;
+    for (size_t i = 0; i < 4; ++i)
+    {
+        it1 = vers.find_first_of(':', it2);
+        it2 = vers.find_first_of(';', it2);
+        data = vers.substr(it1 + 1, it2 - it1);
+        datas.push_back(std::move(data));
+        ++it2;
+    }
     return datas;
 }
 

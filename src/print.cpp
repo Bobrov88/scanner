@@ -34,49 +34,17 @@ void PRINT::print_all_hid_devices(const std::vector<UTIL::AVAILABLE_HID> &hids)
         table[0][3] = PROD;
         table[0][4] = SN;
         table[0][5] = MODEL;
-        table[0][6] = FW_VER;
 
         int row = 1;
         for (const auto &hid : hids)
         {
+            hid_device *ptr = hid_open_path(hid.path_);
             table[row][0] = row;
             table[row][1] = CONVERT::hex_view(hid.vid_);
             table[row][2] = CONVERT::hex_view(hid.pid_);
             table[row][3] = CONVERT::str(hid.product_).c_str();
             table[row][4] = CONVERT::str(hid.serial_number_).c_str();
-            hid_device *ptr = hid_open_path(hid.path_);
-            try
-            {
-                auto resp = UTIL::get_firmware_device_name_model(ptr);
-                if (!resp.empty())
-                {
-                    boost::json::value obj = boost::json::parse(resp);
-                    table[row][5] = obj.at("deviceName").as_string().c_str();
-                    table[row][6] = obj.at("FwVer").as_string().c_str();
-                }
-                else
-                {
-                    table[row][5] = table[row][5] = ERR;
-                    continue;
-                }
-            }
-            catch (const boost::system::system_error &e)
-            {
-                boost::system::error_code ec = e.code();
-                logger << CONVERT::str(hid.serial_number_).c_str() << ": " << READ_ERROR;
-                logger << ec.value()
-                       << " "
-                       << ec.category().name() << " " << ec.message();
-                console << EXCEPTION << " "s << LOOK_TO_LOG;
-                table[row][5] = table[row][5] = ERR;
-            }
-            catch (const std::exception &ex)
-            {
-                logger << CONVERT::str(hid.serial_number_).c_str() << ": " << READ_ERROR;
-                logger << ex.what();
-                console << EXCEPTION << " "s << LOOK_TO_LOG;
-                table[row][5] = table[row][5] = ERR;
-            }
+            table[row][5] = CONVERT::str(hid.manufacturer_).c_str();
             ++row;
             hid_close(ptr);
         }
@@ -109,6 +77,7 @@ void PRINT::print_software_version(const std::vector<UTIL::AVAILABLE_HID> &hids)
             table[row][0] = row;
             table[row][1] = CONVERT::str(hid.product_).c_str();
             table[row][2] = CONVERT::str(hid.serial_number_).c_str();
+            table[row][3] = CONVERT::str(hid.manufacturer_).c_str();
             hid_device *ptr = hid_open_path(hid.path_);
             try
             {
@@ -116,15 +85,14 @@ void PRINT::print_software_version(const std::vector<UTIL::AVAILABLE_HID> &hids)
                 auto vers = UTIL::split_for_read_device_info(info);
                 if (!vers.empty())
                 {
-                    table[row][3] = vers[0];
-                    table[row][4] = vers[1];
-                    table[row][5] = vers[2];
-                    table[row][6] = vers[3];
-                    table[row][7] = vers[4];
+                    table[row][4] = vers[0];
+                    table[row][5] = vers[1];
+                    table[row][6] = vers[2];
+                    table[row][7] = vers[3];
                 }
                 else
                 {
-                    table[row][3] = table[row][4] = table[row][5] = table[row][6] = table[row][7] = ERR;
+                    table[row][4] = table[row][5] = table[row][6] = table[row][7] = ERR;
                     continue;
                 }
             }

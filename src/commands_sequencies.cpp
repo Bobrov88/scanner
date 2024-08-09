@@ -198,7 +198,7 @@ void SEQ::testing_to_pass_COM_from_HID_command(uint8_t *c)
 void SEQ::get_config_command(uint8_t *c, const uint8_t suffix)
 {
     c[0] = 0xfd;
-    c[1] = 0x0C;
+    c[1] = 0x0c;
     c[2] = 0xff;
     c[3] = 0x47;
     c[4] = 0x65;
