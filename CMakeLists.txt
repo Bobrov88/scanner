@@ -169,7 +169,7 @@ target_link_libraries(${OUTPUT_FILE} PRIVATE ${FWLIB_TO_INCLUDE})
 
 # Debian 11 i386 build
 # docker build --no-cache -t scanner_debian11_i386 -f ./debian11-i386.Dockerfile .
-# docker run --rm -it --volume=./:/home/project/scanner scanner_debian11_x64
+# docker run --rm -it --volume=./:/home/project/scanner scanner_debian11_i386
 # conan install -pr linux_x86_build -if build_debian11_x86 /home/project/scanner/ --build=missing 
 # cmake -Bbuild_debian11_x86 . -DTARGET_SYSTEM=DEBIANi386 -D_DEBUG=FALSE -DLANG=en_US -Dstatic-libsystemd=true -Dstatic-libudev=true
 # cmake --build ./build_debian11_x86

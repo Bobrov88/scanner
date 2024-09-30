@@ -2670,16 +2670,21 @@ std::vector<std::pair<std::string, std::string>> UTIL::get_json_file_list()
 
 std::vector<std::pair<std::string, int>> UTIL::get_firmware_list()
 {
+    console << "Get firmware list";
     std::vector<std::pair<std::string, int>> firmware_files;
+    console << fs::current_path().string();
     for (const auto &entry : fs::directory_iterator(fs::current_path()))
     {
         if (entry.is_regular_file() && entry.path().extension() == ".sig")
         {
             std::string file = entry.path().filename().string();
+            console << file;
             int parse_result = firmware_parse_pro(file.data());
+            console << parse_result;
             firmware_files.push_back({std::move(file), parse_result});
         }
     }
+    console << "Size "<<firmware_files.size();
     return firmware_files;
 }
 
