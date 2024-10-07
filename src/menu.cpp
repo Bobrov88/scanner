@@ -276,7 +276,6 @@ void MENU::RestoreCustomSettings()
 
 void MENU::DownloadFirmware()
 {
-    console << "1.0.1";
     logger << DOWNLOAD_FIRMWARE;
     std::vector<UTIL::AVAILABLE_COM> coms;
 #ifdef __WIN__
@@ -308,7 +307,6 @@ void MENU::DownloadFirmware()
     PRINT::download_attention();
 
     auto firmware_files = UTIL::get_firmware_list();
-    console << "Size " <<firmware_files.size();
     PRINT::print_all_firmware_files(firmware_files);
     if (firmware_files.empty())
         return;
