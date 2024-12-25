@@ -3,6 +3,9 @@ FROM i386/centos:7
 ENV TZ=Europe/Moscow
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
+RUN sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+RUN sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+
 RUN yum update -y && \
     yum upgrade -y && \
     yum groupinstall -y 'Development Tools' && \
@@ -11,13 +14,11 @@ RUN yum update -y && \
     yum install -y sqlite-devel libffi-devel && \
     yum install -y xz-devel && \
     yum install -y xz-lzma-compat && \
-    yum install -y bzip2-devel && \
-    yum install -y libX11-devel
-#   yum install -y libudev-devel && \
-#   yum install boost boost-thread boost-devel -y
-#yum install -y qt5-qtbase-devel && \
-#yum install -y qt-devel qt-config && \
-#yum-builddep -y qt5-qtbase-devel
+    yum install -y bzip2-devel
+
+RUN yum install -y libusbx-devel && \
+    yum install -y libusb-devel && \
+    yum install -y libudev-devel
 
 #install and build gcc 9.4.0
 RUN mkdir /build && \
@@ -37,7 +38,7 @@ RUN mkdir /build && \
     cp /build/obj.gcc-9.4.0/stage1-i686-redhat-linux/libstdc++-v3/src/.libs/libstdc++.so.6.0.28 /usr/lib && \
     rm -f /usr/lib/libstdc++.so.6 && \
     ln -s /usr/lib/libstdc++.so.6.0.28 /usr/lib/libstdc++.so.6
-
+    
 #install and build cmake
 RUN cd /build/ && \
     git clone https://gitlab.kitware.com/cmake/cmake.git && \
@@ -85,12 +86,6 @@ RUN cd /home && \
     cd project &&\
     mkdir scanner
 
-RUN yum install libusbx-devel -y && yum install libusb-devel -y && yum install -y libudev-devel
-#RUN yum -y install glibc.i686
-#RUN yum -y install glibc-devel.i686
-#RUN LD_LIBRARY_PATH=/usr/local/lib  ## for finding libhidapi-hidraw ## to be resolved as plugged-in into scanner
-#RUN export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/libhidapi-hidraw.so.0
-#RUN yum install libstdc++.i686
 
 COPY conanfile.txt /home/project/scanner
 
