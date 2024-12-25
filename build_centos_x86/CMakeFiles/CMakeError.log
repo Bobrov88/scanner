@@ -1,0 +1,84 @@
+Performing C++ SOURCE FILE Test CMAKE_HAVE_LIBC_PTHREAD failed with the following output:
+Change Dir: /home/project/scanner/build_centos_x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_a7f43/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_a7f43.dir/build.make CMakeFiles/cmTC_a7f43.dir/build
+gmake[1]: Entering directory `/home/project/scanner/build_centos_x86/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_a7f43.dir/src.cxx.o
+/usr/local/bin/c++ -DCMAKE_HAVE_LIBC_PTHREAD  -std=gnu++17 -o CMakeFiles/cmTC_a7f43.dir/src.cxx.o -c /home/project/scanner/build_centos_x86/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_a7f43
+/usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_a7f43.dir/link.txt --verbose=1
+/usr/local/bin/c++ -static-libstdc++ -static-libgcc    CMakeFiles/cmTC_a7f43.dir/src.cxx.o -o cmTC_a7f43 
+CMakeFiles/cmTC_a7f43.dir/src.cxx.o: In function `main':
+src.cxx:(.text+0x27): undefined reference to `pthread_create'
+src.cxx:(.text+0x36): undefined reference to `pthread_detach'
+src.cxx:(.text+0x45): undefined reference to `pthread_cancel'
+src.cxx:(.text+0x56): undefined reference to `pthread_join'
+src.cxx:(.text+0x67): undefined reference to `pthread_atfork'
+collect2: error: ld returned 1 exit status
+gmake[1]: *** [cmTC_a7f43] Error 1
+gmake[1]: Leaving directory `/home/project/scanner/build_centos_x86/CMakeFiles/CMakeTmp'
+gmake: *** [cmTC_a7f43/fast] Error 2
+
+
+Source file was:
+#include <pthread.h>
+
+static void* test_func(void* data)
+{
+  return data;
+}
+
+int main(void)
+{
+  pthread_t thread;
+  pthread_create(&thread, NULL, test_func, NULL);
+  pthread_detach(thread);
+  pthread_cancel(thread);
+  pthread_join(thread, NULL);
+  pthread_atfork(NULL, NULL, NULL);
+  pthread_exit(NULL);
+
+  return 0;
+}
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /home/project/scanner/build_centos_x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_ee66c/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_ee66c.dir/build.make CMakeFiles/cmTC_ee66c.dir/build
+gmake[1]: Entering directory `/home/project/scanner/build_centos_x86/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_ee66c.dir/CheckFunctionExists.cxx.o
+/usr/local/bin/c++   -DCHECK_FUNCTION_EXISTS=pthread_create -std=gnu++17 -o CMakeFiles/cmTC_ee66c.dir/CheckFunctionExists.cxx.o -c /home/project/scanner/build_centos_x86/CMakeFiles/CheckLibraryExists/CheckFunctionExists.cxx
+Linking CXX executable cmTC_ee66c
+/usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_ee66c.dir/link.txt --verbose=1
+/usr/local/bin/c++    -DCHECK_FUNCTION_EXISTS=pthread_create -static-libstdc++ -static-libgcc    CMakeFiles/cmTC_ee66c.dir/CheckFunctionExists.cxx.o -o cmTC_ee66c  -lpthreads 
+/usr/bin/ld: cannot find -lpthreads
+collect2: error: ld returned 1 exit status
+gmake[1]: *** [cmTC_ee66c] Error 1
+gmake[1]: Leaving directory `/home/project/scanner/build_centos_x86/CMakeFiles/CMakeTmp'
+gmake: *** [cmTC_ee66c/fast] Error 2
+
+
+
+Performing C SOURCE FILE Test HIDAPI_ICONV_CONST failed with the following output:
+Change Dir: /home/project/scanner/build_centos_x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_b63d1/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_b63d1.dir/build.make CMakeFiles/cmTC_b63d1.dir/build
+gmake[1]: Entering directory `/home/project/scanner/build_centos_x86/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_b63d1.dir/src.c.o
+/usr/local/bin/gcc -DHIDAPI_ICONV_CONST  -fPIE -o CMakeFiles/cmTC_b63d1.dir/src.c.o -c /home/project/scanner/build_centos_x86/CMakeFiles/CMakeTmp/src.c
+/home/project/scanner/build_centos_x86/CMakeFiles/CMakeTmp/src.c:2:27: error: conflicting types for 'iconv'
+    2 |             extern size_t iconv (iconv_t cd, const char **inbuf, size_t *inbytesleft, char **outbuf, size_t *outbytesleft);
+      |                           ^~~~~
+In file included from /home/project/scanner/build_centos_x86/CMakeFiles/CMakeTmp/src.c:1:
+/usr/include/iconv.h:42:15: note: previous declaration of 'iconv' was here
+   42 | extern size_t iconv (iconv_t __cd, char **__restrict __inbuf,
+      |               ^~~~~
+gmake[1]: *** [CMakeFiles/cmTC_b63d1.dir/src.c.o] Error 1
+gmake[1]: Leaving directory `/home/project/scanner/build_centos_x86/CMakeFiles/CMakeTmp'
+gmake: *** [cmTC_b63d1/fast] Error 2
+
+
+Source file was:
+#include<iconv.h>
+            extern size_t iconv (iconv_t cd, const char **inbuf, size_t *inbytesleft, char **outbuf, size_t *outbytesleft);
+            int main() {}

@@ -1,0 +1,2 @@
+/usr/bin/ar qc libhidapi-hidraw.a CMakeFiles/hidapi_hidraw.dir/hid.c.o
+/usr/bin/ranlib libhidapi-hidraw.a

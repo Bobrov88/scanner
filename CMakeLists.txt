@@ -141,6 +141,19 @@ target_link_libraries(${OUTPUT_FILE} PRIVATE utf8cpp hidapi::hidapi)
 target_link_libraries(${OUTPUT_FILE} PRIVATE Boost::thread Boost::system Boost::json Boost::log Boost::log_setup)
 target_link_libraries(${OUTPUT_FILE} PRIVATE ${FWLIB_TO_INCLUDE})
 
+# install(TARGETS ${OUTPUT_FILE} DESTINATION ${CMAKE_SOURCE_DIR}/setup)
+# install(FILES ${CMAKE_SOURCE_DIR}/src/libs/ DESTINATION lib)
+
+# set(CPACK_GENERATOR "RPM")
+# set(CPACK_PACKAGE_NAME "scanner_utility")
+# set(CPACK_PACKAGE_VERSION "1.0")
+# set(CPACK_PACKAGE_RELEASE "1")
+# set(CPACK_PACKAGE_LICENSE "Bobrov D.A.")
+# set(CPACK_PACKAGE_DESCRIPTION "Utility for gaining info from scanner NEO FOX SD, read and write settings, downloading firmware")
+# set(CPACK_RPM_PACKAGE_GROUP "Applications/Utilities")
+# include(CPack)
+
+
 # Windows10 x64 build
 # conan install -pr .\conan_profiles\win10\win10_build -if build_win_x86_64 . -s build_type=Debug -s compiler="Visual Studio" -s compiler.runtime=MDd --build=missing
 # cmake -Bbuild_win_x86_64 . -DTARGET_SYSTEM=WINDOWS -D_DEBUG=TRUE -DLANG=ru_RU -G "Visual Studio 16" -A x64
