@@ -32,7 +32,8 @@
 *.app
 
 # Build folders
-./build/*
+./build*/*
+./cmake/
 
 # TODO
 .vscode/*

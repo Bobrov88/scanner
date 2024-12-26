@@ -1,0 +1,2 @@
+/usr/bin/ar qc libhidapi-libusb.a CMakeFiles/hidapi_libusb.dir/hid.c.o
+/usr/bin/ranlib libhidapi-libusb.a
